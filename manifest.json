@@ -1,0 +1,22 @@
+{
+  "name": "CA Final Study Companion",
+  "short_name": "CA Tracker",
+  "description": "Track your CA Final Group 2 preparation — Syllabus, Schedule, Planner & Mocks",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0b14",
+  "theme_color": "#6C3CE1",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%236C3CE1'/><text y='68' x='50' text-anchor='middle' font-size='48' fill='white' font-family='Arial'>CA</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%236C3CE1'/><text y='68' x='50' text-anchor='middle' font-size='48' fill='white' font-family='Arial'>CA</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
