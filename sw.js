@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ca-tracker-v10';
+const CACHE_NAME = 'ca-tracker-v11';
 const ASSETS = [
   '/',
   '/index.html',
@@ -11,7 +11,18 @@ const ASSETS = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS))
+      .then(cache => {
+        // Cache busting on install
+        return Promise.all(
+          ASSETS.map(url => {
+            return fetch(url + '?v=' + new Date().getTime())
+              .then(response => {
+                if (!response.ok) throw new Error('Network error');
+                return cache.put(url, response);
+              });
+          })
+        );
+      })
       .then(() => self.skipWaiting())
   );
 });
@@ -26,8 +37,11 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
-      .catch(() => caches.match('/index.html'))
+    caches.match(event.request, { ignoreSearch: true })
+      .then(response => {
+        if (response) return response;
+        return fetch(event.request);
+      })
+      .catch(() => caches.match('/index.html', { ignoreSearch: true }))
   );
 });
