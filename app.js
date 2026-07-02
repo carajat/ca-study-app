@@ -166,14 +166,28 @@ function updateDashboardStats() {
   document.getElementById('dash-syllabus-bar').style.width = pct + '%';
   
   // Next mock
-  const nextMock = getNextMock();
-  if (nextMock) {
-    const days = daysUntil(nextMock.date);
-    document.getElementById('dash-next-mock').textContent = days + ' days';
-    document.getElementById('dash-next-mock-label').textContent = nextMock.subject + ' · ' + formatDate(nextMock.date);
+  const nextDT = getNextMockFor('DT');
+  const nextIDT = getNextMockFor('IDT');
+  
+  const elValue = document.getElementById('dash-next-mock');
+  const elLabel = document.getElementById('dash-next-mock-label');
+  
+  if (nextDT && nextIDT) {
+    elValue.style.fontSize = '15px';
+    elValue.style.lineHeight = '1.3';
+    elValue.innerHTML = `DT: ${daysUntil(nextDT.date)}d<br>IDT: ${daysUntil(nextIDT.date)}d`;
+    elLabel.textContent = 'Upcoming Mocks';
+  } else if (nextDT || nextIDT) {
+    const nextMock = nextDT || nextIDT;
+    elValue.style.fontSize = '';
+    elValue.style.lineHeight = '';
+    elValue.textContent = daysUntil(nextMock.date) + ' days';
+    elLabel.textContent = nextMock.subject;
   } else {
-    document.getElementById('dash-next-mock').textContent = 'Done!';
-    document.getElementById('dash-next-mock-label').textContent = 'All mocks completed';
+    elValue.style.fontSize = '';
+    elValue.style.lineHeight = '';
+    elValue.textContent = 'Done!';
+    elLabel.textContent = 'All mocks completed';
   }
 }
 
@@ -304,6 +318,12 @@ function renderExams() {
 function getNextMock() {
   const allMocks = [...APP_DATA.mocks.series1, ...APP_DATA.mocks.series2, ...APP_DATA.mocks.series3];
   const upcoming = allMocks.filter(m => daysUntil(m.date) >= 0).sort((a, b) => new Date(a.date) - new Date(b.date));
+  return upcoming[0] || null;
+}
+
+function getNextMockFor(subj) {
+  const allMocks = [...APP_DATA.mocks.series1, ...APP_DATA.mocks.series2, ...APP_DATA.mocks.series3];
+  const upcoming = allMocks.filter(m => m.subject === subj && daysUntil(m.date) >= 0).sort((a, b) => new Date(a.date) - new Date(b.date));
   return upcoming[0] || null;
 }
 
