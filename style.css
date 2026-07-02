@@ -265,6 +265,9 @@ body.theme-rose {
   transition: var(--transition);
   color: var(--text-primary);
 }
+.theme-btn svg {
+  pointer-events: none;
+}
 .theme-btn:active {
   transform: scale(0.9);
 }
