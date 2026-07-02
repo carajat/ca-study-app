@@ -601,7 +601,17 @@ function renderPlannerTaskList(tasks, dayKey) {
 function togglePlannerTask(dayKey, taskIndex) {
   const tasks = getPlannerTasks();
   if (tasks[dayKey] && tasks[dayKey][taskIndex]) {
-    tasks[dayKey][taskIndex].done = !tasks[dayKey][taskIndex].done;
+    const task = tasks[dayKey][taskIndex];
+    task.done = !task.done;
+    
+    // Auto-sync to syllabus
+    if (task.chapterId && task.activityType) {
+      const progress = getSyllabusProgress();
+      if (!progress[task.chapterId]) progress[task.chapterId] = {};
+      progress[task.chapterId][task.activityType] = task.done;
+      saveSyllabusProgress(progress);
+    }
+    
     savePlannerTasks(tasks);
     renderPlanner();
   }
@@ -657,9 +667,9 @@ function openAddTaskModal() {
       <label>Activity (Optional)</label>
       <select id="task-activity" onchange="onTaskChapterChange()">
         <option value="">— Select —</option>
-        <option value="Book">📖 Book (Concepts)</option>
-        <option value="Q.Bank">❓ Question Bank</option>
-        <option value="Video">🎥 Revision Video</option>
+        <option value="conceptBook">📖 Book (Concepts)</option>
+        <option value="questionBank">❓ Question Bank</option>
+        <option value="revisionVideo">🎥 Revision Video</option>
       </select>
     </div>
     <div class="form-group">
@@ -697,7 +707,7 @@ function onTaskSubjectChange() {
   if (chapters.length > 0) {
     chapterGroup.style.display = 'block';
     chapterSelect.innerHTML = '<option value="">— Select Chapter —</option>' + 
-      chapters.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+      chapters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
       
     if (isMain) {
       activityGroup.style.display = 'block';
@@ -712,12 +722,20 @@ function onTaskSubjectChange() {
 }
 
 function onTaskChapterChange() {
-  const chapter = document.getElementById('task-chapter').value;
-  const activity = document.getElementById('task-activity').value;
+  const chapterSelect = document.getElementById('task-chapter');
+  const chapterId = chapterSelect.value;
+  const chapterName = chapterSelect.options[chapterSelect.selectedIndex]?.text;
+  
+  const activitySelect = document.getElementById('task-activity');
+  const activity = activitySelect.value;
+  const activityName = activitySelect.options[activitySelect.selectedIndex]?.text;
+  
   const taskName = document.getElementById('task-name');
   
-  if (chapter) {
-    taskName.value = chapter + (activity ? ` — ${activity}` : '');
+  if (chapterId) {
+    // Strip emojis for cleaner task name
+    const cleanActivity = activityName ? activityName.replace(/[^a-zA-Z\\s\\(\\)]/g, '').trim() : '';
+    taskName.value = chapterName + (cleanActivity ? ` — ${cleanActivity}` : '');
   }
 }
 
@@ -725,6 +743,14 @@ function addPlannerTask() {
   const name = document.getElementById('task-name').value.trim();
   const category = document.getElementById('task-category').value;
   const subject = document.getElementById('task-subject').value;
+  
+  const chapterId = document.getElementById('task-chapter') ? document.getElementById('task-chapter').value : '';
+  let activityType = document.getElementById('task-activity') ? document.getElementById('task-activity').value : '';
+  
+  // For IBS subjects (no activity dropdown), implicitly set activity to 'done'
+  if (subject && subject.startsWith('IBS-') && chapterId) {
+    activityType = 'done';
+  }
   
   if (!name) { showToast('Please enter a task name! ⚠️'); return; }
   
@@ -736,6 +762,8 @@ function addPlannerTask() {
     name,
     category,
     subject,
+    chapterId,
+    activityType,
     done: false,
     originalIndex: tasks[key].length
   });
