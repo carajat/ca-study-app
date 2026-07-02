@@ -643,9 +643,23 @@ function openAddTaskModal() {
     </div>
     <div class="form-group">
       <label>Subject</label>
-      <select id="task-subject">
+      <select id="task-subject" onchange="onTaskSubjectChange()">
         <option value="">— Select —</option>
         ${subjects.map(s => `<option value="${s.value}">${s.label}</option>`).join('')}
+      </select>
+    </div>
+    <div class="form-group" id="task-chapter-group" style="display: none;">
+      <label>Chapter (Optional)</label>
+      <select id="task-chapter" onchange="onTaskChapterChange()">
+      </select>
+    </div>
+    <div class="form-group" id="task-activity-group" style="display: none;">
+      <label>Activity (Optional)</label>
+      <select id="task-activity" onchange="onTaskChapterChange()">
+        <option value="">— Select —</option>
+        <option value="Book">📖 Book (Concepts)</option>
+        <option value="Q.Bank">❓ Question Bank</option>
+        <option value="Video">🎥 Revision Video</option>
       </select>
     </div>
     <div class="form-group">
@@ -654,6 +668,57 @@ function openAddTaskModal() {
     </div>
     <button class="btn-primary" onclick="addPlannerTask()">Add Task ✅</button>
   `);
+}
+
+function onTaskSubjectChange() {
+  const subj = document.getElementById('task-subject').value;
+  const chapterGroup = document.getElementById('task-chapter-group');
+  const activityGroup = document.getElementById('task-activity-group');
+  const chapterSelect = document.getElementById('task-chapter');
+  
+  if (!subj) {
+    chapterGroup.style.display = 'none';
+    activityGroup.style.display = 'none';
+    return;
+  }
+  
+  let chapters = [];
+  let isMain = false;
+  
+  if (subj === 'DT' || subj === 'IBS-DT') { chapters = APP_DATA.dtChapters; isMain = (subj === 'DT'); }
+  else if (subj === 'IDT' || subj === 'IBS-IDT') { chapters = APP_DATA.idtChapters; isMain = (subj === 'IDT'); }
+  else if (subj.startsWith('IBS-')) {
+    const key = subj.replace('IBS-', '').toLowerCase();
+    if (APP_DATA.ibsSubjects[key]) {
+      chapters = APP_DATA.ibsSubjects[key].chapters;
+    }
+  }
+  
+  if (chapters.length > 0) {
+    chapterGroup.style.display = 'block';
+    chapterSelect.innerHTML = '<option value="">— Select Chapter —</option>' + 
+      chapters.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+      
+    if (isMain) {
+      activityGroup.style.display = 'block';
+    } else {
+      activityGroup.style.display = 'none';
+      document.getElementById('task-activity').value = '';
+    }
+  } else {
+    chapterGroup.style.display = 'none';
+    activityGroup.style.display = 'none';
+  }
+}
+
+function onTaskChapterChange() {
+  const chapter = document.getElementById('task-chapter').value;
+  const activity = document.getElementById('task-activity').value;
+  const taskName = document.getElementById('task-name');
+  
+  if (chapter) {
+    taskName.value = chapter + (activity ? ` — ${activity}` : '');
+  }
 }
 
 function addPlannerTask() {
