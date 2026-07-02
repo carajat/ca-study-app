@@ -1055,8 +1055,25 @@ if ('serviceWorker' in navigator) {
 }
 
 // ═══════════════════════════════════════════
-//  THEMES
+//  MENU, THEMES & DATA SHARING
 // ═══════════════════════════════════════════
+function openMenuModal() {
+  openModal('☰ Settings & Tools', `
+    <button class="menu-btn" onclick="openThemeModal()">
+      <span class="menu-btn-icon">🎨</span> Customize Theme
+    </button>
+    <button class="menu-btn" onclick="shareProgressPDF()">
+      <span class="menu-btn-icon">📄</span> Share Progress (PDF)
+    </button>
+    <button class="menu-btn" onclick="exportData()">
+      <span class="menu-btn-icon">📤</span> Share Backup (Export)
+    </button>
+    <button class="menu-btn" onclick="triggerImport()">
+      <span class="menu-btn-icon">📥</span> Load Backup (Import)
+    </button>
+  `);
+}
+
 function openThemeModal() {
   const currentTheme = localStorage.getItem('ca-theme') || 'default';
   openModal('🎨 Select Theme', `
@@ -1068,6 +1085,7 @@ function openThemeModal() {
       <div class="theme-circle tc-sunset ${currentTheme === 'sunset' ? 'active' : ''}" onclick="setTheme('sunset', this)"></div>
       <div class="theme-circle tc-rose ${currentTheme === 'rose' ? 'active' : ''}" onclick="setTheme('rose', this)"></div>
     </div>
+    <button class="btn-primary" style="margin-top:20px" onclick="openMenuModal()">🔙 Back to Menu</button>
   `);
 }
 
@@ -1095,5 +1113,105 @@ function setTheme(themeName, element) {
 function initTheme() {
   const savedTheme = localStorage.getItem('ca-theme') || 'default';
   setTheme(savedTheme);
+}
+
+// ─── Data Export / Import ───
+async function exportData() {
+  const data = localStorage.getItem(STORAGE_KEY) || '{}';
+  const blob = new Blob([data], { type: 'application/json' });
+  const file = new File([blob], 'ca-progress.json', { type: 'application/json' });
+  
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: 'CA Progress Backup',
+        text: 'Here is my CA Final progress backup!'
+      });
+      showToast('Shared successfully! 🚀');
+    } catch (err) {
+      console.log('Share failed:', err);
+    }
+  } else {
+    // Fallback to download
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ca-progress.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Backup downloaded! 📥');
+  }
+}
+
+function triggerImport() {
+  document.getElementById('import-file').click();
+}
+
+function handleImportFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data && typeof data === 'object') {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        showToast('Data restored successfully! Refreshing... 🔄');
+        setTimeout(() => window.location.reload(), 1500);
+      }
+    } catch (err) {
+      alert('Invalid backup file! Make sure you selected the correct .json file.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = ''; // reset input
+}
+
+// ─── PDF Generation ───
+function shareProgressPDF() {
+  const overallPct = calculateOverallProgress();
+  const dtPct = calculateSubjectProgress('dt', 'main');
+  const idtPct = calculateSubjectProgress('idt', 'main');
+  
+  const scores = getMockScores();
+  let mocksHtml = '';
+  Object.keys(scores).forEach(k => {
+    mocksHtml += `<div class="print-row"><span>Mock ${k}</span> <strong>${scores[k].score}/100</strong></div>`;
+  });
+  if (!mocksHtml) mocksHtml = '<p style="color:#666">No mock scores recorded yet.</p>';
+  
+  const html = `
+    <div class="print-title">CA Final Group 2 Progress Report</div>
+    
+    <div class="print-card">
+      <h3 style="margin-bottom:10px">Overall Syllabus Completion</h3>
+      <div style="font-size:32px; font-weight:900; text-align:center">${overallPct}%</div>
+      <div class="print-bar"><div class="print-bar-fill" style="width:${overallPct}%"></div></div>
+    </div>
+    
+    <div class="print-card">
+      <h3 style="margin-bottom:10px">Subject Details</h3>
+      <div class="print-row"><span>Paper 4: Direct Tax</span> <strong>${dtPct}%</strong></div>
+      <div class="print-bar" style="margin-bottom:15px"><div class="print-bar-fill" style="width:${dtPct}%"></div></div>
+      
+      <div class="print-row"><span>Paper 5: Indirect Tax</span> <strong>${idtPct}%</strong></div>
+      <div class="print-bar"><div class="print-bar-fill" style="width:${idtPct}%"></div></div>
+    </div>
+    
+    <div class="print-card">
+      <h3 style="margin-bottom:10px">Mock Test Scores</h3>
+      ${mocksHtml}
+    </div>
+    
+    <p style="text-align:center; color:#666; margin-top:30px; font-size:12px;">Generated via CA Final Study Companion PWA</p>
+  `;
+  
+  document.getElementById('print-section').innerHTML = html;
+  closeModal();
+  setTimeout(() => window.print(), 500);
 }
 
