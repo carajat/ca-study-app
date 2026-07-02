@@ -322,7 +322,10 @@ function openMockScoreModal(mockId, subject, series, date) {
         <label>Notes</label>
         <textarea id="mock-notes-input" rows="3" placeholder="Weak areas, what to revise...">${existing.notes || ''}</textarea>
       </div>
-      <button class="btn-primary" onclick="saveMockScoreFromModal('${mockId}')">💾 Save Score</button>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-primary" onclick="saveMockScoreFromModal('${mockId}')">💾 Save Score</button>
+        ${existing.score ? `<button class="btn-secondary" onclick="clearMockScoreFromModal('${mockId}')" style="flex: 0.5;">🗑️ Clear</button>` : ''}
+      </div>
     </div>
   `);
 }
@@ -336,6 +339,16 @@ function saveMockScoreFromModal(mockId) {
   renderExams();
   showToast('Score saved! ✅');
 }
+
+function clearMockScoreFromModal(mockId) {
+  const scores = getMockScores();
+  delete scores[mockId];
+  saveState({ mockScores: scores });
+  closeModal();
+  renderExams();
+  showToast('Score cleared! 🗑️');
+}
+
 
 function renderScoreChart() {
   const canvas = document.getElementById('score-chart');
