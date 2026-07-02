@@ -1009,6 +1009,9 @@ function calculateOverallProgress() {
 //  INITIALIZATION
 // ═══════════════════════════════════════════
 function init() {
+  // Initialize Themes
+  initTheme();
+  
   // Load saved schedule preference
   const saved = loadState();
   if (saved.activeSchedule) state.activeSchedule = saved.activeSchedule;
@@ -1030,3 +1033,47 @@ document.addEventListener('DOMContentLoaded', init);
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(err => console.log('SW error:', err));
 }
+
+// ═══════════════════════════════════════════
+//  THEMES
+// ═══════════════════════════════════════════
+function openThemeModal() {
+  const currentTheme = localStorage.getItem('ca-theme') || 'default';
+  openModal('🎨 Select Theme', `
+    <p style="text-align:center; color:var(--text-secondary); margin-bottom: 20px;">Personalize your app colors</p>
+    <div class="theme-picker">
+      <div class="theme-circle tc-default ${currentTheme === 'default' ? 'active' : ''}" onclick="setTheme('default', this)"></div>
+      <div class="theme-circle tc-ocean ${currentTheme === 'ocean' ? 'active' : ''}" onclick="setTheme('ocean', this)"></div>
+      <div class="theme-circle tc-forest ${currentTheme === 'forest' ? 'active' : ''}" onclick="setTheme('forest', this)"></div>
+      <div class="theme-circle tc-sunset ${currentTheme === 'sunset' ? 'active' : ''}" onclick="setTheme('sunset', this)"></div>
+      <div class="theme-circle tc-rose ${currentTheme === 'rose' ? 'active' : ''}" onclick="setTheme('rose', this)"></div>
+    </div>
+  `);
+}
+
+function setTheme(themeName, element) {
+  // Remove all theme classes
+  document.body.classList.remove('theme-ocean', 'theme-forest', 'theme-sunset', 'theme-rose');
+  
+  if (themeName !== 'default') {
+    document.body.classList.add('theme-' + themeName);
+  }
+  localStorage.setItem('ca-theme', themeName);
+  
+  // Update UI
+  if (element) {
+    document.querySelectorAll('.theme-circle').forEach(el => el.classList.remove('active'));
+    element.classList.add('active');
+  }
+  
+  // Re-render chart if on Exams tab to update chart color
+  if (state.activeTab === 'exams') {
+    renderScoreChart();
+  }
+}
+
+function initTheme() {
+  const savedTheme = localStorage.getItem('ca-theme') || 'default';
+  setTheme(savedTheme);
+}
+
