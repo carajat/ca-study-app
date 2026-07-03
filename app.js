@@ -1133,10 +1133,9 @@ function renderSyllabusDetail(subject) {
         ${chapters.map((ch, idx) => {
           const chProgress = progress[ch.id] || {};
           return `
-            <div class="st-row draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${idx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${idx}, 'syllabus-chapter', '${key}')" ondragend="handleDragEnd(event)">
+            <div class="st-row ${isEditMode ? 'is-edit' : ''} draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${idx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${idx}, 'syllabus-chapter', '${key}')" ondragend="handleDragEnd(event)">
               <span class="drag-handle">::</span>
-              <span class="st-num">${!isEditMode ? idx + 1 : ''}</span>
-              ${!isEditMode ? `<div class="st-name">${ch.name}</div>` : `
+              ${!isEditMode ? `<span class="st-num">${idx + 1}</span><div class="st-name">${ch.name}</div>` : `
                 <div class="st-name" style="flex:1; margin-right: 10px;">
                   <input type="text" class="inline-input" value="${ch.name}" onclick="event.stopPropagation()" onchange="updateSyllabusChapter('${key}', ${idx}, this.value)">
                 </div>
