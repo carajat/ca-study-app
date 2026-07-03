@@ -12,6 +12,109 @@ let state = {
   activeSubject: null
 };
 
+// ─── Dynamic Data State ─────────────────
+let DYNAMIC_DATA = null;
+let isEditMode = false;
+
+function loadDynamicData() {
+  const savedData = localStorage.getItem('ca_dynamic_data');
+  if (savedData) {
+    try {
+      DYNAMIC_DATA = JSON.parse(savedData);
+    } catch(e) {
+      console.error("Failed to parse dynamic data", e);
+      DYNAMIC_DATA = JSON.parse(JSON.stringify(APP_DATA));
+    }
+  } else {
+    DYNAMIC_DATA = JSON.parse(JSON.stringify(APP_DATA));
+  }
+  
+  // Migrate to unified syllabusSubjects if not present
+  if (!DYNAMIC_DATA.syllabusSubjects) {
+    DYNAMIC_DATA.syllabusSubjects = [
+      { id: 'dt', name: '📘 Paper 4: DT & International Tax', source: 'CA Aarish Khan', type: 'main', chapters: DYNAMIC_DATA.dtChapters || APP_DATA.dtChapters },
+      { id: 'idt', name: '📗 Paper 5: IDT (GST + Customs)', source: 'VB Sir', type: 'main', chapters: DYNAMIC_DATA.idtChapters || APP_DATA.idtChapters },
+      { id: 'ibs-afm', name: '📊 IBS — AFM', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.afm) ? DYNAMIC_DATA.ibsSubjects.afm.chapters : APP_DATA.ibsSubjects.afm.chapters },
+      { id: 'ibs-fr', name: '📋 IBS — FR', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.fr) ? DYNAMIC_DATA.ibsSubjects.fr.chapters : APP_DATA.ibsSubjects.fr.chapters },
+      { id: 'ibs-audit', name: '🔍 IBS — Audit', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.audit) ? DYNAMIC_DATA.ibsSubjects.audit.chapters : APP_DATA.ibsSubjects.audit.chapters },
+      { id: 'ibs-law', name: '⚖️ IBS — Law (SPOM A)', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.law) ? DYNAMIC_DATA.ibsSubjects.law.chapters : APP_DATA.ibsSubjects.law.chapters },
+      { id: 'ibs-scpm', name: '💰 IBS — SC&PM (SPOM B)', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.scpm) ? DYNAMIC_DATA.ibsSubjects.scpm.chapters : APP_DATA.ibsSubjects.scpm.chapters }
+    ];
+    saveDynamicData();
+  }
+}
+
+function saveDynamicData() {
+  localStorage.setItem('ca_dynamic_data', JSON.stringify(DYNAMIC_DATA));
+}
+
+function toggleEditMode() {
+  isEditMode = !isEditMode;
+  document.body.classList.toggle('edit-mode-active', isEditMode);
+  switchTab(state.activeTab); // re-render current tab
+}
+
+// ─── Drag and Drop & Edit Helpers ───────
+let draggedItemIndex = null;
+
+function handleDragStart(e, index) {
+  if (!isEditMode) return;
+  draggedItemIndex = index;
+  const el = e.target.closest('.draggable-item');
+  if (el) el.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleDragOver(e) {
+  if (!isEditMode) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+
+function handleDrop(e, dropIndex, context, ...args) {
+  if (!isEditMode || draggedItemIndex === null || draggedItemIndex === dropIndex) return;
+  e.preventDefault();
+  
+  // Dispatch to context handler
+  if (context === 'syllabus-subject') reorderSyllabusSubject(draggedItemIndex, dropIndex);
+  else if (context === 'syllabus-chapter') reorderSyllabusChapter(draggedItemIndex, dropIndex, args[0], args[1]);
+  else if (context === 'exam') reorderExam(draggedItemIndex, dropIndex);
+  else if (context === 'mock') reorderMock(draggedItemIndex, dropIndex, args[0]);
+  else if (context === 'schedule-slot') reorderScheduleSlot(draggedItemIndex, dropIndex, args[0]);
+  
+  draggedItemIndex = null;
+  saveDynamicData();
+  switchTab(state.activeTab);
+}
+
+function handleDragEnd(e) {
+  const el = e.target.closest('.draggable-item');
+  if (el) el.classList.remove('dragging');
+}
+
+function reorderArray(arr, from, to) {
+  const item = arr.splice(from, 1)[0];
+  arr.splice(to, 0, item);
+}
+
+function promptEdit(title, defaultValue, callback) {
+  const val = prompt(title, defaultValue);
+  if (val !== null && val.trim() !== '') {
+    callback(val.trim());
+    saveDynamicData();
+    switchTab(state.activeTab);
+  }
+}
+
+function confirmDelete(itemName, callback) {
+  if (confirm(`Are you sure you want to delete "${itemName}"?`)) {
+    callback();
+    saveDynamicData();
+    switchTab(state.activeTab);
+  }
+}
+
+
 // ─── Storage Helper ─────────────────────
 const STORAGE_KEY = 'ca_final_tracker';
 
@@ -139,7 +242,7 @@ function renderDashboard() {
 }
 
 function updateCountdown() {
-  const examDate = new Date(APP_DATA.exam.date);
+  const examDate = new Date(DYNAMIC_DATA.exam.date);
   const now = new Date();
   const diff = examDate - now;
   if (diff <= 0) {
@@ -192,7 +295,7 @@ function updateDashboardStats() {
 }
 
 function updateCurrentActivity() {
-  const schedule = APP_DATA.schedules[state.activeSchedule];
+  const schedule = DYNAMIC_DATA.schedules[state.activeSchedule];
   const now = new Date();
   const currentHour = now.getHours();
   const currentMin = now.getMinutes();
@@ -243,15 +346,15 @@ function updateDashboardPlanner() {
 
 function updateQuote() {
   const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-  const quoteIdx = dayOfYear % APP_DATA.quotes.length;
-  document.getElementById('daily-quote').textContent = '"' + APP_DATA.quotes[quoteIdx] + '"';
+  const quoteIdx = dayOfYear % DYNAMIC_DATA.quotes.length;
+  document.getElementById('daily-quote').textContent = '"' + DYNAMIC_DATA.quotes[quoteIdx] + '"';
 }
 
 // ═══════════════════════════════════════════
 //  EXAM SCHEDULE
 // ═══════════════════════════════════════════
 function renderExams() {
-  const days = daysUntil(APP_DATA.exam.date);
+  const days = daysUntil(DYNAMIC_DATA.exam.date);
   document.getElementById('exam-days-left').textContent = days + ' days left';
   
   // Next mock
@@ -270,23 +373,33 @@ function renderExams() {
   const scores = getMockScores();
   
   ['series1', 'series2', 'series3'].forEach((seriesKey, idx) => {
-    const series = APP_DATA.mocks[seriesKey];
+    const series = DYNAMIC_DATA.mocks[seriesKey];
     const seriesHtml = `
       <div class="mock-series glass-card">
         <h3 class="series-title">Series ${idx + 1}</h3>
         <div class="mock-list">
-          ${series.map(mock => {
+          ${series.map((mock, mockIdx) => {
             const score = scores[mock.id];
             const isPast = daysUntil(mock.date) < 0;
             const isUpcoming = daysUntil(mock.date) >= 0 && daysUntil(mock.date) <= 3;
             return `
-              <div class="mock-item ${score ? 'scored' : ''} ${isUpcoming ? 'upcoming' : ''}" onclick="openMockScoreModal('${mock.id}', '${mock.subject}', ${mock.series}, '${mock.date}')">
-                <div class="mock-subject">${mock.subject}</div>
+              <div class="mock-item ${score ? 'scored' : ''} ${isUpcoming ? 'upcoming' : ''} draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${mockIdx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${mockIdx}, 'mock', '${seriesKey}')" ondragend="handleDragEnd(event)" ${!isEditMode ? `onclick="openMockScoreModal('${mock.id}', '${mock.subject}', ${mock.series}, '${mock.date}')"` : ''}>
+                <span class="drag-handle">::</span>
+                <div class="mock-subject" style="flex:1">${mock.subject}</div>
                 <div class="mock-date">${formatDate(mock.date)}</div>
+                ${!isEditMode ? `
                 <div class="mock-score">${score ? score.score + '/100' : (isPast ? '⚠️' : '⬜')}</div>
+                ` : `
+                <div class="edit-mode-controls">
+                  <button class="edit-btn" onclick="event.stopPropagation(); editMock('${seriesKey}', ${mockIdx})">✏️</button>
+                  <button class="delete-btn" onclick="event.stopPropagation(); deleteMock('${seriesKey}', ${mockIdx})">🗑️</button>
+                </div>
+                `}
               </div>
             `;
           }).join('')}
+        </div>
+        ${isEditMode ? `<button class="add-item-btn" onclick="addMock('${seriesKey}')">+ Add Mock</button>` : ''}
         </div>
       </div>
     `;
@@ -298,17 +411,26 @@ function renderExams() {
     <div class="mock-series glass-card final-datesheet">
       <h3 class="series-title">🎓 CA Final — November 2026</h3>
       <div class="mock-list">
-        ${APP_DATA.finalExams.map(exam => {
+        ${DYNAMIC_DATA.finalExams.map((exam, examIdx) => {
           const days = daysUntil(exam.date);
           return `
-            <div class="mock-item final-exam-item">
-              <div class="mock-subject">${exam.subject}</div>
+            <div class="mock-item final-exam-item draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${examIdx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${examIdx}, 'exam')" ondragend="handleDragEnd(event)">
+              <span class="drag-handle">::</span>
+              <div class="mock-subject" style="flex:1">${exam.subject}</div>
               <div class="mock-date">${formatDate(exam.date)} (${exam.day})<br><small>${exam.time}</small></div>
+              ${!isEditMode ? `
               <div class="mock-score final-days">${days} days</div>
+              ` : `
+              <div class="edit-mode-controls">
+                <button class="edit-btn" onclick="editExam(${examIdx})">✏️</button>
+                <button class="delete-btn" onclick="deleteExam(${examIdx})">🗑️</button>
+              </div>
+              `}
             </div>
           `;
         }).join('')}
       </div>
+      ${isEditMode ? `<button class="add-item-btn" onclick="addExam()">+ Add Exam</button>` : ''}
     </div>
   `;
   
@@ -316,13 +438,13 @@ function renderExams() {
 }
 
 function getNextMock() {
-  const allMocks = [...APP_DATA.mocks.series1, ...APP_DATA.mocks.series2, ...APP_DATA.mocks.series3];
+  const allMocks = [...DYNAMIC_DATA.mocks.series1, ...DYNAMIC_DATA.mocks.series2, ...DYNAMIC_DATA.mocks.series3];
   const upcoming = allMocks.filter(m => daysUntil(m.date) >= 0).sort((a, b) => new Date(a.date) - new Date(b.date));
   return upcoming[0] || null;
 }
 
 function getNextMockFor(subj) {
-  const allMocks = [...APP_DATA.mocks.series1, ...APP_DATA.mocks.series2, ...APP_DATA.mocks.series3];
+  const allMocks = [...DYNAMIC_DATA.mocks.series1, ...DYNAMIC_DATA.mocks.series2, ...DYNAMIC_DATA.mocks.series3];
   const upcoming = allMocks.filter(m => m.subject === subj && daysUntil(m.date) >= 0).sort((a, b) => new Date(a.date) - new Date(b.date));
   return upcoming[0] || null;
 }
@@ -406,7 +528,7 @@ function renderScoreChart() {
   subjects.forEach(subj => {
     const points = [];
     ['series1', 'series2', 'series3'].forEach((series, sIdx) => {
-      const mock = APP_DATA.mocks[series].find(m => m.subject === subj);
+      const mock = DYNAMIC_DATA.mocks[series].find(m => m.subject === subj);
       if (mock && scores[mock.id]) {
         points.push({ x: 100 + sIdx * 120, y: 180 - (scores[mock.id].score / 100 * 160) });
       }
@@ -445,7 +567,7 @@ function renderScoreChart() {
 //  TIMETABLE
 // ═══════════════════════════════════════════
 function renderSchedule() {
-  const schedule = APP_DATA.schedules[state.activeSchedule];
+  const schedule = DYNAMIC_DATA.schedules[state.activeSchedule];
   
   const container = document.getElementById('schedule-slots-container');
   container.innerHTML = '';
@@ -453,7 +575,7 @@ function renderSchedule() {
   const now = new Date();
   const currentMin = now.getHours() * 60 + now.getMinutes();
   
-  schedule.slots.forEach(slot => {
+  schedule.slots.forEach((slot, idx) => {
     const [startStr] = slot.startRange.split('-');
     const [sh, sm] = startStr.split(':').map(Number);
     const startMin = sh * 60 + sm;
@@ -462,9 +584,10 @@ function renderSchedule() {
     const durationStr = slot.duration >= 60 ? (slot.duration / 60) + ' hrs' : slot.duration + ' min';
     
     container.innerHTML += `
-      <div class="schedule-slot glass-card slot-type-${slot.type} ${isActive ? 'slot-active' : ''}">
-        ${isActive ? '<div class="active-indicator">🔴 NOW</div>' : ''}
-        <div class="slot-header">
+      <div class="schedule-slot glass-card slot-type-${slot.type} ${isActive ? 'slot-active' : ''} draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${idx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${idx}, 'schedule-slot', '${state.activeSchedule}')" ondragend="handleDragEnd(event)">
+        <span class="drag-handle">::</span>
+        ${isActive && !isEditMode ? '<div class="active-indicator">🔴 NOW</div>' : ''}
+        <div class="slot-header" style="flex:1">
           <span class="slot-icon">${slot.icon}</span>
           <span class="slot-label">${slot.label}</span>
         </div>
@@ -472,13 +595,22 @@ function renderSchedule() {
           <span class="slot-range">Start between: ${slot.startRange}</span>
           <span class="slot-duration">Duration: ${durationStr}</span>
         </div>
+        ${isEditMode ? `
+        <div class="edit-mode-controls">
+          <button class="edit-btn" onclick="editScheduleSlot('${state.activeSchedule}', ${idx})">✏️</button>
+          <button class="delete-btn" onclick="deleteScheduleSlot('${state.activeSchedule}', ${idx})">🗑️</button>
+        </div>
+        ` : ''}
       </div>
     `;
   });
+  if (isEditMode) {
+    container.innerHTML += `<button class="add-item-btn" onclick="addScheduleSlot('${state.activeSchedule}')">+ Add Slot</button>`;
+  }
   
   // Study rules
   const rulesList = document.getElementById('study-rules-list');
-  rulesList.innerHTML = APP_DATA.schedules.rules.map(r => `<li>${r}</li>`).join('');
+  rulesList.innerHTML = DYNAMIC_DATA.schedules.rules.map(r => `<li>${r}</li>`).join('');
 }
 
 function switchSchedule(type) {
@@ -532,8 +664,8 @@ function renderMiniCalendar() {
   // Build set of important dates for highlighting
   const mockDates = new Set();
   const examDates = new Set();
-  [...APP_DATA.mocks.series1, ...APP_DATA.mocks.series2, ...APP_DATA.mocks.series3].forEach(m => mockDates.add(m.date));
-  APP_DATA.finalExams.forEach(e => examDates.add(e.date));
+  [...DYNAMIC_DATA.mocks.series1, ...DYNAMIC_DATA.mocks.series2, ...DYNAMIC_DATA.mocks.series3].forEach(m => mockDates.add(m.date));
+  DYNAMIC_DATA.finalExams.forEach(e => examDates.add(e.date));
   
   for (let d = 1; d <= daysInMonth; d++) {
     const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -555,11 +687,11 @@ function renderMiniCalendar() {
     // Get tooltip for special days
     let tooltip = '';
     if (isMockDay) {
-      const mock = [...APP_DATA.mocks.series1, ...APP_DATA.mocks.series2, ...APP_DATA.mocks.series3].find(m => m.date === key);
+      const mock = [...DYNAMIC_DATA.mocks.series1, ...DYNAMIC_DATA.mocks.series2, ...DYNAMIC_DATA.mocks.series3].find(m => m.date === key);
       tooltip = `Mock: ${mock.subject}`;
     }
     if (isExamDay) {
-      const exam = APP_DATA.finalExams.find(e => e.date === key);
+      const exam = DYNAMIC_DATA.finalExams.find(e => e.date === key);
       tooltip = `EXAM: ${exam.subject}`;
     }
     
@@ -715,12 +847,12 @@ function onTaskSubjectChange() {
   let chapters = [];
   let isMain = false;
   
-  if (subj === 'DT' || subj === 'IBS-DT') { chapters = APP_DATA.dtChapters; isMain = (subj === 'DT'); }
-  else if (subj === 'IDT' || subj === 'IBS-IDT') { chapters = APP_DATA.idtChapters; isMain = (subj === 'IDT'); }
+  if (subj === 'DT' || subj === 'IBS-DT') { chapters = DYNAMIC_DATA.dtChapters; isMain = (subj === 'DT'); }
+  else if (subj === 'IDT' || subj === 'IBS-IDT') { chapters = DYNAMIC_DATA.idtChapters; isMain = (subj === 'IDT'); }
   else if (subj.startsWith('IBS-')) {
     const key = subj.replace('IBS-', '').toLowerCase();
-    if (APP_DATA.ibsSubjects[key]) {
-      chapters = APP_DATA.ibsSubjects[key].chapters;
+    if (DYNAMIC_DATA.ibsSubjects[key]) {
+      chapters = DYNAMIC_DATA.ibsSubjects[key].chapters;
     }
   }
   
@@ -831,32 +963,36 @@ function showSubjectsList() {
   const container = document.getElementById('syllabus-subjects-list');
   container.style.display = 'block';
   
-  const subjects = [
-    { key: 'dt', name: '📘 Paper 4: DT & International Tax', source: 'CA Aarish Khan · 46 chapters', type: 'main', chapters: APP_DATA.dtChapters },
-    { key: 'idt', name: '📗 Paper 5: IDT (GST + Customs)', source: 'VB Sir · 31 chapters', type: 'main', chapters: APP_DATA.idtChapters },
-    { key: 'ibs-afm', name: '📊 IBS — AFM', source: '12 chapters', type: 'ibs', chapters: APP_DATA.ibsSubjects.afm.chapters },
-    { key: 'ibs-fr', name: '📋 IBS — FR', source: '31 chapters', type: 'ibs', chapters: APP_DATA.ibsSubjects.fr.chapters },
-    { key: 'ibs-audit', name: '🔍 IBS — Audit', source: '19 chapters', type: 'ibs', chapters: APP_DATA.ibsSubjects.audit.chapters },
-    { key: 'ibs-law', name: '⚖️ IBS — Law (SPOM A)', source: '14 chapters', type: 'ibs', chapters: APP_DATA.ibsSubjects.law.chapters },
-    { key: 'ibs-scpm', name: '💰 IBS — SC&PM (SPOM B)', source: '14 chapters', type: 'ibs', chapters: APP_DATA.ibsSubjects.scpm.chapters }
-  ];
+  const subjects = DYNAMIC_DATA.syllabusSubjects || [];
   
-  container.innerHTML = subjects.map(subj => {
-    const pct = calculateSubjectProgress(subj.key, subj.type);
+  container.innerHTML = subjects.map((subj, idx) => {
+    const pct = calculateSubjectProgress(subj.id, subj.type);
     return `
-      <div class="subject-card glass-card" onclick="openSubjectDetail('${subj.key}', '${subj.type}')">
-        <div class="subj-info">
+      <div class="subject-card glass-card draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${idx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${idx}, 'syllabus-subject')" ondragend="handleDragEnd(event)">
+        <span class="drag-handle">::</span>
+        <div class="subj-info" onclick="!isEditMode && openSubjectDetail('${subj.id}', '${subj.type}')" style="${isEditMode ? '' : 'cursor:pointer; flex: 1'}">
           <div class="subj-name">${subj.name}</div>
           <div class="subj-source">${subj.source}</div>
         </div>
+        ${!isEditMode ? `
         <div class="subj-progress">
           <span class="subj-pct">${pct}%</span>
           <div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%"></div></div>
         </div>
         <span class="subj-arrow">▶</span>
+        ` : `
+        <div class="edit-mode-controls">
+          <button class="edit-btn" onclick="editSyllabusSubject(${idx})">✏️</button>
+          <button class="delete-btn" onclick="deleteSyllabusSubject(${idx})">🗑️</button>
+        </div>
+        `}
       </div>
     `;
   }).join('');
+  
+  if (isEditMode) {
+    container.innerHTML += \`<button class="add-item-btn" onclick="addSyllabusSubject()">+ Add Subject</button>\`;
+  }
 }
 
 function openSubjectDetail(key, type) {
@@ -871,18 +1007,10 @@ function renderSyllabusDetail(subject) {
   const { key, type } = subject;
   const progress = getSyllabusProgress();
   
-  let chapters, title;
-  if (key === 'dt') {
-    chapters = APP_DATA.dtChapters;
-    title = '📘 DT & International Tax';
-  } else if (key === 'idt') {
-    chapters = APP_DATA.idtChapters;
-    title = '📗 IDT (GST + Customs)';
-  } else {
-    const ibsKey = key.replace('ibs-', '');
-    chapters = APP_DATA.ibsSubjects[ibsKey].chapters;
-    title = APP_DATA.ibsSubjects[ibsKey].name;
-  }
+  const subjData = DYNAMIC_DATA.syllabusSubjects.find(s => s.id === key);
+  if (!subjData) return;
+  const chapters = subjData.chapters || [];
+  const title = subjData.name;
   
   const pct = calculateSubjectProgress(key, type);
   
@@ -918,17 +1046,28 @@ function renderSyllabusDetail(subject) {
         ${chapters.map((ch, idx) => {
           const chProgress = progress[ch.id] || {};
           return `
-            <div class="st-row">
-              <span class="st-num">${idx + 1}</span>
+            <div class="st-row draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${idx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${idx}, 'syllabus-chapter', '${key}')" ondragend="handleDragEnd(event)">
+              <span class="drag-handle">::</span>
+              <span class="st-num">${!isEditMode ? idx + 1 : ''}</span>
               <span class="st-name">${ch.name}</span>
+              ${!isEditMode ? `
               <span class="st-check"><input type="checkbox" ${chProgress.conceptBook ? 'checked' : ''} onchange="toggleSyllabusCheck('${ch.id}', 'conceptBook', this.checked)"></span>
               <span class="st-check"><input type="checkbox" ${chProgress.questionBank ? 'checked' : ''} onchange="toggleSyllabusCheck('${ch.id}', 'questionBank', this.checked)"></span>
               <span class="st-check"><input type="checkbox" ${chProgress.revisionVideo ? 'checked' : ''} onchange="toggleSyllabusCheck('${ch.id}', 'revisionVideo', this.checked)"></span>
+              ` : `
+              <div class="edit-mode-controls">
+                <button class="edit-btn" onclick="editSyllabusChapter('${key}', ${idx})">✏️</button>
+                <button class="delete-btn" onclick="deleteSyllabusChapter('${key}', ${idx})">🗑️</button>
+              </div>
+              `}
             </div>
           `;
         }).join('')}
       </div>
     `;
+    if (isEditMode) {
+      contentEl.innerHTML += `<button class="add-item-btn" onclick="addSyllabusChapter('${key}')">+ Add Chapter</button>`;
+    }
   } else {
     // IBS: Simple checkbox
     contentEl.innerHTML = `
@@ -936,15 +1075,25 @@ function renderSyllabusDetail(subject) {
         ${chapters.map((ch, idx) => {
           const isDone = progress[ch.id]?.done || false;
           return `
-            <div class="ss-row ${isDone ? 'done' : ''}" onclick="toggleIbsCheck('${ch.id}')">
+            <div class="ss-row ${isDone ? 'done' : ''} draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${idx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${idx}, 'syllabus-chapter', '${key}')" ondragend="handleDragEnd(event)" ${!isEditMode ? `onclick="toggleIbsCheck('${ch.id}')"` : ''}>
+              <span class="drag-handle">::</span>
               <span class="ss-check">${isDone ? '☑️' : '☐'}</span>
               <span class="ss-num">${idx + 1}.</span>
-              <span class="ss-name">${ch.name}</span>
+              <span class="ss-name" style="flex:1">${ch.name}</span>
+              ${isEditMode ? `
+              <div class="edit-mode-controls">
+                <button class="edit-btn" onclick="event.stopPropagation(); editSyllabusChapter('${key}', ${idx})">✏️</button>
+                <button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter('${key}', ${idx})">🗑️</button>
+              </div>
+              ` : ''}
             </div>
           `;
         }).join('')}
       </div>
     `;
+    if (isEditMode) {
+      contentEl.innerHTML += `<button class="add-item-btn" onclick="addSyllabusChapter('${key}')">+ Add Chapter</button>`;
+    }
   }
 }
 
@@ -974,27 +1123,21 @@ function toggleIbsCheck(chapterId) {
 // ─── Progress Calculation ───────────────
 function calculateSubjectProgress(key, type) {
   const progress = getSyllabusProgress();
+  const subj = DYNAMIC_DATA.syllabusSubjects?.find(s => s.id === key);
+  if (!subj || !subj.chapters) return 0;
+  
+  const chapters = subj.chapters;
   let total = 0, done = 0;
   
-  if (key === 'dt') {
-    total = APP_DATA.dtChapters.length * 3;
-    APP_DATA.dtChapters.forEach(ch => {
-      const p = progress[ch.id] || {};
-      if (p.conceptBook) done++;
-      if (p.questionBank) done++;
-      if (p.revisionVideo) done++;
-    });
-  } else if (key === 'idt') {
-    total = APP_DATA.idtChapters.length * 3;
-    APP_DATA.idtChapters.forEach(ch => {
+  if (type === 'main') {
+    total = chapters.length * 3;
+    chapters.forEach(ch => {
       const p = progress[ch.id] || {};
       if (p.conceptBook) done++;
       if (p.questionBank) done++;
       if (p.revisionVideo) done++;
     });
   } else {
-    const ibsKey = key.replace('ibs-', '');
-    const chapters = APP_DATA.ibsSubjects[ibsKey].chapters;
     total = chapters.length;
     chapters.forEach(ch => {
       if (progress[ch.id]?.done) done++;
@@ -1032,6 +1175,9 @@ function init() {
   // Initialize Themes
   initTheme();
   
+  // Load dynamic data
+  loadDynamicData();
+  
   // Load saved schedule preference
   const saved = loadState();
   if (saved.activeSchedule) state.activeSchedule = saved.activeSchedule;
@@ -1059,6 +1205,9 @@ if ('serviceWorker' in navigator) {
 // ═══════════════════════════════════════════
 function openMenuModal() {
   openModal('☰ Settings & Tools', `
+    <button class="menu-btn" onclick="toggleEditMode(); closeModal()">
+      <span class="menu-btn-icon">${isEditMode ? '✅' : '✏️'}</span> Edit Mode: <strong style="color: ${isEditMode ? 'var(--color-primary)' : 'inherit'}">${isEditMode ? 'ON' : 'OFF'}</strong>
+    </button>
     <button class="menu-btn" onclick="openThemeModal()">
       <span class="menu-btn-icon">🎨</span> Customize Theme
     </button>
@@ -1108,6 +1257,161 @@ function setTheme(themeName, element) {
   if (state.activeTab === 'exams') {
     renderScoreChart();
   }
+}
+
+// ─── SYLLABUS EDIT HANDLERS ─────────────
+function reorderSyllabusSubject(from, to) {
+  reorderArray(DYNAMIC_DATA.syllabusSubjects, from, to);
+}
+function editSyllabusSubject(idx) {
+  const subj = DYNAMIC_DATA.syllabusSubjects[idx];
+  promptEdit('Edit Subject Name:', subj.name, (newName) => {
+    subj.name = newName;
+  });
+}
+function deleteSyllabusSubject(idx) {
+  confirmDelete(DYNAMIC_DATA.syllabusSubjects[idx].name, () => {
+    DYNAMIC_DATA.syllabusSubjects.splice(idx, 1);
+  });
+}
+function addSyllabusSubject() {
+  promptEdit('New Subject Name:', '', (name) => {
+    const id = 'subj-' + Date.now();
+    const type = confirm('Is this a Main Subject (with Book/QB/Video tracking)?\nClick OK for Main, Cancel for Simple (like IBS).') ? 'main' : 'ibs';
+    DYNAMIC_DATA.syllabusSubjects.push({ id, name, source: '', type, chapters: [] });
+    saveDynamicData();
+    switchTab(state.activeTab);
+  });
+}
+
+function reorderSyllabusChapter(from, to, subjectId) {
+  const subj = DYNAMIC_DATA.syllabusSubjects.find(s => s.id === subjectId);
+  if (subj) reorderArray(subj.chapters, from, to);
+}
+function editSyllabusChapter(subjectId, idx) {
+  const subj = DYNAMIC_DATA.syllabusSubjects.find(s => s.id === subjectId);
+  if (subj) {
+    promptEdit('Edit Chapter Name:', subj.chapters[idx].name, (newName) => {
+      subj.chapters[idx].name = newName;
+    });
+  }
+}
+function deleteSyllabusChapter(subjectId, idx) {
+  const subj = DYNAMIC_DATA.syllabusSubjects.find(s => s.id === subjectId);
+  if (subj) {
+    confirmDelete(subj.chapters[idx].name, () => {
+      subj.chapters.splice(idx, 1);
+    });
+  }
+}
+function addSyllabusChapter(subjectId) {
+  const subj = DYNAMIC_DATA.syllabusSubjects.find(s => s.id === subjectId);
+  if (subj) {
+    promptEdit('New Chapter Name:', '', (name) => {
+      subj.chapters.push({ id: 'ch-' + Date.now(), name });
+      saveDynamicData();
+      renderSyllabusDetail(state.activeSubject);
+    });
+  }
+}
+
+// ─── EXAMS EDIT HANDLERS ───────────────
+function reorderMock(from, to, seriesKey) {
+  reorderArray(DYNAMIC_DATA.mocks[seriesKey], from, to);
+}
+function editMock(seriesKey, idx) {
+  const mock = DYNAMIC_DATA.mocks[seriesKey][idx];
+  promptEdit('Edit Mock Subject:', mock.subject, (subj) => {
+    promptEdit('Edit Mock Date (YYYY-MM-DD):', mock.date, (date) => {
+      mock.subject = subj;
+      mock.date = date;
+      saveDynamicData();
+      switchTab(state.activeTab);
+    });
+  });
+}
+function deleteMock(seriesKey, idx) {
+  confirmDelete(DYNAMIC_DATA.mocks[seriesKey][idx].subject, () => {
+    DYNAMIC_DATA.mocks[seriesKey].splice(idx, 1);
+  });
+}
+function addMock(seriesKey) {
+  promptEdit('New Mock Subject:', '', (subj) => {
+    promptEdit('Mock Date (YYYY-MM-DD):', '2026-08-01', (date) => {
+      DYNAMIC_DATA.mocks[seriesKey].push({ id: 'm-new-' + Date.now(), subject: subj, date: date, series: seriesKey.replace('series', '') });
+      saveDynamicData();
+      switchTab(state.activeTab);
+    });
+  });
+}
+
+function reorderExam(from, to) {
+  reorderArray(DYNAMIC_DATA.finalExams, from, to);
+}
+function editExam(idx) {
+  const exam = DYNAMIC_DATA.finalExams[idx];
+  promptEdit('Edit Exam Subject:', exam.subject, (subj) => {
+    promptEdit('Edit Exam Date (YYYY-MM-DD):', exam.date, (date) => {
+      exam.subject = subj;
+      exam.date = date;
+      saveDynamicData();
+      switchTab(state.activeTab);
+    });
+  });
+}
+function deleteExam(idx) {
+  confirmDelete(DYNAMIC_DATA.finalExams[idx].subject, () => {
+    DYNAMIC_DATA.finalExams.splice(idx, 1);
+  });
+}
+function addExam() {
+  promptEdit('New Exam Subject:', '', (subj) => {
+    promptEdit('Exam Date (YYYY-MM-DD):', '2026-11-01', (date) => {
+      promptEdit('Exam Day & Time:', 'Monday 2:00 PM - 5:00 PM', (dayTime) => {
+        const parts = dayTime.split(' ');
+        const day = parts[0];
+        const time = parts.slice(1).join(' ');
+        DYNAMIC_DATA.finalExams.push({ id: 'final-new-' + Date.now(), subject: subj, date, day, time });
+        saveDynamicData();
+        switchTab(state.activeTab);
+      });
+    });
+  });
+}
+
+// ─── SCHEDULE EDIT HANDLERS ─────────────
+function reorderScheduleSlot(from, to, scheduleKey) {
+  reorderArray(DYNAMIC_DATA.schedules[scheduleKey].slots, from, to);
+}
+function editScheduleSlot(scheduleKey, idx) {
+  const slot = DYNAMIC_DATA.schedules[scheduleKey].slots[idx];
+  promptEdit('Edit Slot Label:', slot.label, (label) => {
+    promptEdit('Edit Start Range (HH:MM-HH:MM):', slot.startRange, (range) => {
+      promptEdit('Edit Duration (minutes):', slot.duration, (dur) => {
+        slot.label = label;
+        slot.startRange = range;
+        slot.duration = parseInt(dur) || 60;
+        saveDynamicData();
+        switchTab(state.activeTab);
+      });
+    });
+  });
+}
+function deleteScheduleSlot(scheduleKey, idx) {
+  confirmDelete(DYNAMIC_DATA.schedules[scheduleKey].slots[idx].label, () => {
+    DYNAMIC_DATA.schedules[scheduleKey].slots.splice(idx, 1);
+  });
+}
+function addScheduleSlot(scheduleKey) {
+  promptEdit('New Slot Label:', '', (label) => {
+    promptEdit('Start Range (HH:MM-HH:MM):', '09:00-10:00', (range) => {
+      promptEdit('Duration (minutes):', '60', (dur) => {
+        DYNAMIC_DATA.schedules[scheduleKey].slots.push({ id: 's-new-' + Date.now(), label, startRange: range, duration: parseInt(dur) || 60, type: 'study', icon: '📝' });
+        saveDynamicData();
+        switchTab(state.activeTab);
+      });
+    });
+  });
 }
 
 function initTheme() {
