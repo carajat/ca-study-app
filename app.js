@@ -528,7 +528,12 @@ function renderExams() {
           const days = daysUntil(exam.date);
           return `
             <div class="mock-item final-exam-item draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${examIdx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${examIdx}, 'exam')" ondragend="handleDragEnd(event)">
-              <span class="drag-handle">::</span>
+              ${isEditMode ? `
+  <div class="order-controls" style="display:flex; flex-direction:column; justify-content:center; margin-right:12px; gap:8px; z-index:10;">
+    <button onclick="moveSubjectUp(${idx})" style="background:transparent; border:none; color:var(--text-secondary); padding:4px; line-height:0; cursor:pointer;"><span class="material-symbols-rounded">expand_less</span></button>
+    <button onclick="moveSubjectDown(${idx})" style="background:transparent; border:none; color:var(--text-secondary); padding:4px; line-height:0; cursor:pointer;"><span class="material-symbols-rounded">expand_more</span></button>
+  </div>
+` : ''}
               ${!isEditMode ? `
               <div class="mock-subject" style="flex:1">${exam.subject}</div>
               <div class="mock-date">${formatDate(exam.date)} (${exam.day})<br><small>${exam.time}</small></div>
@@ -1092,7 +1097,7 @@ function showSubjectsList() {
   container.innerHTML = subjects.map((subj, idx) => {
     const pct = calculateSubjectProgress(subj.id, subj.type);
     return `
-      <div class="subject-card glass-card draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${idx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${idx}, 'syllabus-subject')" ondragend="handleDragEnd(event)">
+      <div class="subject-card glass-card draggable-item" >
         <span class="drag-handle">::</span>
         <div class="subj-info" onclick="openSubjectDetail('${subj.id}', '${subj.type}')" style="cursor:pointer; flex: 1">
           ${!isEditMode ? `
