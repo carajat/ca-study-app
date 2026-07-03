@@ -190,7 +190,7 @@ function savePlannerTasks(tasks) {
 // ─── Toast ──────────────────────────────
 function showToast(msg) {
   const toast = document.getElementById('toast');
-  toast.textContent = msg;
+  toast.innerHTML = msg;
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 2500);
 }
@@ -380,7 +380,7 @@ function updateCurrentActivity() {
   }
   
   if (currentSlot) {
-    document.getElementById('ca-slot-name').innerHTML = '<span class="material-symbols-rounded" style="vertical-align:middle; margin-right:6px; font-size: 20px;">' + currentSlot.icon + '</span>' + currentSlot.label;
+    document.getElementById('ca-slot-name').innerHTML = '<span class="material-symbols-rounded" style="vertical-align:middle; margin-right:6px; font-size: 20px;">' + (currentSlot.icon || '').trim() + '</span> ' + currentSlot.label;
     document.getElementById('ca-slot-details').textContent = `Window: ${currentSlot.startRange} · Duration: ${currentSlot.duration >= 60 ? (currentSlot.duration/60) + ' hrs' : currentSlot.duration + ' min'}`;
     document.getElementById('ca-slot-name').className = 'ca-slot-name slot-' + currentSlot.type;
   } else {
@@ -389,7 +389,7 @@ function updateCurrentActivity() {
   }
   
   if (nextSlot) {
-    document.getElementById('ca-next-slot').innerHTML = '<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">arrow_forward</span> Next: ' + '<span class="material-symbols-rounded" style="vertical-align:middle; font-size:14px; margin-right:4px;">' + nextSlot.icon + '</span> ' + nextSlot.label;
+    document.getElementById('ca-next-slot').innerHTML = '<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">arrow_forward</span> Next: ' + '<span class="material-symbols-rounded" style="vertical-align:middle; font-size:14px; margin-right:4px;">' + (nextSlot.icon || '').trim() + '</span> ' + nextSlot.label;
   } else {
     document.getElementById('ca-next-slot').textContent = '';
   }
@@ -672,7 +672,7 @@ function renderSchedule() {
         <span class="drag-handle">::</span>
         ${isActive && !isEditMode ? '<div class="active-indicator"><span class="material-symbols-rounded icon-sm">circle</span> NOW</div>' : ''}
         <div class="slot-header" style="flex:1">
-          <span class="material-symbols-rounded slot-icon">${slot.icon}</span>
+          <span class="material-symbols-rounded slot-icon">${(slot.icon || "").trim()}</span>
           ${!isEditMode ? `<span class="slot-label">${slot.label}</span>` : `<input type="text" class="inline-input" value="${slot.label}" onchange="updateScheduleSlot('${state.activeSchedule}', ${idx}, 'label', this.value)">`}
         </div>
         <div class="slot-details" style="${isEditMode ? 'display:flex; flex-direction:column; gap:4px; margin-right:10px;' : ''}">
