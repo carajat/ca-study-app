@@ -6,55 +6,73 @@
 
 /* ─── CSS Variables (Dark Mode — Default) ── */
 :root {
-  --bg-primary: #131314;
-  --bg-card: #1E1F20;
-  --text-primary: #e3e3e3;
-  --text-secondary: #c4c7c5;
-  --text-muted: #8e918f;
-  --primary: #a8c7fa;
-  --primary-container: #004a77;
-  --on-primary: #062e6f;
-  --on-primary-container: #c2e7ff;
-  --accent: #a8c7fa;
-  --success: #81c995;
-  --danger: #f28b82;
-  --warning: #fdd663;
+  --bg-primary: #000000;
+  --bg-card: #1c1c1e;
+  --text-primary: #ffffff;
+  --text-secondary: #ebebf5;
+  --text-muted: #8e8e93;
+  --primary: #0a84ff;
+  --primary-container: #1c1c1e;
+  --on-primary: #ffffff;
+  --on-primary-container: #0a84ff;
+  --accent: #0a84ff;
+  --success: #34c759;
+  --danger: #ff453a;
+  --warning: #ffd60a;
   
-  --border-color: rgba(255,255,255,0.1);
+  --border-color: rgba(255,255,255,0.15);
   --border-radius-lg: 16px;
   --border-radius-md: 12px;
   --border-radius-sm: 8px;
   --nav-height: 68px;
+  --purple: #0a84ff;
+  --blue: #0a84ff;
+  --green: #34c759;
+  --red: #ff453a;
+  --yellow: #ffd60a;
+  --orange: #ff9f0a;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --checkbox-row-odd: rgba(255,255,255,0.01);
+  --checkbox-row-active: rgba(10, 132, 255, 0.1);
+  --card-gradient-final: linear-gradient(145deg, #1a1a1c, #1c1c1e);
+  --card-gradient-countdown: linear-gradient(145deg, #151830, #1c1c1e);
+  --toast-shadow: rgba(0,0,0,0.5);
+  --scrollbar-thumb: #3a3a3c;
+  --nav-bg: rgba(28, 28, 30, 0.7);
+  --bg-card-hover: #2c2c2e;
 }
 
 /* ─── Light Mode (Auto — follows device theme) ── */
 @media (prefers-color-scheme: light) {
   :root {
-    --bg-primary: #f4f5f9;
+    --bg-primary: #f2f2f7;
     --bg-card: #ffffff;
-    --bg-card-hover: #f0f1f5;
-    --border-color: #e2e4ea;
-    --border-glow: rgba(108, 60, 225, 0.15);
-    --text-primary: #1a1d2e;
-    --text-secondary: #5a5f72;
-    --text-muted: #8a8fa0;
-    --purple: #6C3CE1;
-    --purple-glow: rgba(108, 60, 225, 0.2);
-    --blue: #2563EB;
-    --green: #059669;
-    --yellow: #D97706;
-    --red: #DC2626;
-    --orange: #EA580C;
-    --nav-bg: rgba(255, 255, 255, 0.95);
+    --text-primary: #000000;
+    --text-secondary: #3c3c43;
+    --text-muted: #8e8e93;
+    --primary: #007aff;
+    --primary-container: #ffffff;
+    --on-primary: #ffffff;
+    --on-primary-container: #007aff;
+    --accent: #007aff;
+    --success: #34c759;
+    --danger: #ff3b30;
+    --warning: #ffcc00;
+    --border-color: rgba(0,0,0,0.1);
+    --purple: #007aff;
+    --blue: #007aff;
+    --green: #34c759;
+    --red: #ff3b30;
+    --yellow: #ffcc00;
+    --orange: #ff9500;
     --checkbox-row-odd: rgba(0,0,0,0.02);
-    --checkbox-row-active: rgba(108, 60, 225, 0.06);
+    --checkbox-row-active: rgba(0, 122, 255, 0.08);
     --card-gradient-final: linear-gradient(145deg, #fdf2f2, #ffffff);
     --card-gradient-countdown: linear-gradient(145deg, #eef0ff, #ffffff);
-    --toast-shadow: rgba(108, 60, 225, 0.25);
+    --toast-shadow: rgba(0, 122, 255, 0.25);
     --scrollbar-thumb: #d1d5db;
-    --chart-label: #888;
-    --chart-grid: #e5e7eb;
-    --chart-legend: #444;
+    --nav-bg: rgba(255, 255, 255, 0.7);
+    --bg-card-hover: #f2f2f7;
   }
 }
 
@@ -266,7 +284,7 @@ body.theme-rose {
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'Roboto', -apple-system, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
@@ -278,10 +296,9 @@ body {
 /* ─── Glass Card ─────────────────────── */
 .glass-card {
   background: var(--bg-card);
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--border-radius-md);
   padding: 16px;
   margin: 16px;
-  border: 1px solid var(--border-color);
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
@@ -295,39 +312,40 @@ body {
   position: fixed;
   bottom: 0;
   width: 100%;
-  background: var(--bg-card);
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   display: flex;
   justify-content: space-around;
   padding: 12px 8px 24px;
   z-index: 100;
-  border-top: 1px solid var(--border-color);
+  border-top: 0.5px solid var(--border-color);
 }
 .nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   background: none;
   border: none;
   font-family: inherit;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   gap: 4px;
   width: 64px;
 }
 .nav-icon {
   font-size: 24px;
-  padding: 4px 16px;
-  border-radius: 16px;
-  transition: background-color 0.2s, color 0.2s;
+  padding: 4px;
+  border-radius: 0;
+  transition: color 0.2s;
 }
 .nav-item.active {
   color: var(--primary);
-  font-weight: 700;
+  font-weight: 600;
 }
 .nav-item.active .nav-icon {
-  background: var(--primary-container);
-  color: var(--on-primary-container);
+  color: var(--primary);
 }
 
 /* ─── App Header ─────────────────────── */
@@ -676,30 +694,30 @@ body {
 .planner-actions { display: flex; gap: 8px; padding: 4px 16px 16px; }
 .btn-primary {
   background: var(--primary);
-  color: var(--on-primary);
+  color: #ffffff;
   border: none;
-  padding: 12px 24px;
-  border-radius: 100px;
+  padding: 14px 24px;
+  border-radius: 12px;
   font-weight: 600;
   width: 100%;
-  font-size: 15px;
+  font-size: 16px;
   cursor: pointer;
-  transition: all var(--transition);
+  transition: opacity 0.2s;
 }
-.btn-primary:active { transform: scale(0.97); }
+.btn-primary:active { opacity: 0.7; }
 .btn-secondary {
-  background: var(--bg-primary);
+  background: var(--bg-card);
   color: var(--primary);
-  border: 1px solid var(--border-color);
-  padding: 12px 24px;
-  border-radius: 100px;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 12px;
   font-weight: 600;
   width: 100%;
-  font-size: 15px;
+  font-size: 16px;
   cursor: pointer;
-  transition: all var(--transition);
+  transition: opacity 0.2s;
 }
-.btn-secondary:active { background: rgba(255,255,255,0.1); }
+.btn-secondary:active { opacity: 0.7; }
 
 /* ─── Syllabus Overview ──────────────── */
 .overall-progress { text-align: center; }
@@ -982,10 +1000,6 @@ body.edit-mode-active .add-item-btn {
 .inline-input { min-width: 0; }
 
 .material-symbols-rounded {
-  font-variation-settings:
-  'FILL' 1,
-  'wght' 400,
-  'GRAD' 0,
-  'opsz' 24;
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
 }
 .icon-sm { font-size: 18px; }
