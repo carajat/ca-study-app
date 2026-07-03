@@ -380,7 +380,7 @@ function updateCurrentActivity() {
   }
   
   if (currentSlot) {
-    document.getElementById('ca-slot-name').innerHTML = currentSlot.icon + ' ' + currentSlot.label;
+    document.getElementById('ca-slot-name').innerHTML = '<span class="material-symbols-rounded" style="vertical-align:middle; margin-right:6px; font-size: 20px;">' + currentSlot.icon + '</span>' + currentSlot.label;
     document.getElementById('ca-slot-details').textContent = `Window: ${currentSlot.startRange} · Duration: ${currentSlot.duration >= 60 ? (currentSlot.duration/60) + ' hrs' : currentSlot.duration + ' min'}`;
     document.getElementById('ca-slot-name').className = 'ca-slot-name slot-' + currentSlot.type;
   } else {
