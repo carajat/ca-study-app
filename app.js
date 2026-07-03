@@ -42,6 +42,20 @@ function loadDynamicData() {
     }
   }
   
+  // Migrate mocks from Object to Array of Series
+  if (DYNAMIC_DATA.mocks && !Array.isArray(DYNAMIC_DATA.mocks)) {
+    const newMocks = [];
+    Object.keys(DYNAMIC_DATA.mocks).forEach((key, idx) => {
+      newMocks.push({
+        id: key,
+        name: `Series ${idx + 1}`,
+        tests: DYNAMIC_DATA.mocks[key]
+      });
+    });
+    DYNAMIC_DATA.mocks = newMocks;
+    saveDynamicData();
+  }
+  
   // Migrate to unified syllabusSubjects if not present
   if (!DYNAMIC_DATA.syllabusSubjects) {
     DYNAMIC_DATA.syllabusSubjects = [
@@ -190,6 +204,41 @@ function openModal(title, bodyHtml) {
 
 function closeModal() {
   document.getElementById('modal-overlay').classList.remove('show');
+}
+
+window.activeFormCallback = null;
+function openFormModal(title, fields, callback) {
+  window.activeFormCallback = callback;
+  let html = '<div class="form-modal-body">';
+  
+  fields.forEach((f, idx) => {
+    html += `
+      <div class="form-group">
+        <label>${f.label}</label>
+        <input type="${f.type || 'text'}" id="fm-input-${idx}" value="${f.value || ''}" placeholder="${f.placeholder || ''}" class="form-input">
+      </div>
+    `;
+  });
+  
+  html += `
+    <div style="display: flex; gap: 8px; margin-top: 15px;">
+      <button class="btn-primary" onclick="submitFormModal(${fields.length})">💾 Save</button>
+      <button class="btn-secondary" onclick="closeModal()">❌ Cancel</button>
+    </div>
+  </div>`;
+  
+  openModal(title, html);
+}
+
+function submitFormModal(numFields) {
+  if (window.activeFormCallback) {
+    const values = [];
+    for (let i = 0; i < numFields; i++) {
+      values.push(document.getElementById(`fm-input-${i}`).value);
+    }
+    window.activeFormCallback(...values);
+    closeModal();
+  }
 }
 
 // ─── Tab Navigation ─────────────────────
@@ -385,18 +434,25 @@ function renderExams() {
   container.innerHTML = '';
   const scores = getMockScores();
   
-  ['series1', 'series2', 'series3'].forEach((seriesKey, idx) => {
-    const series = DYNAMIC_DATA.mocks[seriesKey];
+  DYNAMIC_DATA.mocks.forEach((series, seriesIdx) => {
     const seriesHtml = `
       <div class="mock-series glass-card">
-        <h3 class="series-title">Series ${idx + 1}</h3>
+        <h3 class="series-title" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>${series.name}</span>
+          ${isEditMode ? `
+          <div class="edit-mode-controls" style="display:inline-flex; opacity:1; transform:none; position:static;">
+            <button class="edit-btn" onclick="editMockSeries(${seriesIdx})">✏️</button>
+            <button class="delete-btn" onclick="deleteMockSeries(${seriesIdx})">🗑️</button>
+          </div>
+          ` : ''}
+        </h3>
         <div class="mock-list">
-          ${series.map((mock, mockIdx) => {
+          ${series.tests.map((mock, mockIdx) => {
             const score = scores[mock.id];
             const isPast = daysUntil(mock.date) < 0;
             const isUpcoming = daysUntil(mock.date) >= 0 && daysUntil(mock.date) <= 3;
             return `
-              <div class="mock-item ${score ? 'scored' : ''} ${isUpcoming ? 'upcoming' : ''} draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${mockIdx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${mockIdx}, 'mock', '${seriesKey}')" ondragend="handleDragEnd(event)" ${!isEditMode ? `onclick="openMockScoreModal('${mock.id}', '${mock.subject}', ${mock.series}, '${mock.date}')"` : ''}>
+              <div class="mock-item ${score ? 'scored' : ''} ${isUpcoming ? 'upcoming' : ''} draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${mockIdx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${mockIdx}, 'mock', '${series.id}')" ondragend="handleDragEnd(event)" ${!isEditMode ? `onclick="openMockScoreModal('${mock.id}', '${mock.subject}', '${series.name}', '${mock.date}')"` : ''}>
                 <span class="drag-handle">::</span>
                 <div class="mock-subject" style="flex:1">${mock.subject}</div>
                 <div class="mock-date">${formatDate(mock.date)}</div>
@@ -404,20 +460,24 @@ function renderExams() {
                 <div class="mock-score">${score ? score.score + '/100' : (isPast ? '⚠️' : '⬜')}</div>
                 ` : `
                 <div class="edit-mode-controls">
-                  <button class="edit-btn" onclick="event.stopPropagation(); editMock('${seriesKey}', ${mockIdx})">✏️</button>
-                  <button class="delete-btn" onclick="event.stopPropagation(); deleteMock('${seriesKey}', ${mockIdx})">🗑️</button>
+                  <button class="edit-btn" onclick="event.stopPropagation(); editMock('${series.id}', ${mockIdx})">✏️</button>
+                  <button class="delete-btn" onclick="event.stopPropagation(); deleteMock('${series.id}', ${mockIdx})">🗑️</button>
                 </div>
                 `}
               </div>
             `;
           }).join('')}
         </div>
-        ${isEditMode ? `<button class="add-item-btn" onclick="addMock('${seriesKey}')">+ Add Mock</button>` : ''}
-        </div>
+        ${isEditMode ? `<button class="add-item-btn" onclick="addMock('${series.id}')">+ Add Mock</button>` : ''}
       </div>
     `;
     container.innerHTML += seriesHtml;
   });
+  
+  if (isEditMode) {
+    container.innerHTML += `<button class="add-item-btn" style="margin-bottom: 20px" onclick="addMockSeries()">+ Add New Test Series</button>`;
+  }
+
   
   // ─── Final Exam Datesheet ─────────────
   container.innerHTML += `
@@ -1278,22 +1338,32 @@ function reorderSyllabusSubject(from, to) {
 }
 function editSyllabusSubject(idx) {
   const subj = DYNAMIC_DATA.syllabusSubjects[idx];
-  promptEdit('Edit Subject Name:', subj.name, (newName) => {
+  openFormModal('Edit Subject', [
+    { label: 'Subject Name', type: 'text', value: subj.name }
+  ], (newName) => {
+    if (!newName) return;
     subj.name = newName;
+    saveDynamicData();
+    renderSyllabusList();
   });
 }
 function deleteSyllabusSubject(idx) {
   confirmDelete(DYNAMIC_DATA.syllabusSubjects[idx].name, () => {
     DYNAMIC_DATA.syllabusSubjects.splice(idx, 1);
+    saveDynamicData();
+    renderSyllabusList();
   });
 }
 function addSyllabusSubject() {
-  promptEdit('New Subject Name:', '', (name) => {
+  openFormModal('Add New Subject', [
+    { label: 'Subject Name', type: 'text', placeholder: 'e.g., Paper 6: IBS' }
+  ], (name) => {
+    if (!name) return;
     const id = 'subj-' + Date.now();
     const type = confirm('Is this a Main Subject (with Book/QB/Video tracking)?\nClick OK for Main, Cancel for Simple (like IBS).') ? 'main' : 'ibs';
     DYNAMIC_DATA.syllabusSubjects.push({ id, name, source: '', type, chapters: [] });
     saveDynamicData();
-    switchTab(state.activeTab);
+    renderSyllabusList();
   });
 }
 
@@ -1304,8 +1374,13 @@ function reorderSyllabusChapter(from, to, subjectId) {
 function editSyllabusChapter(subjectId, idx) {
   const subj = DYNAMIC_DATA.syllabusSubjects.find(s => s.id === subjectId);
   if (subj) {
-    promptEdit('Edit Chapter Name:', subj.chapters[idx].name, (newName) => {
+    openFormModal('Edit Chapter Name', [
+      { label: 'Chapter Name', type: 'text', value: subj.chapters[idx].name }
+    ], (newName) => {
+      if (!newName) return;
       subj.chapters[idx].name = newName;
+      saveDynamicData();
+      renderSyllabusDetail({ key: subj.id, type: subj.type });
     });
   }
 }
@@ -1314,16 +1389,21 @@ function deleteSyllabusChapter(subjectId, idx) {
   if (subj) {
     confirmDelete(subj.chapters[idx].name, () => {
       subj.chapters.splice(idx, 1);
+      saveDynamicData();
+      renderSyllabusDetail({ key: subj.id, type: subj.type });
     });
   }
 }
 function addSyllabusChapter(subjectId) {
   const subj = DYNAMIC_DATA.syllabusSubjects.find(s => s.id === subjectId);
   if (subj) {
-    promptEdit('New Chapter Name:', '', (name) => {
+    openFormModal('Add Chapter', [
+      { label: 'Chapter Name', type: 'text', placeholder: 'e.g., Chapter 1' }
+    ], (name) => {
+      if (!name) return;
       subj.chapters.push({ id: 'ch-' + Date.now(), name });
       saveDynamicData();
-      renderSyllabusDetail(state.activeSubject);
+      renderSyllabusDetail({ key: subj.id, type: subj.type });
     });
   }
 }
@@ -1333,28 +1413,37 @@ function reorderMock(from, to, seriesKey) {
   reorderArray(DYNAMIC_DATA.mocks[seriesKey], from, to);
 }
 function editMock(seriesKey, idx) {
-  const mock = DYNAMIC_DATA.mocks[seriesKey][idx];
-  promptEdit('Edit Mock Subject:', mock.subject, (subj) => {
-    promptEdit('Edit Mock Date (YYYY-MM-DD):', mock.date, (date) => {
-      mock.subject = subj;
-      mock.date = date;
-      saveDynamicData();
-      switchTab(state.activeTab);
-    });
+  const series = DYNAMIC_DATA.mocks.find(s => s.id === seriesKey);
+  const mock = series.tests[idx];
+  openFormModal('Edit Mock', [
+    { label: 'Subject', type: 'text', value: mock.subject },
+    { label: 'Date', type: 'date', value: mock.date }
+  ], (subj, date) => {
+    if (!subj || !date) return;
+    mock.subject = subj;
+    mock.date = date;
+    saveDynamicData();
+    renderExams();
   });
 }
 function deleteMock(seriesKey, idx) {
-  confirmDelete(DYNAMIC_DATA.mocks[seriesKey][idx].subject, () => {
-    DYNAMIC_DATA.mocks[seriesKey].splice(idx, 1);
+  const series = DYNAMIC_DATA.mocks.find(s => s.id === seriesKey);
+  confirmDelete(series.tests[idx].subject, () => {
+    series.tests.splice(idx, 1);
+    saveDynamicData();
+    renderExams();
   });
 }
 function addMock(seriesKey) {
-  promptEdit('New Mock Subject:', '', (subj) => {
-    promptEdit('Mock Date (YYYY-MM-DD):', '2026-08-01', (date) => {
-      DYNAMIC_DATA.mocks[seriesKey].push({ id: 'm-new-' + Date.now(), subject: subj, date: date, series: seriesKey.replace('series', '') });
-      saveDynamicData();
-      switchTab(state.activeTab);
-    });
+  const series = DYNAMIC_DATA.mocks.find(s => s.id === seriesKey);
+  openFormModal('Add Mock', [
+    { label: 'Subject', type: 'text', placeholder: 'e.g., DT Full Syllabus' },
+    { label: 'Date', type: 'date', value: '2026-08-01' }
+  ], (subj, date) => {
+    if (!subj || !date) return;
+    series.tests.push({ id: 'm-new-' + Date.now(), subject: subj, date: date, series: series.name });
+    saveDynamicData();
+    renderExams();
   });
 }
 
@@ -1363,32 +1452,39 @@ function reorderExam(from, to) {
 }
 function editExam(idx) {
   const exam = DYNAMIC_DATA.finalExams[idx];
-  promptEdit('Edit Exam Subject:', exam.subject, (subj) => {
-    promptEdit('Edit Exam Date (YYYY-MM-DD):', exam.date, (date) => {
-      exam.subject = subj;
-      exam.date = date;
-      saveDynamicData();
-      switchTab(state.activeTab);
-    });
+  openFormModal('Edit Final Exam', [
+    { label: 'Subject', type: 'text', value: exam.subject },
+    { label: 'Date', type: 'date', value: exam.date },
+    { label: 'Day', type: 'text', value: exam.day },
+    { label: 'Time', type: 'text', value: exam.time }
+  ], (subj, date, day, time) => {
+    if (!subj || !date) return;
+    exam.subject = subj;
+    exam.date = date;
+    exam.day = day;
+    exam.time = time;
+    saveDynamicData();
+    renderExams();
   });
 }
 function deleteExam(idx) {
   confirmDelete(DYNAMIC_DATA.finalExams[idx].subject, () => {
     DYNAMIC_DATA.finalExams.splice(idx, 1);
+    saveDynamicData();
+    renderExams();
   });
 }
 function addExam() {
-  promptEdit('New Exam Subject:', '', (subj) => {
-    promptEdit('Exam Date (YYYY-MM-DD):', '2026-11-01', (date) => {
-      promptEdit('Exam Day & Time:', 'Monday 2:00 PM - 5:00 PM', (dayTime) => {
-        const parts = dayTime.split(' ');
-        const day = parts[0];
-        const time = parts.slice(1).join(' ');
-        DYNAMIC_DATA.finalExams.push({ id: 'final-new-' + Date.now(), subject: subj, date, day, time });
-        saveDynamicData();
-        switchTab(state.activeTab);
-      });
-    });
+  openFormModal('Add Final Exam', [
+    { label: 'Subject', type: 'text', placeholder: 'e.g., Paper 6: IBS' },
+    { label: 'Date', type: 'date', value: '2026-11-01' },
+    { label: 'Day', type: 'text', placeholder: 'e.g., Monday' },
+    { label: 'Time', type: 'text', placeholder: 'e.g., 2:00 PM - 6:00 PM' }
+  ], (subj, date, day, time) => {
+    if (!subj || !date) return;
+    DYNAMIC_DATA.finalExams.push({ id: 'final-new-' + Date.now(), subject: subj, date, day, time });
+    saveDynamicData();
+    renderExams();
   });
 }
 
@@ -1398,32 +1494,36 @@ function reorderScheduleSlot(from, to, scheduleKey) {
 }
 function editScheduleSlot(scheduleKey, idx) {
   const slot = DYNAMIC_DATA.schedules[scheduleKey].slots[idx];
-  promptEdit('Edit Slot Label:', slot.label, (label) => {
-    promptEdit('Edit Start Range (HH:MM-HH:MM):', slot.startRange, (range) => {
-      promptEdit('Edit Duration (minutes):', slot.duration, (dur) => {
-        slot.label = label;
-        slot.startRange = range;
-        slot.duration = parseInt(dur) || 60;
-        saveDynamicData();
-        switchTab(state.activeTab);
-      });
-    });
+  openFormModal('Edit Schedule Slot', [
+    { label: 'Label', type: 'text', value: slot.label },
+    { label: 'Start - End Time', type: 'text', value: slot.startRange, placeholder: 'e.g., 09:00-11:00' },
+    { label: 'Duration (minutes)', type: 'number', value: slot.duration }
+  ], (label, range, dur) => {
+    if (!label) return;
+    slot.label = label;
+    slot.startRange = range;
+    slot.duration = parseInt(dur) || 60;
+    saveDynamicData();
+    renderSchedule();
   });
 }
 function deleteScheduleSlot(scheduleKey, idx) {
   confirmDelete(DYNAMIC_DATA.schedules[scheduleKey].slots[idx].label, () => {
     DYNAMIC_DATA.schedules[scheduleKey].slots.splice(idx, 1);
+    saveDynamicData();
+    renderSchedule();
   });
 }
 function addScheduleSlot(scheduleKey) {
-  promptEdit('New Slot Label:', '', (label) => {
-    promptEdit('Start Range (HH:MM-HH:MM):', '09:00-10:00', (range) => {
-      promptEdit('Duration (minutes):', '60', (dur) => {
-        DYNAMIC_DATA.schedules[scheduleKey].slots.push({ id: 's-new-' + Date.now(), label, startRange: range, duration: parseInt(dur) || 60, type: 'study', icon: '📝' });
-        saveDynamicData();
-        switchTab(state.activeTab);
-      });
-    });
+  openFormModal('Add Schedule Slot', [
+    { label: 'Label', type: 'text', placeholder: 'e.g., Break / Revision' },
+    { label: 'Start - End Time', type: 'text', placeholder: 'e.g., 14:00-15:00' },
+    { label: 'Duration (minutes)', type: 'number', value: 60 }
+  ], (label, range, dur) => {
+    if (!label) return;
+    DYNAMIC_DATA.schedules[scheduleKey].slots.push({ id: 's-new-' + Date.now(), label, startRange: range, duration: parseInt(dur) || 60, type: 'study', icon: '📝' });
+    saveDynamicData();
+    renderSchedule();
   });
 }
 
@@ -1530,5 +1630,38 @@ function shareProgressPDF() {
   document.getElementById('print-section').innerHTML = html;
   closeModal();
   setTimeout(() => window.print(), 500);
+}
+
+// ─── Test Series Managers ─────────────────────
+function addMockSeries() {
+  openFormModal('Add Test Series', [
+    { label: 'Series Name', type: 'text', placeholder: 'e.g., ICAI MTPs' }
+  ], (name) => {
+    if (!name) return;
+    const id = 'series_' + Date.now();
+    DYNAMIC_DATA.mocks.push({ id, name, tests: [] });
+    saveDynamicData();
+    renderExams();
+  });
+}
+
+function editMockSeries(idx) {
+  const series = DYNAMIC_DATA.mocks[idx];
+  openFormModal('Edit Series Name', [
+    { label: 'Series Name', type: 'text', value: series.name }
+  ], (name) => {
+    if (!name) return;
+    DYNAMIC_DATA.mocks[idx].name = name;
+    saveDynamicData();
+    renderExams();
+  });
+}
+
+function deleteMockSeries(idx) {
+  if (confirm(`Delete series "${DYNAMIC_DATA.mocks[idx].name}" and all its mocks?`)) {
+    DYNAMIC_DATA.mocks.splice(idx, 1);
+    saveDynamicData();
+    renderExams();
+  }
 }
 
