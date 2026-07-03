@@ -5,8 +5,8 @@
 const APP_DATA = {
   // ─── Exam Info ─────────────────────────
   exam: {
-    name: "CA Final Group 2",
-    date: "2026-11-09",
+    name: "CA Final Group 2 — Paper 4: DT",
+    date: "2026-11-09T14:00:00+05:30",
     scheme: "New Scheme"
   },
 
