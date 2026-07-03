@@ -124,6 +124,10 @@ function initSortable(containerIdOrEl, arrayRef, saveCallback) {
       handle: '.drag-handle',
       animation: 150,
       ghostClass: 'sortable-ghost',
+      delay: 150, // Time in ms to define when the sorting should start
+      delayOnTouchOnly: true, // Only delay if user is using touch
+      touchStartThreshold: 3, // px, how many pixels the point should move before cancelling a delayed drag event
+      fallbackTolerance: 3,
       onEnd: function(evt) {
         if (evt.oldIndex !== evt.newIndex) {
           const item = arrayRef.splice(evt.oldIndex, 1)[0];

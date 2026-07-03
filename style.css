@@ -1133,7 +1133,7 @@ input[type="checkbox"]:checked::before {
 
 
 /* Sortable JS styles */
-.drag-handle { color: var(--text-secondary); cursor: grab; display: none; vertical-align: middle; margin-right: 12px; }
+.drag-handle { color: var(--text-secondary); cursor: grab; display: none; vertical-align: middle; margin-right: 12px; touch-action: none; }
 .edit-mode-active .drag-handle { display: inline-block; }
 .sortable-ghost { opacity: 0.4; }
 .edit-mode-active .subject-card { cursor: default; }
