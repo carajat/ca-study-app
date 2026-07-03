@@ -1233,7 +1233,7 @@ function toggleSyllabusCheck(chapterId, field, checked) {
   const pct = calculateSubjectProgress(state.activeSubject.key, state.activeSubject.type);
   const headerEl = document.getElementById('syllabus-detail-header');
   const barEl = headerEl.querySelector('.stat-bar-fill');
-  const pctEl = headerEl.querySelector('span');
+  const pctEl = headerEl.querySelector('.detail-progress span');
   if (barEl) barEl.style.width = pct + '%';
   if (pctEl) pctEl.textContent = pct + '% done';
 }
