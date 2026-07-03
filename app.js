@@ -197,7 +197,7 @@ function showToast(msg) {
 
 // ─── Modal ──────────────────────────────
 function openModal(title, bodyHtml) {
-  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-title').innerHTML = title;
   document.getElementById('modal-body').innerHTML = bodyHtml;
   document.getElementById('modal-overlay').classList.add('show');
 }
@@ -389,7 +389,7 @@ function updateCurrentActivity() {
   }
   
   if (nextSlot) {
-    document.getElementById('ca-next-slot').innerHTML = '<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">arrow_forward</span> Next: ' + nextSlot.icon + ' ' + nextSlot.label;
+    document.getElementById('ca-next-slot').innerHTML = '<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">arrow_forward</span> Next: ' + '<span class="material-symbols-rounded" style="vertical-align:middle; font-size:14px; margin-right:4px;">' + nextSlot.icon + '</span> ' + nextSlot.label;
   } else {
     document.getElementById('ca-next-slot').textContent = '';
   }
@@ -672,7 +672,7 @@ function renderSchedule() {
         <span class="drag-handle">::</span>
         ${isActive && !isEditMode ? '<div class="active-indicator"><span class="material-symbols-rounded icon-sm">circle</span> NOW</div>' : ''}
         <div class="slot-header" style="flex:1">
-          <span class="slot-icon">${slot.icon}</span>
+          <span class="material-symbols-rounded slot-icon">${slot.icon}</span>
           ${!isEditMode ? `<span class="slot-label">${slot.label}</span>` : `<input type="text" class="inline-input" value="${slot.label}" onchange="updateScheduleSlot('${state.activeSchedule}', ${idx}, 'label', this.value)">`}
         </div>
         <div class="slot-details" style="${isEditMode ? 'display:flex; flex-direction:column; gap:4px; margin-right:10px;' : ''}">
@@ -886,9 +886,9 @@ function openAddTaskModal() {
     <div class="form-group">
       <label>Category</label>
       <select id="task-category">
-        <option value="primary"><span class="material-symbols-rounded icon-sm">local_library</span> Primary Subject</option>
-        <option value="secondary"><span class="material-symbols-rounded icon-sm">import_contacts</span> Secondary Subject</option>
-        <option value="quick"><span class="material-symbols-rounded icon-sm">edit_document</span> Quick Task</option>
+        <option value="primary">Primary Subject</option>
+        <option value="secondary">Secondary Subject</option>
+        <option value="quick">Quick Task</option>
       </select>
     </div>
     <div class="form-group">
@@ -907,9 +907,9 @@ function openAddTaskModal() {
       <label>Activity (Optional)</label>
       <select id="task-activity" onchange="onTaskChapterChange()">
         <option value="">— Select —</option>
-        <option value="conceptBook"><span class="material-symbols-rounded icon-sm">import_contacts</span> Book (Concepts)</option>
-        <option value="questionBank"><span class="material-symbols-rounded icon-sm">help</span> Question Bank</option>
-        <option value="revisionVideo"><span class="material-symbols-rounded icon-sm">videocam</span> Revision Video</option>
+        <option value="conceptBook">Book (Concepts)</option>
+        <option value="questionBank">Question Bank</option>
+        <option value="revisionVideo">Revision Video</option>
       </select>
     </div>
     <div class="form-group">
