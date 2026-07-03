@@ -1344,14 +1344,14 @@ function editSyllabusSubject(idx) {
     if (!newName) return;
     subj.name = newName;
     saveDynamicData();
-    renderSyllabusList();
+    renderSyllabus();
   });
 }
 function deleteSyllabusSubject(idx) {
   confirmDelete(DYNAMIC_DATA.syllabusSubjects[idx].name, () => {
     DYNAMIC_DATA.syllabusSubjects.splice(idx, 1);
     saveDynamicData();
-    renderSyllabusList();
+    renderSyllabus();
   });
 }
 function addSyllabusSubject() {
@@ -1363,7 +1363,7 @@ function addSyllabusSubject() {
     const type = confirm('Is this a Main Subject (with Book/QB/Video tracking)?\nClick OK for Main, Cancel for Simple (like IBS).') ? 'main' : 'ibs';
     DYNAMIC_DATA.syllabusSubjects.push({ id, name, source: '', type, chapters: [] });
     saveDynamicData();
-    renderSyllabusList();
+    renderSyllabus();
   });
 }
 
@@ -1410,7 +1410,8 @@ function addSyllabusChapter(subjectId) {
 
 // ─── EXAMS EDIT HANDLERS ───────────────
 function reorderMock(from, to, seriesKey) {
-  reorderArray(DYNAMIC_DATA.mocks[seriesKey], from, to);
+  const series = DYNAMIC_DATA.mocks.find(s => s.id === seriesKey);
+  if (series) reorderArray(series.tests, from, to);
 }
 function editMock(seriesKey, idx) {
   const series = DYNAMIC_DATA.mocks.find(s => s.id === seriesKey);
