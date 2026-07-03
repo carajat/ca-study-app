@@ -59,8 +59,8 @@ function loadDynamicData() {
   // Migrate to unified syllabusSubjects if not present
   if (!DYNAMIC_DATA.syllabusSubjects) {
     DYNAMIC_DATA.syllabusSubjects = [
-      { id: 'dt', name: '<span class="material-symbols-rounded icon-sm">menu_book</span> Paper 4: DT & International Tax', source: 'CA Aarish Khan', type: 'main', chapters: DYNAMIC_DATA.dtChapters || APP_DATA.dtChapters },
-      { id: 'idt', name: '<span class="material-symbols-rounded icon-sm">auto_stories</span> Paper 5: IDT (GST + Customs)', source: 'VB Sir', type: 'main', chapters: DYNAMIC_DATA.idtChapters || APP_DATA.idtChapters },
+      { id: 'dt', name: 'Paper 4: DT & International Tax', source: 'CA Aarish Khan', type: 'main', chapters: DYNAMIC_DATA.dtChapters || APP_DATA.dtChapters },
+      { id: 'idt', name: 'Paper 5: IDT (GST + Customs)', source: 'VB Sir', type: 'main', chapters: DYNAMIC_DATA.idtChapters || APP_DATA.idtChapters },
       { id: 'ibs-afm', name: 'IBS — AFM', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.afm) ? DYNAMIC_DATA.ibsSubjects.afm.chapters : APP_DATA.ibsSubjects.afm.chapters },
       { id: 'ibs-fr', name: '📋 IBS — FR', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.fr) ? DYNAMIC_DATA.ibsSubjects.fr.chapters : APP_DATA.ibsSubjects.fr.chapters },
       { id: 'ibs-audit', name: 'IBS — Audit', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.audit) ? DYNAMIC_DATA.ibsSubjects.audit.chapters : APP_DATA.ibsSubjects.audit.chapters },
@@ -1060,11 +1060,11 @@ function showSubjectsList() {
         <span class="drag-handle">::</span>
         <div class="subj-info" onclick="openSubjectDetail('${subj.id}', '${subj.type}')" style="cursor:pointer; flex: 1">
           ${!isEditMode ? `
-            <div class="subj-name">${subj.name}</div>
+            <div class="subj-name"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle; margin-right:4px;">menu_book</span> ${subj.name}</div>
             <div class="subj-source">${subj.source}</div>
           ` : `
             <div class="subj-name">
-              <input type="text" class="inline-input" value="${subj.name}" onclick="event.stopPropagation()" onchange="updateSyllabusSubject(${idx}, this.value)">
+              <input type="text" class="inline-input" value="${subj.name.replace(/"/g, '&quot;')}" onclick="event.stopPropagation()" onchange="updateSyllabusSubject(${idx}, this.value)">
             </div>
             <div class="subj-source">${subj.source}</div>
           `}
@@ -1110,7 +1110,7 @@ function renderSyllabusDetail(subject) {
   
   const headerEl = document.getElementById('syllabus-detail-header');
   headerEl.innerHTML = `
-    <h3>${title}</h3>
+    <h3><span class="material-symbols-rounded icon-sm" style="vertical-align:middle; margin-right:6px;">menu_book</span> ${title}</h3>
     <div class="detail-progress">
       <span>${pct}% complete</span>
       <div class="stat-bar stat-bar-lg"><div class="stat-bar-fill" style="width:${pct}%"></div></div>
