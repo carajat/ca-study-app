@@ -437,14 +437,13 @@ function renderExams() {
   DYNAMIC_DATA.mocks.forEach((series, seriesIdx) => {
     const seriesHtml = `
       <div class="mock-series glass-card">
-        <h3 class="series-title" style="display:flex; justify-content:space-between; align-items:center;">
-          <span>${series.name}</span>
-          ${isEditMode ? `
-          <div class="edit-mode-controls" style="display:inline-flex; opacity:1; transform:none; position:static;">
-            <button class="edit-btn" onclick="editMockSeries(${seriesIdx})">✏️</button>
-            <button class="delete-btn" onclick="deleteMockSeries(${seriesIdx})">🗑️</button>
-          </div>
-          ` : ''}
+        <h3 class="series-title" style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+          ${!isEditMode ? `<span>${series.name}</span>` : `
+            <input type="text" class="inline-input" value="${series.name}" onchange="updateMockSeries(${seriesIdx}, this.value)" style="font-weight:bold; font-size:1.1em;">
+            <div class="edit-mode-controls" style="display:inline-flex; opacity:1; transform:none; position:static; margin-left:10px;">
+              <button class="delete-btn" onclick="deleteMockSeries(${seriesIdx})">🗑️</button>
+            </div>
+          `}
         </h3>
         <div class="mock-list">
           ${series.tests.map((mock, mockIdx) => {
@@ -454,13 +453,18 @@ function renderExams() {
             return `
               <div class="mock-item ${score ? 'scored' : ''} ${isUpcoming ? 'upcoming' : ''} draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${mockIdx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${mockIdx}, 'mock', '${series.id}')" ondragend="handleDragEnd(event)" ${!isEditMode ? `onclick="openMockScoreModal('${mock.id}', '${mock.subject}', '${series.name}', '${mock.date}')"` : ''}>
                 <span class="drag-handle">::</span>
+                ${!isEditMode ? `
                 <div class="mock-subject" style="flex:1">${mock.subject}</div>
                 <div class="mock-date">${formatDate(mock.date)}</div>
-                ${!isEditMode ? `
                 <div class="mock-score">${score ? score.score + '/100' : (isPast ? '⚠️' : '⬜')}</div>
                 ` : `
+                <div class="mock-subject" style="flex:1; margin-right:10px;">
+                  <input type="text" class="inline-input" value="${mock.subject}" onchange="updateMock('${series.id}', ${mockIdx}, 'subject', this.value)">
+                </div>
+                <div class="mock-date">
+                  <input type="date" class="inline-input date-input" value="${mock.date}" onchange="updateMock('${series.id}', ${mockIdx}, 'date', this.value)">
+                </div>
                 <div class="edit-mode-controls">
-                  <button class="edit-btn" onclick="event.stopPropagation(); editMock('${series.id}', ${mockIdx})">✏️</button>
                   <button class="delete-btn" onclick="event.stopPropagation(); deleteMock('${series.id}', ${mockIdx})">🗑️</button>
                 </div>
                 `}
@@ -489,13 +493,20 @@ function renderExams() {
           return `
             <div class="mock-item final-exam-item draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${examIdx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${examIdx}, 'exam')" ondragend="handleDragEnd(event)">
               <span class="drag-handle">::</span>
+              ${!isEditMode ? `
               <div class="mock-subject" style="flex:1">${exam.subject}</div>
               <div class="mock-date">${formatDate(exam.date)} (${exam.day})<br><small>${exam.time}</small></div>
-              ${!isEditMode ? `
               <div class="mock-score final-days">${days} days</div>
               ` : `
+              <div class="mock-subject" style="flex:1; display:flex; flex-direction:column; gap:4px; margin-right:10px;">
+                <input type="text" class="inline-input" value="${exam.subject}" onchange="updateExam(${examIdx}, 'subject', this.value)">
+                <input type="text" class="inline-input time-input" value="${exam.time}" onchange="updateExam(${examIdx}, 'time', this.value)" placeholder="Time">
+              </div>
+              <div class="mock-date" style="display:flex; flex-direction:column; gap:4px; margin-right:10px;">
+                <input type="date" class="inline-input date-input" value="${exam.date}" onchange="updateExam(${examIdx}, 'date', this.value)">
+                <input type="text" class="inline-input time-input" value="${exam.day}" onchange="updateExam(${examIdx}, 'day', this.value)" placeholder="Day">
+              </div>
               <div class="edit-mode-controls">
-                <button class="edit-btn" onclick="editExam(${examIdx})">✏️</button>
                 <button class="delete-btn" onclick="deleteExam(${examIdx})">🗑️</button>
               </div>
               `}
@@ -662,15 +673,19 @@ function renderSchedule() {
         ${isActive && !isEditMode ? '<div class="active-indicator">🔴 NOW</div>' : ''}
         <div class="slot-header" style="flex:1">
           <span class="slot-icon">${slot.icon}</span>
-          <span class="slot-label">${slot.label}</span>
+          ${!isEditMode ? `<span class="slot-label">${slot.label}</span>` : `<input type="text" class="inline-input" value="${slot.label}" onchange="updateScheduleSlot('${state.activeSchedule}', ${idx}, 'label', this.value)">`}
         </div>
-        <div class="slot-details">
+        <div class="slot-details" style="${isEditMode ? 'display:flex; flex-direction:column; gap:4px; margin-right:10px;' : ''}">
+          ${!isEditMode ? `
           <span class="slot-range">Start between: ${slot.startRange}</span>
           <span class="slot-duration">Duration: ${durationStr}</span>
+          ` : `
+          <input type="text" class="inline-input time-input" value="${slot.startRange}" onchange="updateScheduleSlot('${state.activeSchedule}', ${idx}, 'startRange', this.value)" placeholder="Start Time">
+          <input type="number" class="inline-input num-input" value="${slot.duration}" onchange="updateScheduleSlot('${state.activeSchedule}', ${idx}, 'duration', parseInt(this.value))" placeholder="Duration (min)">
+          `}
         </div>
         ${isEditMode ? `
         <div class="edit-mode-controls">
-          <button class="edit-btn" onclick="editScheduleSlot('${state.activeSchedule}', ${idx})">✏️</button>
           <button class="delete-btn" onclick="deleteScheduleSlot('${state.activeSchedule}', ${idx})">🗑️</button>
         </div>
         ` : ''}
@@ -1043,9 +1058,16 @@ function showSubjectsList() {
     return `
       <div class="subject-card glass-card draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${idx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${idx}, 'syllabus-subject')" ondragend="handleDragEnd(event)">
         <span class="drag-handle">::</span>
-        <div class="subj-info" onclick="!isEditMode && openSubjectDetail('${subj.id}', '${subj.type}')" style="${isEditMode ? '' : 'cursor:pointer; flex: 1'}">
-          <div class="subj-name">${subj.name}</div>
-          <div class="subj-source">${subj.source}</div>
+        <div class="subj-info" onclick="openSubjectDetail('${subj.id}', '${subj.type}')" style="cursor:pointer; flex: 1">
+          ${!isEditMode ? `
+            <div class="subj-name">${subj.name}</div>
+            <div class="subj-source">${subj.source}</div>
+          ` : `
+            <div class="subj-name">
+              <input type="text" class="inline-input" value="${subj.name}" onclick="event.stopPropagation()" onchange="updateSyllabusSubject(${idx}, this.value)">
+            </div>
+            <div class="subj-source">${subj.source}</div>
+          `}
         </div>
         ${!isEditMode ? `
         <div class="subj-progress">
@@ -1055,8 +1077,7 @@ function showSubjectsList() {
         <span class="subj-arrow">▶</span>
         ` : `
         <div class="edit-mode-controls">
-          <button class="edit-btn" onclick="editSyllabusSubject(${idx})">✏️</button>
-          <button class="delete-btn" onclick="deleteSyllabusSubject(${idx})">🗑️</button>
+          <button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusSubject(${idx})">🗑️</button>
         </div>
         `}
       </div>
@@ -1109,28 +1130,24 @@ function renderSyllabusDetail(subject) {
           <span class="st-check">❓</span>
           <span class="st-check">🎥</span>
         </div>
-        <div class="st-header-labels">
-          <span class="st-num"></span>
-          <span class="st-name"></span>
-          <span class="st-check-label">Book</span>
-          <span class="st-check-label">Q.Bank</span>
-          <span class="st-check-label">Video</span>
-        </div>
         ${chapters.map((ch, idx) => {
           const chProgress = progress[ch.id] || {};
           return `
             <div class="st-row draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${idx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${idx}, 'syllabus-chapter', '${key}')" ondragend="handleDragEnd(event)">
               <span class="drag-handle">::</span>
               <span class="st-num">${!isEditMode ? idx + 1 : ''}</span>
-              <span class="st-name">${ch.name}</span>
+              ${!isEditMode ? `<div class="st-name">${ch.name}</div>` : `
+                <div class="st-name" style="flex:1; margin-right: 10px;">
+                  <input type="text" class="inline-input" value="${ch.name}" onclick="event.stopPropagation()" onchange="updateSyllabusChapter('${key}', ${idx}, this.value)">
+                </div>
+              `}
               ${!isEditMode ? `
               <span class="st-check"><input type="checkbox" ${chProgress.conceptBook ? 'checked' : ''} onchange="toggleSyllabusCheck('${ch.id}', 'conceptBook', this.checked)"></span>
               <span class="st-check"><input type="checkbox" ${chProgress.questionBank ? 'checked' : ''} onchange="toggleSyllabusCheck('${ch.id}', 'questionBank', this.checked)"></span>
               <span class="st-check"><input type="checkbox" ${chProgress.revisionVideo ? 'checked' : ''} onchange="toggleSyllabusCheck('${ch.id}', 'revisionVideo', this.checked)"></span>
               ` : `
               <div class="edit-mode-controls">
-                <button class="edit-btn" onclick="editSyllabusChapter('${key}', ${idx})">✏️</button>
-                <button class="delete-btn" onclick="deleteSyllabusChapter('${key}', ${idx})">🗑️</button>
+                <button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter('${key}', ${idx})">🗑️</button>
               </div>
               `}
             </div>
@@ -1151,14 +1168,15 @@ function renderSyllabusDetail(subject) {
             <div class="ss-row ${isDone ? 'done' : ''} draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${idx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${idx}, 'syllabus-chapter', '${key}')" ondragend="handleDragEnd(event)" ${!isEditMode ? `onclick="toggleIbsCheck('${ch.id}')"` : ''}>
               <span class="drag-handle">::</span>
               <span class="ss-check">${isDone ? '☑️' : '☐'}</span>
-              <span class="ss-num">${idx + 1}.</span>
-              <span class="ss-name" style="flex:1">${ch.name}</span>
-              ${isEditMode ? `
+              <span class="ss-num">${!isEditMode ? idx + 1 + '.' : ''}</span>
+              ${!isEditMode ? `<span class="ss-name" style="flex:1">${ch.name}</span>` : `
+              <div class="ss-name" style="flex:1; margin-right:10px;">
+                <input type="text" class="inline-input" value="${ch.name}" onclick="event.stopPropagation()" onchange="updateSyllabusChapter('${key}', ${idx}, this.value)">
+              </div>
               <div class="edit-mode-controls">
-                <button class="edit-btn" onclick="event.stopPropagation(); editSyllabusChapter('${key}', ${idx})">✏️</button>
                 <button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter('${key}', ${idx})">🗑️</button>
               </div>
-              ` : ''}
+              `}
             </div>
           `;
         }).join('')}
@@ -1336,16 +1354,10 @@ function setTheme(themeName, element) {
 function reorderSyllabusSubject(from, to) {
   reorderArray(DYNAMIC_DATA.syllabusSubjects, from, to);
 }
-function editSyllabusSubject(idx) {
-  const subj = DYNAMIC_DATA.syllabusSubjects[idx];
-  openFormModal('Edit Subject', [
-    { label: 'Subject Name', type: 'text', value: subj.name }
-  ], (newName) => {
-    if (!newName) return;
-    subj.name = newName;
-    saveDynamicData();
-    renderSyllabus();
-  });
+function updateSyllabusSubject(idx, newName) {
+  if (!newName) return;
+  DYNAMIC_DATA.syllabusSubjects[idx].name = newName;
+  saveDynamicData();
 }
 function deleteSyllabusSubject(idx) {
   confirmDelete(DYNAMIC_DATA.syllabusSubjects[idx].name, () => {
@@ -1371,17 +1383,12 @@ function reorderSyllabusChapter(from, to, subjectId) {
   const subj = DYNAMIC_DATA.syllabusSubjects.find(s => s.id === subjectId);
   if (subj) reorderArray(subj.chapters, from, to);
 }
-function editSyllabusChapter(subjectId, idx) {
+function updateSyllabusChapter(subjectId, idx, newName) {
+  if (!newName) return;
   const subj = DYNAMIC_DATA.syllabusSubjects.find(s => s.id === subjectId);
   if (subj) {
-    openFormModal('Edit Chapter Name', [
-      { label: 'Chapter Name', type: 'text', value: subj.chapters[idx].name }
-    ], (newName) => {
-      if (!newName) return;
-      subj.chapters[idx].name = newName;
-      saveDynamicData();
-      renderSyllabusDetail({ key: subj.id, type: subj.type });
-    });
+    subj.chapters[idx].name = newName;
+    saveDynamicData();
   }
 }
 function deleteSyllabusChapter(subjectId, idx) {
@@ -1413,19 +1420,12 @@ function reorderMock(from, to, seriesKey) {
   const series = DYNAMIC_DATA.mocks.find(s => s.id === seriesKey);
   if (series) reorderArray(series.tests, from, to);
 }
-function editMock(seriesKey, idx) {
+function updateMock(seriesKey, idx, field, value) {
   const series = DYNAMIC_DATA.mocks.find(s => s.id === seriesKey);
+  if (!series) return;
   const mock = series.tests[idx];
-  openFormModal('Edit Mock', [
-    { label: 'Subject', type: 'text', value: mock.subject },
-    { label: 'Date', type: 'date', value: mock.date }
-  ], (subj, date) => {
-    if (!subj || !date) return;
-    mock.subject = subj;
-    mock.date = date;
-    saveDynamicData();
-    renderExams();
-  });
+  mock[field] = value;
+  saveDynamicData();
 }
 function deleteMock(seriesKey, idx) {
   const series = DYNAMIC_DATA.mocks.find(s => s.id === seriesKey);
@@ -1451,22 +1451,11 @@ function addMock(seriesKey) {
 function reorderExam(from, to) {
   reorderArray(DYNAMIC_DATA.finalExams, from, to);
 }
-function editExam(idx) {
+function updateExam(idx, field, value) {
   const exam = DYNAMIC_DATA.finalExams[idx];
-  openFormModal('Edit Final Exam', [
-    { label: 'Subject', type: 'text', value: exam.subject },
-    { label: 'Date', type: 'date', value: exam.date },
-    { label: 'Day', type: 'text', value: exam.day },
-    { label: 'Time', type: 'text', value: exam.time }
-  ], (subj, date, day, time) => {
-    if (!subj || !date) return;
-    exam.subject = subj;
-    exam.date = date;
-    exam.day = day;
-    exam.time = time;
-    saveDynamicData();
-    renderExams();
-  });
+  if (!exam) return;
+  exam[field] = value;
+  saveDynamicData();
 }
 function deleteExam(idx) {
   confirmDelete(DYNAMIC_DATA.finalExams[idx].subject, () => {
@@ -1493,20 +1482,11 @@ function addExam() {
 function reorderScheduleSlot(from, to, scheduleKey) {
   reorderArray(DYNAMIC_DATA.schedules[scheduleKey].slots, from, to);
 }
-function editScheduleSlot(scheduleKey, idx) {
+function updateScheduleSlot(scheduleKey, idx, field, value) {
   const slot = DYNAMIC_DATA.schedules[scheduleKey].slots[idx];
-  openFormModal('Edit Schedule Slot', [
-    { label: 'Label', type: 'text', value: slot.label },
-    { label: 'Start - End Time', type: 'text', value: slot.startRange, placeholder: 'e.g., 09:00-11:00' },
-    { label: 'Duration (minutes)', type: 'number', value: slot.duration }
-  ], (label, range, dur) => {
-    if (!label) return;
-    slot.label = label;
-    slot.startRange = range;
-    slot.duration = parseInt(dur) || 60;
-    saveDynamicData();
-    renderSchedule();
-  });
+  if (!slot) return;
+  slot[field] = value;
+  saveDynamicData();
 }
 function deleteScheduleSlot(scheduleKey, idx) {
   confirmDelete(DYNAMIC_DATA.schedules[scheduleKey].slots[idx].label, () => {
@@ -1646,16 +1626,10 @@ function addMockSeries() {
   });
 }
 
-function editMockSeries(idx) {
-  const series = DYNAMIC_DATA.mocks[idx];
-  openFormModal('Edit Series Name', [
-    { label: 'Series Name', type: 'text', value: series.name }
-  ], (name) => {
-    if (!name) return;
-    DYNAMIC_DATA.mocks[idx].name = name;
-    saveDynamicData();
-    renderExams();
-  });
+function updateMockSeries(idx, name) {
+  if (!name) return;
+  DYNAMIC_DATA.mocks[idx].name = name;
+  saveDynamicData();
 }
 
 function deleteMockSeries(idx) {

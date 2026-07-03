@@ -913,6 +913,38 @@ body {
   .bottom-nav { max-width: 520px; left: 50%; transform: translateX(-50%); border-radius: 16px 16px 0 0; }
 }
 
+/* ────────────────────────────────────
+   Inline Edit Mode
+──────────────────────────────────────*/
+.inline-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: inherit;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  width: 100%;
+  box-sizing: border-box;
+  transition: all var(--transition);
+}
+
+.inline-input:focus {
+  outline: none;
+  border-color: var(--purple);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.inline-input.date-input {
+  width: 130px;
+}
+.inline-input.time-input {
+  width: 110px;
+}
+.inline-input.num-input {
+  width: 70px;
+}
+
 /* --- EDIT MODE STYLES --- */
 .edit-mode-controls {
   display: none;
