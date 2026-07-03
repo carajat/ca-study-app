@@ -173,7 +173,7 @@ body.theme-rose {
   margin-bottom: 10px;
   background: var(--bg-card-hover);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
+  border-radius: 12px;
   color: var(--text-primary);
   font-size: 16px;
   font-weight: 600;
@@ -406,7 +406,7 @@ body {
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; margin-bottom: 12px; }
 .stats-grid .glass-card { margin: 0; cursor: pointer; }
 .stat-icon { font-size: 24px; margin-bottom: 6px; }
-.stat-value { font-size: 22px; font-weight: 800; color: #fff; }
+.stat-value { font-size: 22px; font-weight: 800; color: var(--text-primary); }
 .stat-label { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
 .stat-bar {
   width: 100%;
@@ -428,7 +428,7 @@ body {
 /* ─── Current Activity ───────────────── */
 .current-activity { cursor: pointer; }
 .ca-header { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; }
-.ca-slot-name { font-size: 17px; font-weight: 700; color: #fff; }
+.ca-slot-name { font-size: 17px; font-weight: 700; color: var(--text-primary); }
 .ca-slot-name.slot-study { color: var(--purple); }
 .ca-slot-name.slot-break { color: var(--green); }
 .ca-slot-name.slot-sleep { color: var(--blue); }
@@ -438,7 +438,7 @@ body {
 /* ─── Planner Summary ────────────────── */
 .planner-summary { cursor: pointer; }
 .ps-header { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
-.ps-stats { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.ps-stats { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
 
 /* ─── Quote Card ─────────────────────── */
 .quote-card { text-align: center; border-color: rgba(255,255,255,0.05); }
@@ -455,7 +455,7 @@ body {
 .next-mock-card.urgent { border-color: var(--red); box-shadow: 0 0 20px rgba(239, 68, 68, 0.2); animation: pulse 2s infinite; }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.2); } 50% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.4); } }
 .nmc-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: var(--blue); margin-bottom: 8px; }
-.nmc-subject { font-size: 24px; font-weight: 800; color: #fff; }
+.nmc-subject { font-size: 24px; font-weight: 800; color: var(--text-primary); }
 .nmc-date { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
 .nmc-countdown { font-size: 14px; font-weight: 700; color: var(--yellow); margin-top: 8px; }
 
@@ -470,7 +470,7 @@ body {
   gap: 12px;
   padding: 10px 12px;
   background: rgba(255,255,255,0.02);
-  border-radius: var(--radius-sm);
+  border-radius: 12px;
   cursor: pointer;
   transition: all var(--transition);
 }
@@ -498,7 +498,7 @@ body {
   padding: 12px;
   background: rgba(255,255,255,0.03);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
+  border-radius: 12px;
   color: var(--text-muted);
   font-family: inherit;
   font-size: 13px;
@@ -575,7 +575,7 @@ body {
   color: var(--text-secondary);
 }
 .planner-mock-reminder.urgent { border-color: var(--red); color: var(--red); }
-.planner-mock-reminder strong { color: #fff; }
+.planner-mock-reminder strong { color: var(--text-primary); }
 .pmr-icon { font-size: 18px; }
 
 /* ─── Mini Calendar ──────────────────── */
@@ -679,7 +679,7 @@ body {
   padding: 12px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
+  border-radius: 12px;
   margin-bottom: 6px;
   cursor: pointer;
   transition: all var(--transition);
@@ -735,7 +735,7 @@ body {
 /* ─── Syllabus Overview ──────────────── */
 .overall-progress { text-align: center; }
 .op-label { font-size: 12px; color: var(--text-muted); font-weight: 600; letter-spacing: 1px; }
-.op-value { font-size: 32px; font-weight: 900; color: #fff; margin: 4px 0 8px; }
+.op-value { font-size: 32px; font-weight: 900; color: var(--text-primary); margin: 4px 0 8px; }
 
 /* ─── Subject Cards ──────────────────── */
 .subject-card {
@@ -803,13 +803,7 @@ body {
 .st-num { font-size: 11px; color: var(--text-muted); font-weight: 600; text-align: center; }
 .st-name { font-size: 12px; color: var(--text-primary); line-height: 1.4; padding-right: 4px; }
 .st-check { text-align: center; }
-.st-check input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  accent-color: var(--purple);
-  cursor: pointer;
-  border-radius: 12px;
-}
+.st-check input[type="checkbox"] { margin-top: 4px; }
 .st-row:nth-child(odd) { background: rgba(255,255,255,0.01); }
 .st-row:active { background: rgba(108, 60, 225, 0.08); }
 
@@ -848,7 +842,7 @@ body {
 .modal-content {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius) var(--radius) 0 0;
+  border-radius: 20px 20px 0 0;
   padding: 20px;
   width: 100%;
   max-width: 480px;
@@ -878,7 +872,7 @@ body {
   padding: 10px 12px;
   background: rgba(255,255,255,0.04);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
+  border-radius: 12px;
   color: var(--text-primary);
   font-family: inherit;
   font-size: 14px;
@@ -932,7 +926,7 @@ body {
   font-family: inherit;
   font-size: inherit;
   padding: 4px 8px;
-  border-radius: var(--radius-sm);
+  border-radius: 12px;
   width: 100%;
   box-sizing: border-box;
   transition: all var(--transition);
@@ -1084,4 +1078,43 @@ body.edit-mode-active .add-item-btn {
   --scrollbar-thumb: #3a3a3c;
   --nav-bg: rgba(28, 28, 30, 0.7);
   --bg-card-hover: #2c2c2e;
+}
+
+
+/* Custom Premium Checkbox */
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: transparent;
+  margin: 0;
+  font: inherit;
+  color: currentColor;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 6px;
+  display: inline-grid;
+  place-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+input[type="checkbox"]::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em white;
+  transform-origin: center;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+input[type="checkbox"]:checked {
+  background-color: var(--purple);
+  border-color: var(--purple);
+}
+
+input[type="checkbox"]:checked::before {
+  transform: scale(1);
 }
