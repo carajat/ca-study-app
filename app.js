@@ -1288,6 +1288,14 @@ document.addEventListener('DOMContentLoaded', init);
 // Register service worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(err => console.log('SW error:', err));
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        window.location.reload();
+        refreshing = true;
+      }
+    });
+
 }
 
 // ═══════════════════════════════════════════
