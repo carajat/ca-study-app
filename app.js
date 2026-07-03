@@ -482,8 +482,13 @@ function renderExams() {
             const isPast = daysUntil(mock.date) < 0;
             const isUpcoming = daysUntil(mock.date) >= 0 && daysUntil(mock.date) <= 3;
             return `
-              <div class="mock-item ${score ? 'scored' : ''} ${isUpcoming ? 'upcoming' : ''} draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${mockIdx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${mockIdx}, 'mock', '${series.id}')" ondragend="handleDragEnd(event)" ${!isEditMode ? `onclick="openMockScoreModal('${mock.id}', '${mock.subject}', '${series.name}', '${mock.date}')"` : ''}>
-                <span class="drag-handle">::</span>
+              <div class="mock-item ${score ? 'scored' : ''} ${isUpcoming ? 'upcoming' : ''} draggable-item"  ${!isEditMode ? `onclick="openMockScoreModal('${mock.id}', '${mock.subject}', '${series.name}', '${mock.date}')"` : ''}>
+                ${isEditMode ? `
+  <div class="order-controls" style="display:flex; flex-direction:column; margin-right:12px; gap:4px;">
+    <button onclick="moveSubjectUp(${idx})" style="background:transparent; border:none; color:var(--text-secondary); padding:0; line-height:0;"><span class="material-symbols-rounded">expand_less</span></button>
+    <button onclick="moveSubjectDown(${idx})" style="background:transparent; border:none; color:var(--text-secondary); padding:0; line-height:0;"><span class="material-symbols-rounded">expand_more</span></button>
+  </div>
+` : ''}
                 ${!isEditMode ? `
                 <div class="mock-subject" style="flex:1">${mock.subject}</div>
                 <div class="mock-date">${formatDate(mock.date)}</div>
@@ -1143,7 +1148,7 @@ function renderSyllabusDetail(subject) {
   headerEl.innerHTML = `
     <h3><span class="material-symbols-rounded icon-sm" style="vertical-align:middle; margin-right:6px;">menu_book</span> ${title}</h3>
     <div class="detail-progress">
-      <span>${pct}% complete</span>
+      <span>${pct}% done</span>
       <div class="stat-bar stat-bar-lg"><div class="stat-bar-fill" style="width:${pct}%"></div></div>
     </div>
   `;
@@ -1230,7 +1235,7 @@ function toggleSyllabusCheck(chapterId, field, checked) {
   const barEl = headerEl.querySelector('.stat-bar-fill');
   const pctEl = headerEl.querySelector('span');
   if (barEl) barEl.style.width = pct + '%';
-  if (pctEl) pctEl.textContent = pct + '% complete';
+  if (pctEl) pctEl.textContent = pct + '% done';
 }
 
 function toggleIbsCheck(chapterId) {
@@ -1699,3 +1704,25 @@ document.addEventListener('DOMContentLoaded', () => {
         updateThemeIcon(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
     }
 });
+
+
+window.moveSubjectUp = function(idx) {
+  event.stopPropagation();
+  if (idx > 0) {
+    const temp = DYNAMIC_DATA.syllabusSubjects[idx];
+    DYNAMIC_DATA.syllabusSubjects[idx] = DYNAMIC_DATA.syllabusSubjects[idx - 1];
+    DYNAMIC_DATA.syllabusSubjects[idx - 1] = temp;
+    saveDynamicData();
+    renderSyllabus();
+  }
+};
+window.moveSubjectDown = function(idx) {
+  event.stopPropagation();
+  if (idx < DYNAMIC_DATA.syllabusSubjects.length - 1) {
+    const temp = DYNAMIC_DATA.syllabusSubjects[idx];
+    DYNAMIC_DATA.syllabusSubjects[idx] = DYNAMIC_DATA.syllabusSubjects[idx + 1];
+    DYNAMIC_DATA.syllabusSubjects[idx + 1] = temp;
+    saveDynamicData();
+    renderSyllabus();
+  }
+};
