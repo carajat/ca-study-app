@@ -1130,3 +1130,10 @@ input[type="checkbox"]:checked {
 input[type="checkbox"]:checked::before {
   transform: scale(1);
 }
+
+
+/* Sortable JS styles */
+.drag-handle { color: var(--text-secondary); cursor: grab; display: none; vertical-align: middle; margin-right: 12px; }
+.edit-mode-active .drag-handle { display: inline-block; }
+.sortable-ghost { opacity: 0.4; }
+.edit-mode-active .subject-card { cursor: default; }
