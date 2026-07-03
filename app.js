@@ -511,13 +511,13 @@ function renderExams() {
 }
 
 function getNextMock() {
-  const allMocks = [...DYNAMIC_DATA.mocks.series1, ...DYNAMIC_DATA.mocks.series2, ...DYNAMIC_DATA.mocks.series3];
+  const allMocks = DYNAMIC_DATA.mocks.flatMap(s => s.tests);
   const upcoming = allMocks.filter(m => daysUntil(m.date) >= 0).sort((a, b) => new Date(a.date) - new Date(b.date));
   return upcoming[0] || null;
 }
 
 function getNextMockFor(subj) {
-  const allMocks = [...DYNAMIC_DATA.mocks.series1, ...DYNAMIC_DATA.mocks.series2, ...DYNAMIC_DATA.mocks.series3];
+  const allMocks = DYNAMIC_DATA.mocks.flatMap(s => s.tests);
   const upcoming = allMocks.filter(m => m.subject === subj && daysUntil(m.date) >= 0).sort((a, b) => new Date(a.date) - new Date(b.date));
   return upcoming[0] || null;
 }
@@ -600,8 +600,8 @@ function renderScoreChart() {
   // Draw lines for each subject
   subjects.forEach(subj => {
     const points = [];
-    ['series1', 'series2', 'series3'].forEach((series, sIdx) => {
-      const mock = DYNAMIC_DATA.mocks[series].find(m => m.subject === subj);
+    DYNAMIC_DATA.mocks.forEach((series, sIdx) => {
+      const mock = series.tests.find(m => m.subject === subj);
       if (mock && scores[mock.id]) {
         points.push({ x: 100 + sIdx * 120, y: 180 - (scores[mock.id].score / 100 * 160) });
       }
@@ -737,7 +737,7 @@ function renderMiniCalendar() {
   // Build set of important dates for highlighting
   const mockDates = new Set();
   const examDates = new Set();
-  [...DYNAMIC_DATA.mocks.series1, ...DYNAMIC_DATA.mocks.series2, ...DYNAMIC_DATA.mocks.series3].forEach(m => mockDates.add(m.date));
+  DYNAMIC_DATA.mocks.flatMap(s => s.tests).forEach(m => mockDates.add(m.date));
   DYNAMIC_DATA.finalExams.forEach(e => examDates.add(e.date));
   
   for (let d = 1; d <= daysInMonth; d++) {
@@ -760,7 +760,7 @@ function renderMiniCalendar() {
     // Get tooltip for special days
     let tooltip = '';
     if (isMockDay) {
-      const mock = [...DYNAMIC_DATA.mocks.series1, ...DYNAMIC_DATA.mocks.series2, ...DYNAMIC_DATA.mocks.series3].find(m => m.date === key);
+      const mock = DYNAMIC_DATA.mocks.flatMap(s => s.tests).find(m => m.date === key);
       tooltip = `Mock: ${mock.subject}`;
     }
     if (isExamDay) {
