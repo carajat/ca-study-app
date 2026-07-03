@@ -18,15 +18,28 @@ let isEditMode = false;
 
 function loadDynamicData() {
   const savedData = localStorage.getItem('ca_dynamic_data');
+  let parsedData = null;
+  
   if (savedData) {
     try {
-      DYNAMIC_DATA = JSON.parse(savedData);
+      parsedData = JSON.parse(savedData);
     } catch(e) {
       console.error("Failed to parse dynamic data", e);
-      DYNAMIC_DATA = JSON.parse(JSON.stringify(APP_DATA));
     }
-  } else {
+  }
+  
+  // Validate that critical fields exist (to recover from past corrupted states)
+  if (!parsedData || !parsedData.exam || !parsedData.schedules) {
+    console.warn("Corrupted or outdated dynamic data found. Resetting to APP_DATA.");
     DYNAMIC_DATA = JSON.parse(JSON.stringify(APP_DATA));
+  } else {
+    DYNAMIC_DATA = parsedData;
+    // Fallback: Ensure all top-level keys from APP_DATA exist in DYNAMIC_DATA
+    for (let key in APP_DATA) {
+      if (!(key in DYNAMIC_DATA)) {
+        DYNAMIC_DATA[key] = JSON.parse(JSON.stringify(APP_DATA[key]));
+      }
+    }
   }
   
   // Migrate to unified syllabusSubjects if not present
