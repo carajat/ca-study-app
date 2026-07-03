@@ -517,7 +517,7 @@ function renderExams() {
             return `
               <div class="mock-item ${score ? 'scored' : ''} ${isUpcoming ? 'upcoming' : ''} draggable-item"  ${!isEditMode ? `onclick="openMockScoreModal('${mock.id}', '${mock.subject}', '${series.name}', '${mock.date}')"` : ''}>
                 ${isEditMode ? `
-  <span class="drag-handle material-symbols-rounded">drag_indicator</span>
+  <span class="drag-handle material-symbols-rounded">drag_handle</span>
 ` : ''}
                 ${!isEditMode ? `
                 <div class="mock-subject" style="flex:1">${mock.subject}</div>
@@ -559,7 +559,7 @@ function renderExams() {
           return `
             <div class="mock-item final-exam-item draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${examIdx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${examIdx}, 'exam')" ondragend="handleDragEnd(event)">
               ${isEditMode ? `
-  <span class="drag-handle material-symbols-rounded">drag_indicator</span>
+  <span class="drag-handle material-symbols-rounded">drag_handle</span>
 ` : ''}
               ${!isEditMode ? `
               <div class="mock-subject" style="flex:1">${exam.subject}</div>
@@ -737,7 +737,7 @@ function renderSchedule() {
     
     container.innerHTML += `
       <div class="schedule-slot glass-card slot-type-${slot.type} ${isActive ? 'slot-active' : ''} draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${idx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${idx}, 'schedule-slot', '${state.activeSchedule}')" ondragend="handleDragEnd(event)">
-        <span class="drag-handle material-symbols-rounded">drag_indicator</span>
+        <span class="drag-handle material-symbols-rounded">drag_handle</span>
         ${isActive && !isEditMode ? '<div class="active-indicator"><span class="material-symbols-rounded icon-sm">circle</span> NOW</div>' : ''}
         <div class="slot-header" style="flex:1">
           <span class="material-symbols-rounded slot-icon">${(slot.icon || "").trim()}</span>
@@ -1126,7 +1126,7 @@ function showSubjectsList() {
     const pct = calculateSubjectProgress(subj.id, subj.type);
     return `
       <div class="subject-card glass-card draggable-item" >
-        <span class="drag-handle material-symbols-rounded">drag_indicator</span>
+        <span class="drag-handle material-symbols-rounded">drag_handle</span>
         <div class="subj-info" onclick="openSubjectDetail('${subj.id}', '${subj.type}')" style="cursor:pointer; flex: 1">
           ${!isEditMode ? `
             <div class="subj-name"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle; margin-right:4px;">menu_book</span> ${subj.name}</div>
@@ -1203,7 +1203,7 @@ function renderSyllabusDetail(subject) {
           const chProgress = progress[ch.id] || {};
           return `
             <div class="st-row ${isEditMode ? 'is-edit' : ''} draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${idx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${idx}, 'syllabus-chapter', '${key}')" ondragend="handleDragEnd(event)">
-              <span class="drag-handle material-symbols-rounded">drag_indicator</span>
+              <span class="drag-handle material-symbols-rounded">drag_handle</span>
               ${!isEditMode ? `<span class="st-num">${idx + 1}</span><div class="st-name">${ch.name}</div>` : `
                 <div class="st-name" style="flex:1; margin-right: 10px;">
                   <input type="text" class="inline-input" value="${ch.name}" onclick="event.stopPropagation()" onchange="updateSyllabusChapter('${key}', ${idx}, this.value)">
@@ -1234,7 +1234,7 @@ function renderSyllabusDetail(subject) {
           const isDone = progress[ch.id]?.done || false;
           return `
             <div class="ss-row ${isDone ? 'done' : ''} draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${idx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${idx}, 'syllabus-chapter', '${key}')" ondragend="handleDragEnd(event)" ${!isEditMode ? `onclick="toggleIbsCheck('${ch.id}')"` : ''}>
-              <span class="drag-handle material-symbols-rounded">drag_indicator</span>
+              <span class="drag-handle material-symbols-rounded">drag_handle</span>
               <span class="ss-check">${isDone ? '<span class="material-symbols-rounded icon-sm">check_box</span>' : '<span class="material-symbols-rounded icon-sm">check_box_outline_blank</span>'}</span>
               <span class="ss-num">${!isEditMode ? idx + 1 + '.' : ''}</span>
               ${!isEditMode ? `<span class="ss-name" style="flex:1">${ch.name}</span>` : `
