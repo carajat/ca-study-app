@@ -1004,7 +1004,7 @@ function showSubjectsList() {
   }).join('');
   
   if (isEditMode) {
-    container.innerHTML += \`<button class="add-item-btn" onclick="addSyllabusSubject()">+ Add Subject</button>\`;
+    container.innerHTML += `<button class="add-item-btn" onclick="addSyllabusSubject()">+ Add Subject</button>`;
   }
 }
 
