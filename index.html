@@ -23,7 +23,7 @@
     <div class="modal-content" onclick="event.stopPropagation()">
       <div class="modal-header">
         <h3 id="modal-title">Enter Score</h3>
-        <button class="modal-close" onclick="closeModal()">✕</button>
+        <button class="modal-close" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button>
       </div>
       <div id="modal-body"></div>
     </div>
@@ -40,9 +40,14 @@
             <h1 style="margin:0;">CA Final Group 2</h1>
             <p class="subtitle" style="margin: 4px 0 0 0;">November 2026 · New Scheme</p>
           </div>
-          <button class="theme-btn" onclick="openMenuModal()" style="position: relative; z-index: 10;">
-            <span class="material-symbols-rounded">menu</span>
-          </button>
+          <div style="display: flex; gap: 8px;">
+            <button class="theme-btn" id="themeToggleBtn" onclick="toggleTheme()" style="position: relative; z-index: 10;">
+              <span class="material-symbols-rounded">light_mode</span>
+            </button>
+            <button class="theme-btn" onclick="openMenuModal()" style="position: relative; z-index: 10;">
+              <span class="material-symbols-rounded">menu</span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -72,13 +77,13 @@
       <!-- Quick Stats Grid -->
       <div class="stats-grid">
         <div class="stat-card glass-card" onclick="switchTab('syllabus')">
-          <div class="stat-icon">📖</div>
+          <div class="stat-icon"><span class="material-symbols-rounded">book</span></div>
           <div class="stat-value" id="dash-syllabus-pct">0%</div>
           <div class="stat-label">Syllabus Done</div>
           <div class="stat-bar"><div class="stat-bar-fill" id="dash-syllabus-bar"></div></div>
         </div>
         <div class="stat-card glass-card" onclick="switchTab('exams')">
-          <div class="stat-icon">📝</div>
+          <div class="stat-icon"><span class="material-symbols-rounded">edit_document</span></div>
           <div class="stat-value" id="dash-next-mock">--</div>
           <div class="stat-label" id="dash-next-mock-label">Next Mock</div>
         </div>
@@ -86,7 +91,7 @@
 
       <!-- Current Activity -->
       <div class="current-activity glass-card" onclick="switchTab('schedule')">
-        <div class="ca-header">📅 Current Activity</div>
+        <div class="ca-header"><span class="material-symbols-rounded icon-sm">schedule</span> Current Activity</div>
         <div id="current-slot-info">
           <div class="ca-slot-name" id="ca-slot-name">Loading...</div>
           <div class="ca-slot-details" id="ca-slot-details"></div>
@@ -96,7 +101,7 @@
 
       <!-- Today's Planner Summary -->
       <div class="planner-summary glass-card" onclick="switchTab('planner')">
-        <div class="ps-header">🗓️ Today's Plan</div>
+        <div class="ps-header"><span class="material-symbols-rounded icon-sm">calendar_today</span> Today's Plan</div>
         <div class="ps-stats">
           <span id="dash-planner-done">0</span>/<span id="dash-planner-total">0</span> tasks done
         </div>
@@ -105,7 +110,7 @@
 
       <!-- Quote -->
       <div class="quote-card glass-card">
-        <div class="quote-icon">💬</div>
+        <div class="quote-icon"><span class="material-symbols-rounded">format_quote</span></div>
         <p id="daily-quote" class="quote-text"></p>
       </div>
     </section>
@@ -135,7 +140,7 @@
 
       <!-- Score Trend Chart -->
       <div class="glass-card chart-card">
-        <h3>📈 Score Trend</h3>
+        <h3><span class="material-symbols-rounded icon-sm">trending_up</span> Score Trend</h3>
         <canvas id="score-chart" width="400" height="200"></canvas>
       </div>
     </section>
@@ -200,15 +205,15 @@
       <!-- Planner Tasks -->
       <div id="planner-tasks-container">
         <div class="planner-section">
-          <h3>📚 Primary Subject</h3>
+          <h3><span class="material-symbols-rounded icon-sm">menu_book</span> Primary Subject</h3>
           <div id="planner-primary-tasks"></div>
         </div>
         <div class="planner-section">
-          <h3>📖 Secondary Subject</h3>
+          <h3><span class="material-symbols-rounded icon-sm">import_contacts</span> Secondary Subject</h3>
           <div id="planner-secondary-tasks"></div>
         </div>
         <div class="planner-section">
-          <h3>📝 Quick Tasks</h3>
+          <h3><span class="material-symbols-rounded icon-sm">task_alt</span> Quick Tasks</h3>
           <div id="planner-quick-tasks"></div>
         </div>
       </div>
@@ -216,7 +221,7 @@
       <!-- Add Task Button -->
       <div class="planner-actions">
         <button class="btn-primary" onclick="openAddTaskModal()">+ Add Task</button>
-        <button class="btn-secondary" onclick="copyToTomorrow()">📋 Copy to Tomorrow</button>
+        <button class="btn-secondary" onclick="copyToTomorrow()"><span class="material-symbols-rounded icon-sm">content_copy</span> Copy to Tomorrow</button>
       </div>
     </section>
 
@@ -249,7 +254,7 @@
   <!-- ═══════════ BOTTOM NAVIGATION ═══════════ -->
   <nav class="bottom-nav">
     <button class="nav-item active" data-tab="dashboard" onclick="switchTab('dashboard')">
-      <span class="nav-icon">🏠</span>
+      <span class="material-symbols-rounded nav-icon">home</span>
       <span class="nav-label">Home</span>
     </button>
     <button class="nav-item" data-tab="exams" onclick="switchTab('exams')">

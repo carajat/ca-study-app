@@ -61,11 +61,11 @@ function loadDynamicData() {
     DYNAMIC_DATA.syllabusSubjects = [
       { id: 'dt', name: '<span class="material-symbols-rounded icon-sm">menu_book</span> Paper 4: DT & International Tax', source: 'CA Aarish Khan', type: 'main', chapters: DYNAMIC_DATA.dtChapters || APP_DATA.dtChapters },
       { id: 'idt', name: '<span class="material-symbols-rounded icon-sm">auto_stories</span> Paper 5: IDT (GST + Customs)', source: 'VB Sir', type: 'main', chapters: DYNAMIC_DATA.idtChapters || APP_DATA.idtChapters },
-      { id: 'ibs-afm', name: '📊 IBS — AFM', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.afm) ? DYNAMIC_DATA.ibsSubjects.afm.chapters : APP_DATA.ibsSubjects.afm.chapters },
+      { id: 'ibs-afm', name: 'IBS — AFM', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.afm) ? DYNAMIC_DATA.ibsSubjects.afm.chapters : APP_DATA.ibsSubjects.afm.chapters },
       { id: 'ibs-fr', name: '📋 IBS — FR', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.fr) ? DYNAMIC_DATA.ibsSubjects.fr.chapters : APP_DATA.ibsSubjects.fr.chapters },
-      { id: 'ibs-audit', name: '🔍 IBS — Audit', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.audit) ? DYNAMIC_DATA.ibsSubjects.audit.chapters : APP_DATA.ibsSubjects.audit.chapters },
+      { id: 'ibs-audit', name: 'IBS — Audit', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.audit) ? DYNAMIC_DATA.ibsSubjects.audit.chapters : APP_DATA.ibsSubjects.audit.chapters },
       { id: 'ibs-law', name: '⚖️ IBS — Law (SPOM A)', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.law) ? DYNAMIC_DATA.ibsSubjects.law.chapters : APP_DATA.ibsSubjects.law.chapters },
-      { id: 'ibs-scpm', name: '💰 IBS — SC&PM (SPOM B)', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.scpm) ? DYNAMIC_DATA.ibsSubjects.scpm.chapters : APP_DATA.ibsSubjects.scpm.chapters }
+      { id: 'ibs-scpm', name: 'IBS — SC&PM (SPOM B)', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.scpm) ? DYNAMIC_DATA.ibsSubjects.scpm.chapters : APP_DATA.ibsSubjects.scpm.chapters }
     ];
     saveDynamicData();
   }
@@ -1025,7 +1025,7 @@ function copyToTomorrow() {
   
   tasks[tomorrowKey] = todayTasks.map((t, i) => ({ ...t, done: false, originalIndex: i }));
   savePlannerTasks(tasks);
-  showToast('Copied to tomorrow! 📋');
+  showToast('Copied to tomorrow!');
 }
 
 // ═══════════════════════════════════════════
@@ -1299,10 +1299,10 @@ function openMenuModal() {
       <span class="menu-btn-icon">${isEditMode ? '<span class="material-symbols-rounded icon-sm">check_circle</span>' : '<span class="material-symbols-rounded icon-sm">edit</span>'}</span> Edit Mode: <strong style="color: ${isEditMode ? 'var(--color-primary)' : 'inherit'}">${isEditMode ? 'ON' : 'OFF'}</strong>
     </button>
     <button class="menu-btn" onclick="openThemeModal()">
-      <span class="menu-btn-icon">🎨</span> Customize Theme
+      <span class="material-symbols-rounded menu-btn-icon">palette</span> Customize Theme
     </button>
     <button class="menu-btn" onclick="shareProgressPDF()">
-      <span class="menu-btn-icon">📄</span> Share Progress (PDF)
+      <span class="material-symbols-rounded menu-btn-icon">picture_as_pdf</span> Share Progress (PDF)
     </button>
     <button class="menu-btn" onclick="exportData()">
       <span class="menu-btn-icon"><span class="material-symbols-rounded icon-sm">upload</span></span> Share Backup (Export)
@@ -1315,7 +1315,7 @@ function openMenuModal() {
 
 function openThemeModal() {
   const currentTheme = localStorage.getItem('ca-theme') || 'default';
-  openModal('🎨 Select Theme', `
+  openModal('Select Theme', `
     <p style="text-align:center; color:var(--text-secondary); margin-bottom: 20px;">Personalize your app colors</p>
     <div class="theme-picker">
       <div class="theme-circle tc-default ${currentTheme === 'default' ? 'active' : ''}" onclick="setTheme('default', this)"></div>
@@ -1324,7 +1324,7 @@ function openThemeModal() {
       <div class="theme-circle tc-sunset ${currentTheme === 'sunset' ? 'active' : ''}" onclick="setTheme('sunset', this)"></div>
       <div class="theme-circle tc-rose ${currentTheme === 'rose' ? 'active' : ''}" onclick="setTheme('rose', this)"></div>
     </div>
-    <button class="btn-primary" style="margin-top:20px" onclick="openMenuModal()">🔙 Back to Menu</button>
+    <button class="btn-primary" style="margin-top:20px" onclick="openMenuModal()">Back to Menu</button>
   `);
 }
 
@@ -1525,7 +1525,7 @@ async function exportData() {
         title: 'CA Progress Backup',
         text: 'Here is my CA Final progress backup!'
       });
-      showToast('Shared successfully! 🚀');
+      showToast('Shared successfully!');
     } catch (err) {
       console.log('Share failed:', err);
     }
@@ -1557,7 +1557,7 @@ function handleImportFile(event) {
       const data = JSON.parse(e.target.result);
       if (data && typeof data === 'object') {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        showToast('Data restored successfully! Refreshing... 🔄');
+        showToast('Data restored successfully! Refreshing...');
         setTimeout(() => window.location.reload(), 1500);
       }
     } catch (err) {
@@ -1639,3 +1639,24 @@ function deleteMockSeries(idx) {
   }
 }
 
+
+function toggleTheme() {
+    const currentTheme = document.body.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(newTheme);
+}
+function updateThemeIcon(theme) {
+    const btn = document.getElementById('themeToggleBtn');
+    if(btn) btn.innerHTML = theme === 'light' ? '<span class="material-symbols-rounded">dark_mode</span>' : '<span class="material-symbols-rounded">light_mode</span>';
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        document.body.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+    } else {
+        updateThemeIcon(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    }
+});
