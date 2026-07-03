@@ -115,8 +115,9 @@ function toggleEditMode() {
 // ─── Drag and Drop & Edit Helpers ───────
 
 window.activeSortables = [];
-function initSortable(containerId, arrayRef, saveCallback) {
-  const container = document.getElementById(containerId);
+function initSortable(containerIdOrEl, arrayRef, saveCallback) {
+  const container = typeof containerIdOrEl === "string" ? document.getElementById(containerIdOrEl) : containerIdOrEl;
+  
   if (!container) return;
   if (isEditMode) {
     const s = new Sortable(container, {
