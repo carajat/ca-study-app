@@ -59,8 +59,8 @@ function loadDynamicData() {
   // Migrate to unified syllabusSubjects if not present
   if (!DYNAMIC_DATA.syllabusSubjects) {
     DYNAMIC_DATA.syllabusSubjects = [
-      { id: 'dt', name: '📘 Paper 4: DT & International Tax', source: 'CA Aarish Khan', type: 'main', chapters: DYNAMIC_DATA.dtChapters || APP_DATA.dtChapters },
-      { id: 'idt', name: '📗 Paper 5: IDT (GST + Customs)', source: 'VB Sir', type: 'main', chapters: DYNAMIC_DATA.idtChapters || APP_DATA.idtChapters },
+      { id: 'dt', name: '<span class="material-symbols-rounded icon-sm">menu_book</span> Paper 4: DT & International Tax', source: 'CA Aarish Khan', type: 'main', chapters: DYNAMIC_DATA.dtChapters || APP_DATA.dtChapters },
+      { id: 'idt', name: '<span class="material-symbols-rounded icon-sm">auto_stories</span> Paper 5: IDT (GST + Customs)', source: 'VB Sir', type: 'main', chapters: DYNAMIC_DATA.idtChapters || APP_DATA.idtChapters },
       { id: 'ibs-afm', name: '📊 IBS — AFM', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.afm) ? DYNAMIC_DATA.ibsSubjects.afm.chapters : APP_DATA.ibsSubjects.afm.chapters },
       { id: 'ibs-fr', name: '📋 IBS — FR', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.fr) ? DYNAMIC_DATA.ibsSubjects.fr.chapters : APP_DATA.ibsSubjects.fr.chapters },
       { id: 'ibs-audit', name: '🔍 IBS — Audit', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.audit) ? DYNAMIC_DATA.ibsSubjects.audit.chapters : APP_DATA.ibsSubjects.audit.chapters },
@@ -222,8 +222,8 @@ function openFormModal(title, fields, callback) {
   
   html += `
     <div style="display: flex; gap: 8px; margin-top: 15px;">
-      <button class="btn-primary" onclick="submitFormModal(${fields.length})">💾 Save</button>
-      <button class="btn-secondary" onclick="closeModal()">❌ Cancel</button>
+      <button class="btn-primary" onclick="submitFormModal(${fields.length})"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">save</span> Save</button>
+      <button class="btn-secondary" onclick="closeModal()"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">close</span> Cancel</button>
     </div>
   </div>`;
   
@@ -380,16 +380,16 @@ function updateCurrentActivity() {
   }
   
   if (currentSlot) {
-    document.getElementById('ca-slot-name').textContent = currentSlot.icon + ' ' + currentSlot.label;
+    document.getElementById('ca-slot-name').innerHTML = currentSlot.icon + ' ' + currentSlot.label;
     document.getElementById('ca-slot-details').textContent = `Window: ${currentSlot.startRange} · Duration: ${currentSlot.duration >= 60 ? (currentSlot.duration/60) + ' hrs' : currentSlot.duration + ' min'}`;
     document.getElementById('ca-slot-name').className = 'ca-slot-name slot-' + currentSlot.type;
   } else {
-    document.getElementById('ca-slot-name').textContent = '😴 Rest Time';
+    document.getElementById('ca-slot-name').innerHTML = '<span class="material-symbols-rounded icon-sm">bed</span> Rest Time';
     document.getElementById('ca-slot-details').textContent = 'No active session right now';
   }
   
   if (nextSlot) {
-    document.getElementById('ca-next-slot').textContent = '⏭️ Next: ' + nextSlot.icon + ' ' + nextSlot.label;
+    document.getElementById('ca-next-slot').innerHTML = '<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">arrow_forward</span> Next: ' + nextSlot.icon + ' ' + nextSlot.label;
   } else {
     document.getElementById('ca-next-slot').textContent = '';
   }
@@ -441,7 +441,7 @@ function renderExams() {
           ${!isEditMode ? `<span>${series.name}</span>` : `
             <input type="text" class="inline-input" value="${series.name}" onchange="updateMockSeries(${seriesIdx}, this.value)" style="font-weight:bold; font-size:1.1em;">
             <div class="edit-mode-controls" style="display:inline-flex; opacity:1; transform:none; position:static; margin-left:10px;">
-              <button class="delete-btn" onclick="deleteMockSeries(${seriesIdx})">🗑️</button>
+              <button class="delete-btn" onclick="deleteMockSeries(${seriesIdx})"><span class="material-symbols-rounded icon-sm">delete</span></button>
             </div>
           `}
         </h3>
@@ -456,7 +456,7 @@ function renderExams() {
                 ${!isEditMode ? `
                 <div class="mock-subject" style="flex:1">${mock.subject}</div>
                 <div class="mock-date">${formatDate(mock.date)}</div>
-                <div class="mock-score">${score ? score.score + '/100' : (isPast ? '⚠️' : '⬜')}</div>
+                <div class="mock-score">${score ? score.score + '/100' : (isPast ? '<span class="material-symbols-rounded icon-sm" style="color:var(--error-color);">warning</span>' : '<span class="material-symbols-rounded icon-sm">check_box_outline_blank</span>')}</div>
                 ` : `
                 <div class="mock-subject" style="flex:1; margin-right:10px;">
                   <input type="text" class="inline-input" value="${mock.subject}" onchange="updateMock('${series.id}', ${mockIdx}, 'subject', this.value)">
@@ -465,7 +465,7 @@ function renderExams() {
                   <input type="date" class="inline-input date-input" value="${mock.date}" onchange="updateMock('${series.id}', ${mockIdx}, 'date', this.value)">
                 </div>
                 <div class="edit-mode-controls">
-                  <button class="delete-btn" onclick="event.stopPropagation(); deleteMock('${series.id}', ${mockIdx})">🗑️</button>
+                  <button class="delete-btn" onclick="event.stopPropagation(); deleteMock('${series.id}', ${mockIdx})"><span class="material-symbols-rounded icon-sm">delete</span></button>
                 </div>
                 `}
               </div>
@@ -486,7 +486,7 @@ function renderExams() {
   // ─── Final Exam Datesheet ─────────────
   container.innerHTML += `
     <div class="mock-series glass-card final-datesheet">
-      <h3 class="series-title">🎓 CA Final — November 2026</h3>
+      <h3 class="series-title"><span class="material-symbols-rounded icon-sm">school</span> CA Final — November 2026</h3>
       <div class="mock-list">
         ${DYNAMIC_DATA.finalExams.map((exam, examIdx) => {
           const days = daysUntil(exam.date);
@@ -507,7 +507,7 @@ function renderExams() {
                 <input type="text" class="inline-input time-input" value="${exam.day}" onchange="updateExam(${examIdx}, 'day', this.value)" placeholder="Day">
               </div>
               <div class="edit-mode-controls">
-                <button class="delete-btn" onclick="deleteExam(${examIdx})">🗑️</button>
+                <button class="delete-btn" onclick="deleteExam(${examIdx})"><span class="material-symbols-rounded icon-sm">delete</span></button>
               </div>
               `}
             </div>
@@ -539,7 +539,7 @@ function openMockScoreModal(mockId, subject, series, date) {
   
   openModal(`${subject} — Series ${series}`, `
     <div class="mock-modal">
-      <p class="mock-modal-date">📅 ${formatDate(date)}</p>
+      <p class="mock-modal-date"><span class="material-symbols-rounded icon-sm">event</span> ${formatDate(date)}</p>
       <div class="form-group">
         <label>Score (out of 100)</label>
         <input type="number" id="mock-score-input" min="0" max="100" value="${existing.score || ''}" placeholder="Enter marks">
@@ -549,8 +549,8 @@ function openMockScoreModal(mockId, subject, series, date) {
         <textarea id="mock-notes-input" rows="3" placeholder="Weak areas, what to revise...">${existing.notes || ''}</textarea>
       </div>
       <div style="display: flex; gap: 8px;">
-        <button class="btn-primary" onclick="saveMockScoreFromModal('${mockId}')">💾 Save Score</button>
-        ${existing.score ? `<button class="btn-secondary" onclick="clearMockScoreFromModal('${mockId}')" style="flex: 0.5;">🗑️ Clear</button>` : ''}
+        <button class="btn-primary" onclick="saveMockScoreFromModal('${mockId}')"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">save</span> Save Score</button>
+        ${existing.score ? `<button class="btn-secondary" onclick="clearMockScoreFromModal('${mockId}')" style="flex: 0.5;"><span class="material-symbols-rounded icon-sm">delete</span> Clear</button>` : ''}
       </div>
     </div>
   `);
@@ -559,11 +559,11 @@ function openMockScoreModal(mockId, subject, series, date) {
 function saveMockScoreFromModal(mockId) {
   const score = document.getElementById('mock-score-input').value;
   const notes = document.getElementById('mock-notes-input').value;
-  if (!score) { showToast('Please enter a score! ⚠️'); return; }
+  if (!score) { showToast('Please enter a score! <span class="material-symbols-rounded icon-sm" style="color:var(--error-color);">warning</span>'); return; }
   saveMockScore(mockId, score, notes);
   closeModal();
   renderExams();
-  showToast('Score saved! ✅');
+  showToast('Score saved! <span class="material-symbols-rounded icon-sm" style="color:var(--success-color);">check_circle</span>');
 }
 
 function clearMockScoreFromModal(mockId) {
@@ -572,7 +572,7 @@ function clearMockScoreFromModal(mockId) {
   saveState({ mockScores: scores });
   closeModal();
   renderExams();
-  showToast('Score cleared! 🗑️');
+  showToast('Score cleared! <span class="material-symbols-rounded icon-sm" style="color:var(--error-color);">delete</span>');
 }
 
 
@@ -670,7 +670,7 @@ function renderSchedule() {
     container.innerHTML += `
       <div class="schedule-slot glass-card slot-type-${slot.type} ${isActive ? 'slot-active' : ''} draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${idx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${idx}, 'schedule-slot', '${state.activeSchedule}')" ondragend="handleDragEnd(event)">
         <span class="drag-handle">::</span>
-        ${isActive && !isEditMode ? '<div class="active-indicator">🔴 NOW</div>' : ''}
+        ${isActive && !isEditMode ? '<div class="active-indicator"><span class="material-symbols-rounded icon-sm">circle</span> NOW</div>' : ''}
         <div class="slot-header" style="flex:1">
           <span class="slot-icon">${slot.icon}</span>
           ${!isEditMode ? `<span class="slot-label">${slot.label}</span>` : `<input type="text" class="inline-input" value="${slot.label}" onchange="updateScheduleSlot('${state.activeSchedule}', ${idx}, 'label', this.value)">`}
@@ -686,7 +686,7 @@ function renderSchedule() {
         </div>
         ${isEditMode ? `
         <div class="edit-mode-controls">
-          <button class="delete-btn" onclick="deleteScheduleSlot('${state.activeSchedule}', ${idx})">🗑️</button>
+          <button class="delete-btn" onclick="deleteScheduleSlot('${state.activeSchedule}', ${idx})"><span class="material-symbols-rounded icon-sm">delete</span></button>
         </div>
         ` : ''}
       </div>
@@ -723,10 +723,10 @@ function renderPlannerMockReminder() {
   const el = document.getElementById('planner-mock-reminder');
   if (nextMock) {
     const days = daysUntil(nextMock.date);
-    el.innerHTML = `<span class="pmr-icon">🎯</span> Next mock: <strong>${nextMock.subject}</strong> in <strong>${days} days</strong> (${formatDate(nextMock.date)})`;
+    el.innerHTML = `<span class="pmr-icon"><span class="material-symbols-rounded icon-sm">track_changes</span></span> Next mock: <strong>${nextMock.subject}</strong> in <strong>${days} days</strong> (${formatDate(nextMock.date)})`;
     el.className = 'planner-mock-reminder glass-card' + (days <= 3 ? ' urgent' : '');
   } else {
-    el.innerHTML = '✅ All mock tests done!';
+    el.innerHTML = '<span class="material-symbols-rounded icon-sm" style="vertical-align:middle; color:var(--success-color);">task_alt</span> All mock tests done!';
   }
 }
 
@@ -828,12 +828,12 @@ function renderPlannerTaskList(tasks, dayKey) {
   
   return tasks.map((task, idx) => `
     <div class="planner-task ${task.done ? 'task-done' : ''}" onclick="togglePlannerTask('${dayKey}', ${task.originalIndex})">
-      <span class="task-check">${task.done ? '☑️' : '☐'}</span>
+      <span class="task-check">${task.done ? '<span class="material-symbols-rounded icon-sm">check_box</span>' : '<span class="material-symbols-rounded icon-sm">check_box_outline_blank</span>'}</span>
       <div class="task-info">
         <div class="task-name">${task.name}</div>
         ${task.subject ? '<div class="task-subject">' + task.subject + '</div>' : ''}
       </div>
-      <button class="task-delete" onclick="event.stopPropagation(); deletePlannerTask('${dayKey}', ${task.originalIndex})">🗑️</button>
+      <button class="task-delete" onclick="event.stopPropagation(); deletePlannerTask('${dayKey}', ${task.originalIndex})"><span class="material-symbols-rounded icon-sm">delete</span></button>
     </div>
   `).join('');
 }
@@ -865,7 +865,7 @@ function deletePlannerTask(dayKey, taskIndex) {
     tasks[dayKey].forEach((t, i) => t.originalIndex = i);
     savePlannerTasks(tasks);
     renderPlanner();
-    showToast('Task deleted! 🗑️');
+    showToast('Task deleted! <span class="material-symbols-rounded icon-sm">delete</span>');
   }
 }
 
@@ -882,13 +882,13 @@ function openAddTaskModal() {
     { value: 'IBS-SCPM', label: 'IBS — SC&PM' }
   ];
   
-  openModal('➕ Add Task', `
+  openModal('<span class="material-symbols-rounded icon-sm">add</span> Add Task', `
     <div class="form-group">
       <label>Category</label>
       <select id="task-category">
-        <option value="primary">📚 Primary Subject</option>
-        <option value="secondary">📖 Secondary Subject</option>
-        <option value="quick">📝 Quick Task</option>
+        <option value="primary"><span class="material-symbols-rounded icon-sm">local_library</span> Primary Subject</option>
+        <option value="secondary"><span class="material-symbols-rounded icon-sm">import_contacts</span> Secondary Subject</option>
+        <option value="quick"><span class="material-symbols-rounded icon-sm">edit_document</span> Quick Task</option>
       </select>
     </div>
     <div class="form-group">
@@ -907,16 +907,16 @@ function openAddTaskModal() {
       <label>Activity (Optional)</label>
       <select id="task-activity" onchange="onTaskChapterChange()">
         <option value="">— Select —</option>
-        <option value="conceptBook">📖 Book (Concepts)</option>
-        <option value="questionBank">❓ Question Bank</option>
-        <option value="revisionVideo">🎥 Revision Video</option>
+        <option value="conceptBook"><span class="material-symbols-rounded icon-sm">import_contacts</span> Book (Concepts)</option>
+        <option value="questionBank"><span class="material-symbols-rounded icon-sm">help</span> Question Bank</option>
+        <option value="revisionVideo"><span class="material-symbols-rounded icon-sm">videocam</span> Revision Video</option>
       </select>
     </div>
     <div class="form-group">
       <label>Task Description</label>
       <input type="text" id="task-name" placeholder="e.g. Ch 24 Transfer Pricing — ALP methods">
     </div>
-    <button class="btn-primary" onclick="addPlannerTask()">Add Task ✅</button>
+    <button class="btn-primary" onclick="addPlannerTask()">Add Task <span class="material-symbols-rounded icon-sm">check_circle</span></button>
   `);
 }
 
@@ -992,7 +992,7 @@ function addPlannerTask() {
     activityType = 'done';
   }
   
-  if (!name) { showToast('Please enter a task name! ⚠️'); return; }
+  if (!name) { showToast('Please enter a task name! <span class="material-symbols-rounded icon-sm">warning</span>'); return; }
   
   const tasks = getPlannerTasks();
   const key = dateKey(state.plannerDate);
@@ -1011,7 +1011,7 @@ function addPlannerTask() {
   savePlannerTasks(tasks);
   closeModal();
   renderPlanner();
-  showToast('Task added! ✅');
+  showToast('Task added! <span class="material-symbols-rounded icon-sm">check_circle</span>');
 }
 
 function copyToTomorrow() {
@@ -1077,7 +1077,7 @@ function showSubjectsList() {
         <span class="subj-arrow">▶</span>
         ` : `
         <div class="edit-mode-controls">
-          <button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusSubject(${idx})">🗑️</button>
+          <button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusSubject(${idx})"><span class="material-symbols-rounded icon-sm">delete</span></button>
         </div>
         `}
       </div>
@@ -1126,9 +1126,9 @@ function renderSyllabusDetail(subject) {
         <div class="st-header">
           <span class="st-num">#</span>
           <span class="st-name">Chapter</span>
-          <span class="st-check">📖</span>
-          <span class="st-check">❓</span>
-          <span class="st-check">🎥</span>
+          <span class="st-check"><span class="material-symbols-rounded icon-sm">import_contacts</span></span>
+          <span class="st-check"><span class="material-symbols-rounded icon-sm">help</span></span>
+          <span class="st-check"><span class="material-symbols-rounded icon-sm">videocam</span></span>
         </div>
         ${chapters.map((ch, idx) => {
           const chProgress = progress[ch.id] || {};
@@ -1146,7 +1146,7 @@ function renderSyllabusDetail(subject) {
               <span class="st-check"><input type="checkbox" ${chProgress.revisionVideo ? 'checked' : ''} onchange="toggleSyllabusCheck('${ch.id}', 'revisionVideo', this.checked)"></span>
               ` : `
               <div class="edit-mode-controls">
-                <button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter('${key}', ${idx})">🗑️</button>
+                <button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter('${key}', ${idx})"><span class="material-symbols-rounded icon-sm">delete</span></button>
               </div>
               `}
             </div>
@@ -1166,14 +1166,14 @@ function renderSyllabusDetail(subject) {
           return `
             <div class="ss-row ${isDone ? 'done' : ''} draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${idx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${idx}, 'syllabus-chapter', '${key}')" ondragend="handleDragEnd(event)" ${!isEditMode ? `onclick="toggleIbsCheck('${ch.id}')"` : ''}>
               <span class="drag-handle">::</span>
-              <span class="ss-check">${isDone ? '☑️' : '☐'}</span>
+              <span class="ss-check">${isDone ? '<span class="material-symbols-rounded icon-sm">check_box</span>' : '<span class="material-symbols-rounded icon-sm">check_box_outline_blank</span>'}</span>
               <span class="ss-num">${!isEditMode ? idx + 1 + '.' : ''}</span>
               ${!isEditMode ? `<span class="ss-name" style="flex:1">${ch.name}</span>` : `
               <div class="ss-name" style="flex:1; margin-right:10px;">
                 <input type="text" class="inline-input" value="${ch.name}" onclick="event.stopPropagation()" onchange="updateSyllabusChapter('${key}', ${idx}, this.value)">
               </div>
               <div class="edit-mode-controls">
-                <button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter('${key}', ${idx})">🗑️</button>
+                <button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter('${key}', ${idx})"><span class="material-symbols-rounded icon-sm">delete</span></button>
               </div>
               `}
             </div>
@@ -1296,7 +1296,7 @@ if ('serviceWorker' in navigator) {
 function openMenuModal() {
   openModal('☰ Settings & Tools', `
     <button class="menu-btn" onclick="toggleEditMode(); closeModal()">
-      <span class="menu-btn-icon">${isEditMode ? '✅' : '✏️'}</span> Edit Mode: <strong style="color: ${isEditMode ? 'var(--color-primary)' : 'inherit'}">${isEditMode ? 'ON' : 'OFF'}</strong>
+      <span class="menu-btn-icon">${isEditMode ? '<span class="material-symbols-rounded icon-sm">check_circle</span>' : '<span class="material-symbols-rounded icon-sm">edit</span>'}</span> Edit Mode: <strong style="color: ${isEditMode ? 'var(--color-primary)' : 'inherit'}">${isEditMode ? 'ON' : 'OFF'}</strong>
     </button>
     <button class="menu-btn" onclick="openThemeModal()">
       <span class="menu-btn-icon">🎨</span> Customize Theme
@@ -1305,10 +1305,10 @@ function openMenuModal() {
       <span class="menu-btn-icon">📄</span> Share Progress (PDF)
     </button>
     <button class="menu-btn" onclick="exportData()">
-      <span class="menu-btn-icon">📤</span> Share Backup (Export)
+      <span class="menu-btn-icon"><span class="material-symbols-rounded icon-sm">upload</span></span> Share Backup (Export)
     </button>
     <button class="menu-btn" onclick="triggerImport()">
-      <span class="menu-btn-icon">📥</span> Load Backup (Import)
+      <span class="menu-btn-icon"><span class="material-symbols-rounded icon-sm">download</span></span> Load Backup (Import)
     </button>
   `);
 }
@@ -1501,7 +1501,7 @@ function addScheduleSlot(scheduleKey) {
     { label: 'Duration (minutes)', type: 'number', value: 60 }
   ], (label, range, dur) => {
     if (!label) return;
-    DYNAMIC_DATA.schedules[scheduleKey].slots.push({ id: 's-new-' + Date.now(), label, startRange: range, duration: parseInt(dur) || 60, type: 'study', icon: '📝' });
+    DYNAMIC_DATA.schedules[scheduleKey].slots.push({ id: 's-new-' + Date.now(), label, startRange: range, duration: parseInt(dur) || 60, type: 'study', icon: '<span class="material-symbols-rounded icon-sm">edit_document</span>' });
     saveDynamicData();
     renderSchedule();
   });
@@ -1539,7 +1539,7 @@ async function exportData() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    showToast('Backup downloaded! 📥');
+    showToast('Backup downloaded! <span class="material-symbols-rounded icon-sm">download</span>');
   }
 }
 
