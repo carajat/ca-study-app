@@ -45,7 +45,16 @@ function loadDynamicData() {
   // Validate that critical fields exist (to recover from past corrupted states)
   if (!parsedData || !parsedData.exam || !parsedData.schedules) {
     console.warn("Corrupted or outdated dynamic data found. Resetting to APP_DATA.");
-    DYNAMIC_DATA = JSON.parse(JSON.stringify(APP_DATA[state.activeGroup]));
+    
+    try {
+      if (!APP_DATA[state.activeGroup]) throw new Error("APP_DATA missing group");
+      DYNAMIC_DATA = JSON.parse(JSON.stringify(APP_DATA[state.activeGroup]));
+    } catch(e) {
+      console.error(e);
+      // Fallback if data.js is somehow old
+      DYNAMIC_DATA = JSON.parse(JSON.stringify(APP_DATA.group2 || APP_DATA));
+    }
+  
   } else {
     DYNAMIC_DATA = parsedData;
     // Fallback: Ensure all top-level keys from APP_DATA exist in DYNAMIC_DATA
@@ -328,7 +337,8 @@ function switchTab(tabName) {
   document.querySelector(`.nav-item[data-tab="${tabName}"]`).classList.add('active');
   
   // Refresh content
-  if (tabName === 'dashboard') renderDashboard();
+  if (tabName === 'dashboard') const gs = document.getElementById('group-selector'); if(gs) gs.value = state.activeGroup;
+  renderDashboard();
   if (tabName === 'exams') renderExams();
   if (tabName === 'schedule') renderSchedule();
   if (tabName === 'planner') renderPlanner();
