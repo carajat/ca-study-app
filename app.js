@@ -547,9 +547,9 @@ function renderExams() {
             const isPast = daysUntil(mock.date) < 0;
             const isUpcoming = daysUntil(mock.date) >= 0 && daysUntil(mock.date) <= 3;
             return `
-              <div class="mock-item ${score ? 'scored' : ''} ${isUpcoming ? 'upcoming' : ''} draggable-item"  ${!isEditMode ? `onclick="openMockScoreModal('${mock.id}', '${mock.subject}', '${series.name}', '${mock.date}')"` : ''}>
+              <div class="mock-item ${score ? 'scored' : ''} ${isUpcoming ? 'upcoming' : ''}"  ${!isEditMode ? `onclick="openMockScoreModal('${mock.id}', '${mock.subject}', '${series.name}', '${mock.date}')"` : ''}>
                 ${isEditMode ? `
-  <span class="drag-handle material-symbols-rounded">drag_handle</span>
+  
 ` : ''}
                 ${!isEditMode ? `
                 <div class="mock-subject" style="flex:1">${mock.subject}</div>
@@ -589,9 +589,9 @@ function renderExams() {
         ${DYNAMIC_DATA.finalExams.map((exam, examIdx) => {
           const days = daysUntil(exam.date);
           return `
-            <div class="mock-item final-exam-item draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${examIdx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${examIdx}, 'exam')" ondragend="handleDragEnd(event)">
+            <div class="mock-item final-exam-item">
               ${isEditMode ? `
-  <span class="drag-handle material-symbols-rounded">drag_handle</span>
+  
 ` : ''}
               ${!isEditMode ? `
               <div class="mock-subject" style="flex:1">${exam.subject}</div>
@@ -769,8 +769,8 @@ function renderSchedule() {
     const durationStr = slot.duration >= 60 ? (slot.duration / 60) + ' hrs' : slot.duration + ' min';
     
     container.innerHTML += `
-      <div class="schedule-slot glass-card slot-type-${slot.type} ${isActive ? 'slot-active' : ''} draggable-item" draggable="${isEditMode}" ondragstart="handleDragStart(event, ${idx})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${idx}, 'schedule-slot', '${state.activeSchedule}')" ondragend="handleDragEnd(event)">
-        <span class="drag-handle material-symbols-rounded">drag_handle</span>
+      <div class="schedule-slot glass-card slot-type-${slot.type} ${isActive ? 'slot-active' : ''}">
+        
         ${isActive && !isEditMode ? '<div class="active-indicator"><span class="material-symbols-rounded icon-sm">circle</span> NOW</div>' : ''}
         <div class="slot-header" style="flex:1">
           <span class="material-symbols-rounded slot-icon">${(slot.icon || "").trim()}</span>
@@ -1127,7 +1127,7 @@ function showSubjectsList() {
     if (subj.type === 'folder') {
       return '<div class="subject-folder" data-idx="' + idx + '" style="margin-bottom:12px;">' +
         '<div class="subject-card glass-card folder-header" onclick="toggleFolder(\'' + subj.id + '\')" style="cursor:pointer; display:flex; align-items:center;">' +
-          '<span class="drag-handle material-symbols-rounded">drag_handle</span>' +
+          '' +
           '<div class="subj-info" style="flex: 1">' +
             (!isEditMode ? 
               '<div class="subj-name" style="font-weight:700; color:var(--primary-color)"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle; margin-right:4px;">folder</span> ' + subj.name + '</div>' +
@@ -1150,7 +1150,7 @@ function showSubjectsList() {
     }
     
     return '<div class="subject-card glass-card ' + (!isNested ? 'draggable-item' : '') + '" style="' + (isNested ? 'margin-bottom:8px;' : '') + '" >' +
-      (!isNested ? '<span class="drag-handle material-symbols-rounded">drag_handle</span>' : '') +
+      (!isNested ? '' : '') +
       '<div class="subj-info" onclick="openSubjectDetail(\'' + subj.id + '\', \'' + subj.type + '\')" style="cursor:pointer; flex: 1">' +
         (!isEditMode ? 
           '<div class="subj-name"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle; margin-right:4px;">menu_book</span> ' + subj.name + '</div>' +
@@ -1222,8 +1222,8 @@ function renderSyllabusDetail(subject) {
       '</div>' +
       chapters.map((ch, idx) => {
         const chProgress = progress[ch.id] || {};
-        return '<div class="st-row ' + (isEditMode ? 'is-edit' : '') + ' draggable-item" draggable="' + isEditMode + '" ondragstart="handleDragStart(event, ' + idx + ')" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ' + idx + ', \'syllabus-chapter\', \'' + key + '\')" ondragend="handleDragEnd(event)">' +
-          '<span class="drag-handle material-symbols-rounded">drag_handle</span>' +
+        return '<div class="st-row ' + (isEditMode ? 'is-edit' : '') + '">' +
+          '' +
           (!isEditMode ? '<span class="st-num">' + (idx + 1) + '</span><div class="st-name">' + ch.name + '</div>' : 
             '<div class="st-name" style="flex:1; margin-right: 10px;">' +
               '<input type="text" class="inline-input" value="' + ch.name.replace(/"/g, '&quot;') + '" onclick="event.stopPropagation()" onchange="updateSyllabusChapter(\'' + key + '\', ' + idx + ', this.value)">' +
@@ -1250,8 +1250,8 @@ function renderSyllabusDetail(subject) {
     contentEl.innerHTML = '<div class="syllabus-simple">' +
       chapters.map((ch, idx) => {
         const isDone = progress[ch.id]?.done || false;
-        return '<div class="ss-row ' + (isDone ? 'done' : '') + ' draggable-item" draggable="' + isEditMode + '" ondragstart="handleDragStart(event, ' + idx + ')" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ' + idx + ', \'syllabus-chapter\', \'' + key + '\')" ondragend="handleDragEnd(event)" ' + (!isEditMode ? 'onclick="toggleIbsCheck(\'' + ch.id + '\')"' : '') + '>' +
-          '<span class="drag-handle material-symbols-rounded">drag_handle</span>' +
+        return '<div class="ss-row ' + (isDone ? 'done' : '') + '" ' + (!isEditMode ? 'onclick="toggleIbsCheck(\'' + ch.id + '\')"' : '') + '>' +
+          '' +
           '<span class="ss-check">' + (isDone ? '<span class="material-symbols-rounded icon-sm">check_box</span>' : '<span class="material-symbols-rounded icon-sm">check_box_outline_blank</span>') + '</span>' +
           '<span class="ss-num">' + (!isEditMode ? (idx + 1) + '.' : '') + '</span>' +
           (!isEditMode ? '<span class="ss-name" style="flex:1">' + ch.name + '</span>' : 
@@ -1814,3 +1814,51 @@ window.toggleFolder = function(id) {
     arrow.textContent = 'expand_more';
   }
 };
+
+
+function findSubj(id) {
+  const flattenSubjects = (list) => {
+    let res = [];
+    (list || []).forEach(s => {
+      if (s.type === 'folder' && s.children) res = res.concat(s.children);
+      else res.push(s);
+    });
+    return res;
+  };
+  return flattenSubjects(DYNAMIC_DATA.syllabusSubjects).find(s => s.id === id);
+}
+
+function moveSyllabusSubject(idx, dir) {
+  if (idx + dir < 0 || idx + dir >= DYNAMIC_DATA.syllabusSubjects.length) return;
+  reorderArray(DYNAMIC_DATA.syllabusSubjects, idx, idx + dir);
+  saveDynamicData();
+  renderSyllabusTab();
+}
+
+function moveSyllabusChapter(subjectId, idx, dir) {
+  const subj = findSubj(subjectId);
+  if (subj && subj.chapters) {
+    if (idx + dir < 0 || idx + dir >= subj.chapters.length) return;
+    reorderArray(subj.chapters, idx, idx + dir);
+    saveDynamicData();
+    renderSyllabusDetail(subjectId);
+  }
+}
+
+function moveMock(sIdx, idx, dir) {
+  const seriesKey = Object.keys(DYNAMIC_DATA.mocks)[sIdx];
+  if (DYNAMIC_DATA.mocks[seriesKey]) {
+    if (idx + dir < 0 || idx + dir >= DYNAMIC_DATA.mocks[seriesKey].length) return;
+    reorderArray(DYNAMIC_DATA.mocks[seriesKey], idx, idx + dir);
+    saveDynamicData();
+    renderMocksTab();
+  }
+}
+
+function moveScheduleSlot(scheduleKey, idx, dir) {
+  const slots = DYNAMIC_DATA.schedules[scheduleKey].slots;
+  if (idx + dir < 0 || idx + dir >= slots.length) return;
+  reorderArray(slots, idx, idx + dir);
+  saveDynamicData();
+  renderScheduleDetail(scheduleKey);
+}
