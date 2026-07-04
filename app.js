@@ -179,6 +179,7 @@ function handleDragStart(e, index) {
   const el = e.target.closest('.draggable-item');
   if (el) el.classList.add('dragging');
   e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', index);
 }
 
 function handleDragOver(e) {
