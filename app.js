@@ -968,17 +968,7 @@ function deletePlannerTask(dayKey, taskIndex) {
 }
 
 function openAddTaskModal() {
-  const subjects = [
-    { value: 'DT', label: 'DT (Direct Tax)' },
-    { value: 'IDT', label: 'IDT (Indirect Tax)' },
-    { value: 'IBS-DT', label: 'IBS — DT' },
-    { value: 'IBS-IDT', label: 'IBS — IDT' },
-    { value: 'IBS-AFM', label: 'IBS — AFM' },
-    { value: 'IBS-FR', label: 'IBS — FR' },
-    { value: 'IBS-Audit', label: 'IBS — Audit' },
-    { value: 'IBS-Law', label: 'IBS — Law' },
-    { value: 'IBS-SCPM', label: 'IBS — SC&PM' }
-  ];
+  const subjects = (DYNAMIC_DATA.syllabusSubjects || []).map(s => ({ value: s.id, label: s.name }));
   
   openModal('<span class="material-symbols-rounded icon-sm">add</span> Add Task', `
     <div class="form-group">
