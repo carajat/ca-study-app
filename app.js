@@ -1016,7 +1016,11 @@ function onTaskSubjectChange() {
     chapterSelect.innerHTML = '<option value="">— Select Chapter —</option>' + 
       chapters.map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('');
       
-    activityGroup.style.display = 'block';
+    if (subjectObj && (subjectObj.type === 'ibs' || subj.toLowerCase().startsWith('ibs-'))) {
+      activityGroup.style.display = 'none';
+    } else {
+      activityGroup.style.display = 'block';
+    }
   } else {
     chapterGroup.style.display = 'none';
     activityGroup.style.display = 'none';
