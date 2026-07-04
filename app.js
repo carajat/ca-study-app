@@ -1819,7 +1819,6 @@ window.moveSubjectDown = function(idx) {
 };
 
 window.toggleFolder = function(id) {
-  if (isEditMode) return;
   const el = document.getElementById('folder-' + id);
   const arrow = document.getElementById('arrow-' + id);
   if (el.style.display === 'none') {
@@ -1844,11 +1843,21 @@ function findSubj(id) {
   return flattenSubjects(DYNAMIC_DATA.syllabusSubjects).find(s => s.id === id);
 }
 
-function moveSyllabusSubject(idx, dir) {
-  if (idx + dir < 0 || idx + dir >= DYNAMIC_DATA.syllabusSubjects.length) return;
-  reorderArray(DYNAMIC_DATA.syllabusSubjects, idx, idx + dir);
-  saveDynamicData();
-  renderSyllabusTab();
+window.moveSyllabusSubject = function(idx, dir, parentIdx) {
+  if (parentIdx !== null && parentIdx !== 'null' && parentIdx !== undefined) {
+    const parent = DYNAMIC_DATA.syllabusSubjects[parentIdx];
+    if (parent && parent.children) {
+      if (idx + dir < 0 || idx + dir >= parent.children.length) return;
+      reorderArray(parent.children, idx, idx + dir);
+      saveDynamicData();
+      showSubjectsList();
+    }
+  } else {
+    if (idx + dir < 0 || idx + dir >= DYNAMIC_DATA.syllabusSubjects.length) return;
+    reorderArray(DYNAMIC_DATA.syllabusSubjects, idx, idx + dir);
+    saveDynamicData();
+    showSubjectsList();
+  }
 }
 
 function moveSyllabusChapter(subjectId, idx, dir) {
@@ -1861,13 +1870,13 @@ function moveSyllabusChapter(subjectId, idx, dir) {
   }
 }
 
-function moveMock(sIdx, idx, dir) {
-  const seriesKey = Object.keys(DYNAMIC_DATA.mocks)[sIdx];
-  if (DYNAMIC_DATA.mocks[seriesKey]) {
-    if (idx + dir < 0 || idx + dir >= DYNAMIC_DATA.mocks[seriesKey].length) return;
-    reorderArray(DYNAMIC_DATA.mocks[seriesKey], idx, idx + dir);
+window.moveMock = function(seriesId, idx, dir) {
+  const series = DYNAMIC_DATA.mocks.find(s => s.id === seriesId);
+  if (series && series.tests) {
+    if (idx + dir < 0 || idx + dir >= series.tests.length) return;
+    reorderArray(series.tests, idx, idx + dir);
     saveDynamicData();
-    renderMocksTab();
+    renderExams();
   }
 }
 
@@ -1876,5 +1885,5 @@ function moveScheduleSlot(scheduleKey, idx, dir) {
   if (idx + dir < 0 || idx + dir >= slots.length) return;
   reorderArray(slots, idx, idx + dir);
   saveDynamicData();
-  renderScheduleDetail(scheduleKey);
+  renderSchedule();
 }
