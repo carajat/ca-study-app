@@ -686,7 +686,8 @@ function renderScoreChart() {
   // Labels
   ctx.fillStyle = styles.getPropertyValue('--chart-label').trim() || '#888';
   ctx.font = '11px Inter';
-  ['S1', 'S2', 'S3'].forEach((label, i) => {
+  DYNAMIC_DATA.mocks.forEach((series, i) => {
+    const label = 'S' + (i + 1);
     ctx.fillText(label, 100 + i * 120, 195);
   });
   
