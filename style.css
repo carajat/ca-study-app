@@ -369,7 +369,7 @@ body {
 
 /* ─── App Header ─────────────────────── */
 .app-header { text-align: center; padding: 20px 16px 8px; }
-.app-header h1, .app-header select {
+.app-header h1 {
   font-size: 22px;
   font-weight: 800;
   background: linear-gradient(135deg, var(--purple), var(--blue));
@@ -377,10 +377,14 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+.app-header select {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--purple);
+}
 .app-header select option {
   background: var(--bg-card);
   color: var(--text-primary);
-  -webkit-text-fill-color: initial;
 }
 .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
