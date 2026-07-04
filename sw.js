@@ -1,11 +1,11 @@
-const CACHE_NAME = 'ca-tracker-v53';
+const CACHE_NAME = 'ca-tracker-v54';
 const ASSETS = [
   '/',
-  '/index.html',
-  '/style.css',
+  '/index.html?v=54',
+  '/style.css?v=54',
+  '/app.js?v=54',
+  '/data.js?v=54',
   '/Sortable.min.js',
-  '/app.js',
-  '/data.js',
   '/manifest.json'
 ];
 
@@ -14,15 +14,7 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => {
         // Cache busting on install
-        return Promise.all(
-          ASSETS.map(url => {
-            return fetch(url + '?v=' + new Date().getTime())
-              .then(response => {
-                if (!response.ok) throw new Error('Network error');
-                return cache.put(url, response);
-              });
-          })
-        );
+        return cache.addAll(ASSETS);
       })
       .then(() => self.skipWaiting())
   );
@@ -30,19 +22,27 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME) return caches.delete(key);
+        })
+      );
+    })
   );
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {
+  // Ignore requests with query params for caching matching
+  const request = event.request;
+  const url = new URL(request.url);
+  
   event.respondWith(
-    caches.match(event.request, { ignoreSearch: true })
-      .then(response => {
-        if (response) return response;
-        return fetch(event.request);
-      })
-      .catch(() => caches.match('/index.html', { ignoreSearch: true }))
+    caches.match(request, { ignoreSearch: true }).then(response => {
+      return response || fetch(request).catch(() => {
+        // Fallback for offline if needed
+      });
+    })
   );
 });
