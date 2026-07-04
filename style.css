@@ -1018,7 +1018,7 @@ body.edit-mode-active .add-item-btn {
 }
 
 
-.st-row.is-edit { grid-template-columns: 32px 1fr 42px; }
+.st-row.is-edit { grid-template-columns: 1fr auto; }
 .inline-input { min-width: 0; }
 
 .material-symbols-rounded {

@@ -791,7 +791,7 @@ function renderSchedule() {
         ${isEditMode ? `
         <div class="edit-mode-controls" style="display:flex; gap:4px; align-items:center;">
     <button class="move-btn" onclick="event.stopPropagation(); moveScheduleSlot('${state.activeSchedule}', ${idx}, -1)" ${idx===0 ? 'disabled' : ''}><span class="material-symbols-rounded">keyboard_arrow_up</span></button>
-    <button class="move-btn" onclick="event.stopPropagation(); moveScheduleSlot('${state.activeSchedule}', ${idx}, 1)" ${idx===slots.length-1 ? 'disabled' : ''}><span class="material-symbols-rounded">keyboard_arrow_down</span></button>
+    <button class="move-btn" onclick="event.stopPropagation(); moveScheduleSlot('${state.activeSchedule}', ${idx}, 1)" ${idx===DYNAMIC_DATA.schedules[state.activeSchedule].slots.length-1 ? 'disabled' : ''}><span class="material-symbols-rounded">keyboard_arrow_down</span></button>
     <button class="delete-btn" onclick="deleteScheduleSlot('${state.activeSchedule}', ${idx})"><span class="material-symbols-rounded icon-sm">delete</span></button>
   </div>
 ` : ''}
@@ -1154,8 +1154,7 @@ function showSubjectsList() {
         '</div>' +
         '<div class="folder-content" id="folder-' + subj.id + '" style="display: none; padding-left: 20px; border-left: 2px solid var(--border-color); margin-left: 10px; margin-top: 8px;">' +
           subj.children.map((child, cIdx) => renderSubjectCard(child, cIdx, idx)).join('') +
-        '</div>' +
-      '</div>';
+        '</div>';
     }
     
     return '<div class="subject-card glass-card ' + (!isNested ? 'draggable-item' : '') + '" style="' + (isNested ? 'margin-bottom:8px;' : '') + '" >' +
@@ -1247,13 +1246,11 @@ function renderSyllabusDetail(subject) {
           '<span class="st-check"><input type="checkbox" ' + (chProgress.questionBank ? 'checked' : '') + ' onchange="toggleSyllabusCheck(\'' + ch.id + '\', \'questionBank\', this.checked)"></span>' +
           '<span class="st-check"><input type="checkbox" ' + (chProgress.revisionVideo ? 'checked' : '') + ' onchange="toggleSyllabusCheck(\'' + ch.id + '\', \'revisionVideo\', this.checked)"></span>' 
           : 
-          '<div class="edit-mode-controls">' +
-            '<div class="edit-mode-controls" style="display:flex; gap:4px; align-items:center;">' +
+          '<div class="edit-mode-controls" style="display:flex; gap:4px; align-items:center;">' +
       '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusChapter(\'' + key + '\', ' + idx + ', -1)" ' + (idx === 0 ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_up</span></button>' +
       '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusChapter(\'' + key + '\', ' + idx + ', 1)" ' + (idx === chapters.length - 1 ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_down</span></button>' +
       '<button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter(\'' + key + '\', ' + idx + ')"><span class="material-symbols-rounded icon-sm">delete</span></button>' +
-  '</div>' +
-          '</div>'
+  '</div>'
           ) +
         '</div>';
       }).join('') +
@@ -1275,13 +1272,11 @@ function renderSyllabusDetail(subject) {
           '<div class="ss-name" style="flex:1; margin-right:10px;">' +
             '<input type="text" class="inline-input" value="' + ch.name.replace(/"/g, '&quot;') + '" onclick="event.stopPropagation()" onchange="updateSyllabusChapter(\'' + key + '\', ' + idx + ', this.value)">' +
           '</div>' +
-          '<div class="edit-mode-controls">' +
-            '<div class="edit-mode-controls" style="display:flex; gap:4px; align-items:center;">' +
+          '<div class="edit-mode-controls" style="display:flex; gap:4px; align-items:center;">' +
       '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusChapter(\'' + key + '\', ' + idx + ', -1)" ' + (idx === 0 ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_up</span></button>' +
       '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusChapter(\'' + key + '\', ' + idx + ', 1)" ' + (idx === chapters.length - 1 ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_down</span></button>' +
       '<button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter(\'' + key + '\', ' + idx + ')"><span class="material-symbols-rounded icon-sm">delete</span></button>' +
-  '</div>' +
-          '</div>'
+  '</div>'
           ) +
         '</div>';
       }).join('') +
