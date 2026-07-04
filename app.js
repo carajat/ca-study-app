@@ -1172,6 +1172,7 @@ function showSubjectsList() {
             '<span class="subj-arrow material-symbols-rounded" id="arrow-' + subj.id + '" style="margin-left:8px; font-size:20px;">expand_more</span>'
           : 
             '<div class="edit-mode-controls" style="display:flex; gap:4px; align-items:center;">' +
+            '<button class="move-btn" onclick="event.stopPropagation(); toggleFolder(\'' + subj.id + '\')" title="Expand/Collapse"><span class="material-symbols-rounded" id="arrow-' + subj.id + '">expand_more</span></button>' +
             '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusSubject(' + idx + ', -1)" ' + (idx === 0 ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_up</span></button>' +
             '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusSubject(' + idx + ', 1)" ' + (idx === DYNAMIC_DATA.syllabusSubjects.length - 1 ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_down</span></button>' +
             '<button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusSubject(' + idx + ', null)"><span class="material-symbols-rounded icon-sm">delete</span></button>' +
