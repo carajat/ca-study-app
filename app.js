@@ -4,6 +4,7 @@
 
 // ─── State ──────────────────────────────
 let state = {
+  activeGroup: localStorage.getItem('ca_app_prefs_group') || 'group2',
   activeTab: 'dashboard',
   activeSchedule: 'earlyMorning',
   plannerDate: new Date(),
@@ -16,8 +17,21 @@ let state = {
 let DYNAMIC_DATA = null;
 let isEditMode = false;
 
+
+function getDynamicDataKey() { return state.activeGroup === 'group2' ? 'ca_dynamic_data' : 'ca_dynamic_data_group1'; }
+function getStorageKey() { return state.activeGroup === 'group2' ? 'ca_final_tracker' : 'ca_final_tracker_group1'; }
+
+function switchGroup(groupId) {
+  state.activeGroup = groupId;
+  localStorage.setItem('ca_app_prefs_group', groupId);
+  loadDynamicData();
+  const groupSel = document.getElementById('group-selector');
+  if (groupSel) groupSel.value = state.activeGroup;
+  switchTab('dashboard'); // This will also re-render everything
+}
+
 function loadDynamicData() {
-  const savedData = localStorage.getItem('ca_dynamic_data');
+  const savedData = localStorage.getItem(getDynamicDataKey());
   let parsedData = null;
   
   if (savedData) {
@@ -31,13 +45,13 @@ function loadDynamicData() {
   // Validate that critical fields exist (to recover from past corrupted states)
   if (!parsedData || !parsedData.exam || !parsedData.schedules) {
     console.warn("Corrupted or outdated dynamic data found. Resetting to APP_DATA.");
-    DYNAMIC_DATA = JSON.parse(JSON.stringify(APP_DATA));
+    DYNAMIC_DATA = JSON.parse(JSON.stringify(APP_DATA[state.activeGroup]));
   } else {
     DYNAMIC_DATA = parsedData;
     // Fallback: Ensure all top-level keys from APP_DATA exist in DYNAMIC_DATA
-    for (let key in APP_DATA) {
+    for (let key in APP_DATA[state.activeGroup]) {
       if (!(key in DYNAMIC_DATA)) {
-        DYNAMIC_DATA[key] = JSON.parse(JSON.stringify(APP_DATA[key]));
+        DYNAMIC_DATA[key] = JSON.parse(JSON.stringify(APP_DATA[state.activeGroup][key]));
       }
     }
   }
@@ -103,7 +117,7 @@ function loadDynamicData() {
 }
 
 function saveDynamicData() {
-  localStorage.setItem('ca_dynamic_data', JSON.stringify(DYNAMIC_DATA));
+  localStorage.setItem(getDynamicDataKey(), JSON.stringify(DYNAMIC_DATA));
 }
 
 function toggleEditMode() {
@@ -207,11 +221,11 @@ function confirmDelete(itemName, callback) {
 
 
 // ─── Storage Helper ─────────────────────
-const STORAGE_KEY = 'ca_final_tracker';
+
 
 function loadState() {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(getStorageKey());
     if (saved) return JSON.parse(saved);
   } catch (e) { console.error('Load error:', e); }
   return {};
@@ -221,7 +235,7 @@ function saveState(data) {
   try {
     const existing = loadState();
     const merged = { ...existing, ...data };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+    localStorage.setItem(getStorageKey(), JSON.stringify(merged));
   } catch (e) { console.error('Save error:', e); }
 }
 
@@ -1591,8 +1605,9 @@ function initTheme() {
 
 // ─── Data Export / Import ───
 async function exportData() {
-  const data = localStorage.getItem(STORAGE_KEY) || '{}';
-  const blob = new Blob([data], { type: 'application/json' });
+  const data = localStorage.getItem(getStorageKey()) || '{}';
+  const exportPayload = { trackerData: JSON.parse(data), dynamicData: DYNAMIC_DATA };
+  const blob = new Blob([JSON.stringify(exportPayload)], { type: 'application/json' });
   const file = new File([blob], 'ca-progress.json', { type: 'application/json' });
   
   if (navigator.canShare && navigator.canShare({ files: [file] })) {

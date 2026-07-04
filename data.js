@@ -2,7 +2,7 @@
 // CA Final Study Companion — Pre-loaded Data
 // ========================================
 
-const APP_DATA = {
+const APP_DATA_GROUP2 = {
   // ─── Exam Info ─────────────────────────
   exam: {
     name: "CA Final Group 2 — Paper 4: DT",
@@ -334,4 +334,22 @@ const APP_DATA = {
     "Don't stop when you're tired. Stop when you're done.",
     "Every master was once a disaster."
   ]
+};
+
+const APP_DATA_GROUP1 = {
+  exam: {
+    name: "CA Final Group 1",
+    date: "2026-05-01T14:00:00+05:30",
+    scheme: "New Scheme"
+  },
+  schedules: APP_DATA_GROUP2.schedules,
+  mocks: [],
+  finalExams: [],
+  syllabusSubjects: [],
+  quotes: APP_DATA_GROUP2.quotes
+};
+
+const APP_DATA = {
+  group1: APP_DATA_GROUP1,
+  group2: APP_DATA_GROUP2
 };
