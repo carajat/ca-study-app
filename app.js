@@ -1621,33 +1621,26 @@ function initTheme() {
 
 // ─── Data Export / Import ───
 async function exportData() {
-  const data = localStorage.getItem(getStorageKey()) || '{}';
-  const exportPayload = { trackerData: JSON.parse(data), dynamicData: DYNAMIC_DATA };
-  const blob = new Blob([JSON.stringify(exportPayload)], { type: 'application/json' });
-  const file = new File([blob], 'ca-progress.json', { type: 'application/json' });
-  
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    try {
-      await navigator.share({
-        files: [file],
-        title: 'CA Progress Backup',
-        text: 'Here is my CA Final progress backup!'
-      });
-      showToast('Shared successfully!');
-    } catch (err) {
-      console.log('Share failed:', err);
-    }
-  } else {
-    // Fallback to download
+  try {
+    const data = localStorage.getItem(getStorageKey()) || '{}';
+    const exportPayload = { trackerData: JSON.parse(data), dynamicData: DYNAMIC_DATA };
+    const jsonString = JSON.stringify(exportPayload, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
+    
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'ca-progress.json';
+    a.download = `ca-progress-${state.activeGroup}.json`;
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
     showToast('Backup downloaded! <span class="material-symbols-rounded icon-sm">download</span>');
+  } catch (err) {
+    console.error("Export error:", err);
+    showToast('Export failed!');
   }
 }
 
