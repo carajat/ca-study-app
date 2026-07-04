@@ -562,8 +562,11 @@ function renderExams() {
                 <div class="mock-date">
                   <input type="date" class="inline-input date-input" value="${mock.date}" onchange="updateMock('${series.id}', ${mockIdx}, 'date', this.value)">
                 </div>
-                <div class="edit-mode-controls">
-                  <button class="delete-btn" onclick="event.stopPropagation(); deleteMock('${series.id}', ${mockIdx})"><span class="material-symbols-rounded icon-sm">delete</span></button>
+                <div class="edit-mode-controls" style="display:flex; gap:4px; align-items:center;">
+    <button class="move-btn" onclick="event.stopPropagation(); moveMock('${series.id}', ${mockIdx}, -1)" ${mockIdx===0 ? 'disabled' : ''}><span class="material-symbols-rounded">keyboard_arrow_up</span></button>
+    <button class="move-btn" onclick="event.stopPropagation(); moveMock('${series.id}', ${mockIdx}, 1)" ${mockIdx===series.tests.length-1 ? 'disabled' : ''}><span class="material-symbols-rounded">keyboard_arrow_down</span></button>
+    <button class="delete-btn" onclick="event.stopPropagation(); deleteMock('${series.id}', ${mockIdx})"><span class="material-symbols-rounded icon-sm">delete</span></button>
+  </div>
                 </div>
                 `}
               </div>
@@ -786,10 +789,12 @@ function renderSchedule() {
           `}
         </div>
         ${isEditMode ? `
-        <div class="edit-mode-controls">
-          <button class="delete-btn" onclick="deleteScheduleSlot('${state.activeSchedule}', ${idx})"><span class="material-symbols-rounded icon-sm">delete</span></button>
-        </div>
-        ` : ''}
+        <div class="edit-mode-controls" style="display:flex; gap:4px; align-items:center;">
+    <button class="move-btn" onclick="event.stopPropagation(); moveScheduleSlot('${state.activeSchedule}', ${idx}, -1)" ${idx===0 ? 'disabled' : ''}><span class="material-symbols-rounded">keyboard_arrow_up</span></button>
+    <button class="move-btn" onclick="event.stopPropagation(); moveScheduleSlot('${state.activeSchedule}', ${idx}, 1)" ${idx===slots.length-1 ? 'disabled' : ''}><span class="material-symbols-rounded">keyboard_arrow_down</span></button>
+    <button class="delete-btn" onclick="deleteScheduleSlot('${state.activeSchedule}', ${idx})"><span class="material-symbols-rounded icon-sm">delete</span></button>
+  </div>
+` : ''}
       </div>
     `;
   });
@@ -1140,7 +1145,11 @@ function showSubjectsList() {
             '<div class="subj-progress"><span class="subj-pct">' + p + '%</span><div class="stat-bar"><div class="stat-bar-fill" style="width:' + p + '%"></div></div></div>' +
             '<span class="subj-arrow material-symbols-rounded" id="arrow-' + subj.id + '" style="margin-left:8px; font-size:20px;">expand_more</span>'
           : 
-            '<div class="edit-mode-controls"><button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusSubject(' + idx + ', null)"><span class="material-symbols-rounded icon-sm">delete</span></button></div>'
+            '<div class="edit-mode-controls" style="display:flex; gap:4px; align-items:center;">' +
+            '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusSubject(' + idx + ', -1)" ' + (idx === 0 ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_up</span></button>' +
+            '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusSubject(' + idx + ', 1)" ' + (idx === DYNAMIC_DATA.syllabusSubjects.length - 1 ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_down</span></button>' +
+            '<button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusSubject(' + idx + ', null)"><span class="material-symbols-rounded icon-sm">delete</span></button>' +
+          '</div>'
           ) +
         '</div>' +
         '<div class="folder-content" id="folder-' + subj.id + '" style="display: none; padding-left: 20px; border-left: 2px solid var(--border-color); margin-left: 10px; margin-top: 8px;">' +
@@ -1163,7 +1172,11 @@ function showSubjectsList() {
       '<div class="subj-progress"><span class="subj-pct">' + p + '%</span><div class="stat-bar"><div class="stat-bar-fill" style="width:' + p + '%"></div></div></div>' +
       '<span class="subj-arrow">▶</span>'
       : 
-      '<div class="edit-mode-controls"><button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusSubject(' + (isNested ? parentIdx : idx) + ', ' + (isNested ? idx : 'null') + ')"><span class="material-symbols-rounded icon-sm">delete</span></button></div>'
+      '<div class="edit-mode-controls" style="display:flex; gap:4px; align-items:center;">' +
+      '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusSubject(' + idx + ', -1, ' + (isNested ? parentIdx : 'null') + ')" ' + (idx === 0 ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_up</span></button>' +
+      '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusSubject(' + idx + ', 1, ' + (isNested ? parentIdx : 'null') + ')" ' + (idx === (isNested ? subj.children.length - 1 : DYNAMIC_DATA.syllabusSubjects.length - 1) ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_down</span></button>' +
+      '<button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusSubject(' + (isNested ? parentIdx : idx) + ', ' + (isNested ? idx : 'null') + ')"><span class="material-symbols-rounded icon-sm">delete</span></button>' +
+  '</div>'
       ) +
     '</div>';
   };
@@ -1235,7 +1248,11 @@ function renderSyllabusDetail(subject) {
           '<span class="st-check"><input type="checkbox" ' + (chProgress.revisionVideo ? 'checked' : '') + ' onchange="toggleSyllabusCheck(\'' + ch.id + '\', \'revisionVideo\', this.checked)"></span>' 
           : 
           '<div class="edit-mode-controls">' +
-            '<button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter(\'' + key + '\', ' + idx + ')"><span class="material-symbols-rounded icon-sm">delete</span></button>' +
+            '<div class="edit-mode-controls" style="display:flex; gap:4px; align-items:center;">' +
+      '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusChapter(\'' + key + '\', ' + idx + ', -1)" ' + (idx === 0 ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_up</span></button>' +
+      '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusChapter(\'' + key + '\', ' + idx + ', 1)" ' + (idx === chapters.length - 1 ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_down</span></button>' +
+      '<button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter(\'' + key + '\', ' + idx + ')"><span class="material-symbols-rounded icon-sm">delete</span></button>' +
+  '</div>' +
           '</div>'
           ) +
         '</div>';
@@ -1259,7 +1276,11 @@ function renderSyllabusDetail(subject) {
             '<input type="text" class="inline-input" value="' + ch.name.replace(/"/g, '&quot;') + '" onclick="event.stopPropagation()" onchange="updateSyllabusChapter(\'' + key + '\', ' + idx + ', this.value)">' +
           '</div>' +
           '<div class="edit-mode-controls">' +
-            '<button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter(\'' + key + '\', ' + idx + ')"><span class="material-symbols-rounded icon-sm">delete</span></button>' +
+            '<div class="edit-mode-controls" style="display:flex; gap:4px; align-items:center;">' +
+      '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusChapter(\'' + key + '\', ' + idx + ', -1)" ' + (idx === 0 ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_up</span></button>' +
+      '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusChapter(\'' + key + '\', ' + idx + ', 1)" ' + (idx === chapters.length - 1 ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_down</span></button>' +
+      '<button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter(\'' + key + '\', ' + idx + ')"><span class="material-symbols-rounded icon-sm">delete</span></button>' +
+  '</div>' +
           '</div>'
           ) +
         '</div>';

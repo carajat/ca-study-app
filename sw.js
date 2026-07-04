@@ -1,10 +1,10 @@
-const CACHE_NAME = 'ca-tracker-v71';
+const CACHE_NAME = 'ca-tracker-v73';
 const ASSETS = [
   '/',
-  '/index.html?v=71',
-  '/style.css?v=71',
-  '/app.js?v=71',
-  '/data.js?v=71',
+  '/index.html?v=73',
+  '/style.css?v=73',
+  '/app.js?v=73',
+  '/data.js?v=73',
   '/Sortable.min.js',
   '/manifest.json'
 ];
