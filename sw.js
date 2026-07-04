@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ca-tracker-v61';
+const CACHE_NAME = 'ca-tracker-v62';
 const ASSETS = [
   '/',
   '/index.html?v=61',

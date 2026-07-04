@@ -1002,7 +1002,7 @@ function openAddTaskModal() {
     </div>
     <div class="form-group">
       <label>Task Description</label>
-      <input type="text" id="task-name" placeholder="e.g. Ch 24 Transfer Pricing — ALP methods">
+      <input type="text" id="task-name" placeholder="e.g. Complete pending questions">
     </div>
     <button class="btn-primary" onclick="addPlannerTask()">Add Task <span class="material-symbols-rounded icon-sm">check_circle</span></button>
   `);
