@@ -1371,8 +1371,8 @@ function init() {
   const saved = loadState();
   if (saved.activeSchedule) state.activeSchedule = saved.activeSchedule;
   
-  // Render initial dashboard
-  renderDashboard();
+  // Render initial tab (updates UI state properly)
+  switchTab(state.activeTab);
   
   // Start countdown timer
   setInterval(updateCountdown, 1000);
