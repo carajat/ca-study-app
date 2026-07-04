@@ -1054,7 +1054,7 @@ function addPlannerTask() {
   let activityType = document.getElementById('task-activity') ? document.getElementById('task-activity').value : '';
   
   // For IBS subjects (no activity dropdown), implicitly set activity to 'done'
-  if (subject && subject.startsWith('IBS-') && chapterId) {
+  if (subject && subject.toLowerCase().startsWith('ibs-') && chapterId) {
     activityType = 'done';
   }
   
