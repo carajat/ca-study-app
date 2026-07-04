@@ -1174,7 +1174,7 @@ function showSubjectsList() {
       : 
       '<div class="edit-mode-controls" style="display:flex; gap:4px; align-items:center;">' +
       '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusSubject(' + idx + ', -1, ' + (isNested ? parentIdx : 'null') + ')" ' + (idx === 0 ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_up</span></button>' +
-      '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusSubject(' + idx + ', 1, ' + (isNested ? parentIdx : 'null') + ')" ' + (idx === (isNested ? subj.children.length - 1 : DYNAMIC_DATA.syllabusSubjects.length - 1) ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_down</span></button>' +
+      '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusSubject(' + idx + ', 1, ' + (isNested ? parentIdx : 'null') + ')" ' + (idx === (isNested ? DYNAMIC_DATA.syllabusSubjects[parentIdx].children.length - 1 : DYNAMIC_DATA.syllabusSubjects.length - 1) ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_down</span></button>' +
       '<button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusSubject(' + (isNested ? parentIdx : idx) + ', ' + (isNested ? idx : 'null') + ')"><span class="material-symbols-rounded icon-sm">delete</span></button>' +
   '</div>'
       ) +
