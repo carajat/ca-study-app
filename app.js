@@ -122,7 +122,24 @@ function loadDynamicData() {
       { id: 'ibs-scpm', name: 'IBS — SC&PM (SPOM B)', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.scpm) ? DYNAMIC_DATA.ibsSubjects.scpm.chapters : APP_DATA.ibsSubjects.scpm.chapters }
     ];
     saveDynamicData();
+  
+  // Migrate flat IBS subjects to Folder structure
+  if (DYNAMIC_DATA.syllabusSubjects) {
+    const ibsItems = DYNAMIC_DATA.syllabusSubjects.filter(s => (s.type === 'ibs' || s.id.startsWith('ibs-')) && !s.children);
+    if (ibsItems.length > 0) {
+       const folder = {
+         id: 'ibs-folder',
+         name: 'Paper 6: IBS (MCS)',
+         source: 'Multidisciplinary Case Study',
+         type: 'folder',
+         children: ibsItems
+       };
+       DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => !(s.type === 'ibs' || s.id.startsWith('ibs-') && !s.children));
+       DYNAMIC_DATA.syllabusSubjects.push(folder);
+       saveDynamicData();
+    }
   }
+}
 }
 
 function saveDynamicData() {
@@ -968,44 +985,17 @@ function deletePlannerTask(dayKey, taskIndex) {
 }
 
 function openAddTaskModal() {
-  const subjects = (DYNAMIC_DATA.syllabusSubjects || []).map(s => ({ value: s.id, label: s.name }));
+  const flattenSubjects = (list) => {
+    let res = [];
+    (list || []).forEach(s => {
+      if (s.type === 'folder' && s.children) res = res.concat(s.children);
+      else res.push(s);
+    });
+    return res;
+  };
+  const subjects = flattenSubjects(DYNAMIC_DATA.syllabusSubjects).map(s => ({ value: s.id, label: s.name }));
   
-  openModal('<span class="material-symbols-rounded icon-sm">add</span> Add Task', `
-    <div class="form-group">
-      <label>Category</label>
-      <select id="task-category">
-        <option value="primary">Primary Subject</option>
-        <option value="secondary">Secondary Subject</option>
-        <option value="quick">Quick Task</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Subject</label>
-      <select id="task-subject" onchange="onTaskSubjectChange()">
-        <option value="">— Select —</option>
-        ${subjects.map(s => `<option value="${s.value}">${s.label}</option>`).join('')}
-      </select>
-    </div>
-    <div class="form-group" id="task-chapter-group" style="display: none;">
-      <label>Chapter (Optional)</label>
-      <select id="task-chapter" onchange="onTaskChapterChange()">
-      </select>
-    </div>
-    <div class="form-group" id="task-activity-group" style="display: none;">
-      <label>Activity (Optional)</label>
-      <select id="task-activity" onchange="onTaskChapterChange()">
-        <option value="">— Select —</option>
-        <option value="conceptBook">Book (Concepts)</option>
-        <option value="questionBank">Question Bank</option>
-        <option value="revisionVideo">Revision Video</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Task Description</label>
-      <input type="text" id="task-name" placeholder="e.g. Complete pending questions">
-    </div>
-    <button class="btn-primary" onclick="addPlannerTask()">Add Task <span class="material-symbols-rounded icon-sm">check_circle</span></button>
-  `);
+  openModal('<span class="material-symbols-rounded icon-sm">add</span> Add Task', '<div class="form-group"><label>Date</label><input type="date" id="task-date" value="' + dateKey(state.plannerDate) + '"></div><div class="form-group"><label>Category</label><select id="task-category"><option value="study">Study Session</option><option value="revision">Revision</option><option value="mock">Mock Test</option><option value="personal">Personal / Break</option></select></div><div class="form-group"><label>Subject (Optional)</label><select id="task-subject" onchange="onTaskSubjectChange()"><option value="">— Select —</option>' + subjects.map(s => '<option value="' + s.value + '">' + s.label + '</option>').join('') + '</select></div><div class="form-group" id="task-chapter-group" style="display:none;"><label>Chapter (Optional)</label><select id="task-chapter" onchange="onTaskChapterChange()"><option value="">— Select —</option></select></div><div class="form-group" id="task-activity-group" style="display:none;"><label>Activity (Optional)</label><select id="task-activity" onchange="onTaskChapterChange()"><option value="">— Select —</option><option value="conceptBook">Book (Concepts)</option><option value="questionBank">Question Bank</option><option value="revisionVideo">Revision Video</option></select></div><div class="form-group"><label>Task Description</label><input type="text" id="task-name" placeholder="e.g. Complete pending questions"></div><button class="btn-primary" onclick="addPlannerTask()">Add Task <span class="material-symbols-rounded icon-sm">check_circle</span></button>');
 }
 
 function onTaskSubjectChange() {
@@ -1021,28 +1011,27 @@ function onTaskSubjectChange() {
   }
   
   let chapters = [];
-  let isMain = false;
+  const flattenSubjects = (list) => {
+    let res = [];
+    (list || []).forEach(s => {
+      if (s.type === 'folder' && s.children) res = res.concat(s.children);
+      else res.push(s);
+    });
+    return res;
+  };
+  const flatSubjects = flattenSubjects(DYNAMIC_DATA.syllabusSubjects);
+  const subjectObj = flatSubjects.find(s => s.id === subj);
   
-  if (subj === 'DT' || subj === 'IBS-DT') { chapters = DYNAMIC_DATA.dtChapters; isMain = (subj === 'DT'); }
-  else if (subj === 'IDT' || subj === 'IBS-IDT') { chapters = DYNAMIC_DATA.idtChapters; isMain = (subj === 'IDT'); }
-  else if (subj.startsWith('IBS-')) {
-    const key = subj.replace('IBS-', '').toLowerCase();
-    if (DYNAMIC_DATA.ibsSubjects[key]) {
-      chapters = DYNAMIC_DATA.ibsSubjects[key].chapters;
-    }
+  if (subjectObj && subjectObj.chapters) {
+    chapters = subjectObj.chapters;
   }
   
   if (chapters.length > 0) {
     chapterGroup.style.display = 'block';
     chapterSelect.innerHTML = '<option value="">— Select Chapter —</option>' + 
-      chapters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      chapters.map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('');
       
-    if (isMain) {
-      activityGroup.style.display = 'block';
-    } else {
-      activityGroup.style.display = 'none';
-      document.getElementById('task-activity').value = '';
-    }
+    activityGroup.style.display = 'block';
   } else {
     chapterGroup.style.display = 'none';
     activityGroup.style.display = 'none';
@@ -1131,7 +1120,6 @@ function showSubjectsList() {
   state.syllabusView = 'list';
   document.getElementById('syllabus-detail').style.display = 'none';
   
-  // Overall progress
   const pct = calculateOverallProgress();
   document.getElementById('overall-pct').textContent = pct + '%';
   document.getElementById('overall-bar').style.width = pct + '%';
@@ -1142,39 +1130,58 @@ function showSubjectsList() {
   
   const subjects = DYNAMIC_DATA.syllabusSubjects || [];
   
-  container.innerHTML = subjects.map((subj, idx) => {
-    const pct = calculateSubjectProgress(subj.id, subj.type);
-    return `
-      <div class="subject-card glass-card draggable-item" >
-        <span class="drag-handle material-symbols-rounded">drag_handle</span>
-        <div class="subj-info" onclick="openSubjectDetail('${subj.id}', '${subj.type}')" style="cursor:pointer; flex: 1">
-          ${!isEditMode ? `
-            <div class="subj-name"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle; margin-right:4px;">menu_book</span> ${subj.name}</div>
-            <div class="subj-source">${subj.source}</div>
-          ` : `
-            <div class="subj-name">
-              <input type="text" class="inline-input" value="${subj.name.replace(/"/g, '&quot;')}" onclick="event.stopPropagation()" onchange="updateSyllabusSubject(${idx}, this.value)">
-            </div>
-            <div class="subj-source">${subj.source}</div>
-          `}
-        </div>
-        ${!isEditMode ? `
-        <div class="subj-progress">
-          <span class="subj-pct">${pct}%</span>
-          <div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%"></div></div>
-        </div>
-        <span class="subj-arrow">▶</span>
-        ` : `
-        <div class="edit-mode-controls">
-          <button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusSubject(${idx})"><span class="material-symbols-rounded icon-sm">delete</span></button>
-        </div>
-        `}
-      </div>
-    `;
-  }).join('');
+  window.renderSubjectCard = function(subj, idx, parentIdx = null) {
+    const p = calculateSubjectProgress(subj.id, subj.type);
+    const isNested = parentIdx !== null;
+    
+    if (subj.type === 'folder') {
+      return '<div class="subject-folder" data-idx="' + idx + '" style="margin-bottom:12px;">' +
+        '<div class="subject-card glass-card folder-header" onclick="toggleFolder(\'' + subj.id + '\')" style="cursor:pointer; display:flex; align-items:center;">' +
+          '<span class="drag-handle material-symbols-rounded">drag_handle</span>' +
+          '<div class="subj-info" style="flex: 1">' +
+            (!isEditMode ? 
+              '<div class="subj-name" style="font-weight:700; color:var(--primary-color)"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle; margin-right:4px;">folder</span> ' + subj.name + '</div>' +
+              '<div class="subj-source">' + (subj.source || '') + '</div>'
+            : 
+              '<div class="subj-name"><input type="text" class="inline-input" value="' + subj.name.replace(/"/g, '&quot;') + '" onclick="event.stopPropagation()" onchange="updateSyllabusSubject(' + idx + ', this.value, null)"></div>'
+            ) +
+          '</div>' +
+          (!isEditMode ? 
+            '<div class="subj-progress"><span class="subj-pct">' + p + '%</span><div class="stat-bar"><div class="stat-bar-fill" style="width:' + p + '%"></div></div></div>' +
+            '<span class="subj-arrow material-symbols-rounded" id="arrow-' + subj.id + '" style="margin-left:8px; font-size:20px;">expand_more</span>'
+          : 
+            '<div class="edit-mode-controls"><button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusSubject(' + idx + ', null)"><span class="material-symbols-rounded icon-sm">delete</span></button></div>'
+          ) +
+        '</div>' +
+        '<div class="folder-content" id="folder-' + subj.id + '" style="display: none; padding-left: 20px; border-left: 2px solid var(--border-color); margin-left: 10px; margin-top: 8px;">' +
+          subj.children.map((child, cIdx) => renderSubjectCard(child, cIdx, idx)).join('') +
+        '</div>' +
+      '</div>';
+    }
+    
+    return '<div class="subject-card glass-card ' + (!isNested ? 'draggable-item' : '') + '" style="' + (isNested ? 'margin-bottom:8px;' : '') + '" >' +
+      (!isNested ? '<span class="drag-handle material-symbols-rounded">drag_handle</span>' : '') +
+      '<div class="subj-info" onclick="openSubjectDetail(\'' + subj.id + '\', \'' + subj.type + '\')" style="cursor:pointer; flex: 1">' +
+        (!isEditMode ? 
+          '<div class="subj-name"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle; margin-right:4px;">menu_book</span> ' + subj.name + '</div>' +
+          '<div class="subj-source">' + (subj.source || '') + '</div>'
+        : 
+          '<div class="subj-name"><input type="text" class="inline-input" value="' + subj.name.replace(/"/g, '&quot;') + '" onclick="event.stopPropagation()" onchange="updateSyllabusSubject(' + (isNested ? parentIdx : idx) + ', this.value, ' + (isNested ? idx : 'null') + ')"></div>'
+        ) +
+      '</div>' +
+      (!isEditMode ? 
+      '<div class="subj-progress"><span class="subj-pct">' + p + '%</span><div class="stat-bar"><div class="stat-bar-fill" style="width:' + p + '%"></div></div></div>' +
+      '<span class="subj-arrow">▶</span>'
+      : 
+      '<div class="edit-mode-controls"><button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusSubject(' + (isNested ? parentIdx : idx) + ', ' + (isNested ? idx : 'null') + ')"><span class="material-symbols-rounded icon-sm">delete</span></button></div>'
+      ) +
+    '</div>';
+  };
+  
+  container.innerHTML = subjects.map((subj, idx) => renderSubjectCard(subj, idx, null)).join('');
   
   if (isEditMode) {
-    container.innerHTML += `<button class="add-item-btn" onclick="addSyllabusSubject()">+ Add Subject</button>`;
+    container.innerHTML += '<button class="add-item-btn" onclick="addSyllabusSubject()">+ Add Subject</button>';
   }
 }
 
@@ -1302,8 +1309,33 @@ function toggleIbsCheck(chapterId) {
 // ─── Progress Calculation ───────────────
 function calculateSubjectProgress(key, type) {
   const progress = getSyllabusProgress();
-  const subj = DYNAMIC_DATA.syllabusSubjects?.find(s => s.id === key);
-  if (!subj || !subj.chapters) return 0;
+  const subjects = DYNAMIC_DATA.syllabusSubjects || [];
+  
+  let subj = null;
+  const findSubj = (list) => {
+    for (let s of list) {
+      if (s.id === key) return s;
+      if (s.type === 'folder' && s.children) {
+        const sub = findSubj(s.children);
+        if (sub) return sub;
+      }
+    }
+    return null;
+  };
+  subj = findSubj(subjects);
+  
+  if (!subj) return 0;
+  
+  if (subj.type === 'folder') {
+    if (!subj.children || subj.children.length === 0) return 0;
+    let total = 0;
+    subj.children.forEach(child => {
+      total += calculateSubjectProgress(child.id, child.type);
+    });
+    return Math.round(total / subj.children.length);
+  }
+  
+  if (!subj.chapters) return 0;
   
   const chapters = subj.chapters;
   let total = 0, done = 0;
@@ -1450,18 +1482,25 @@ function setTheme(themeName, element) {
 function reorderSyllabusSubject(from, to) {
   reorderArray(DYNAMIC_DATA.syllabusSubjects, from, to);
 }
-function updateSyllabusSubject(idx, newName) {
-  if (!newName) return;
-  DYNAMIC_DATA.syllabusSubjects[idx].name = newName;
+window.updateSyllabusSubject = function(parentIdx, newName, childIdx) {
+  if (childIdx !== null && childIdx !== undefined) {
+    DYNAMIC_DATA.syllabusSubjects[parentIdx].children[childIdx].name = newName;
+  } else {
+    DYNAMIC_DATA.syllabusSubjects[parentIdx].name = newName;
+  }
   saveDynamicData();
-}
-function deleteSyllabusSubject(idx) {
-  confirmDelete(DYNAMIC_DATA.syllabusSubjects[idx].name, () => {
-    DYNAMIC_DATA.syllabusSubjects.splice(idx, 1);
+};
+window.deleteSyllabusSubject = function(parentIdx, childIdx) {
+  confirmDelete('this subject', () => {
+    if (childIdx !== null && childIdx !== undefined) {
+      DYNAMIC_DATA.syllabusSubjects[parentIdx].children.splice(childIdx, 1);
+    } else {
+      DYNAMIC_DATA.syllabusSubjects.splice(parentIdx, 1);
+    }
     saveDynamicData();
-    renderSyllabus();
+    showSubjectsList();
   });
-}
+};
 function addSyllabusSubject() {
   openFormModal('Add New Subject', [
     { label: 'Subject Name', type: 'text', placeholder: 'e.g., Paper 6: IBS' }
@@ -1771,5 +1810,18 @@ window.moveSubjectDown = function(idx) {
     DYNAMIC_DATA.syllabusSubjects[idx + 1] = temp;
     saveDynamicData();
     renderSyllabus();
+  }
+};
+
+window.toggleFolder = function(id) {
+  if (isEditMode) return;
+  const el = document.getElementById('folder-' + id);
+  const arrow = document.getElementById('arrow-' + id);
+  if (el.style.display === 'none') {
+    el.style.display = 'block';
+    arrow.textContent = 'expand_less';
+  } else {
+    el.style.display = 'none';
+    arrow.textContent = 'expand_more';
   }
 };
