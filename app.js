@@ -337,8 +337,11 @@ function switchTab(tabName) {
   document.querySelector(`.nav-item[data-tab="${tabName}"]`).classList.add('active');
   
   // Refresh content
-  if (tabName === 'dashboard') const gs = document.getElementById('group-selector'); if(gs) gs.value = state.activeGroup;
-  renderDashboard();
+  if (tabName === 'dashboard') {
+    const gs = document.getElementById('group-selector');
+    if(gs) gs.value = state.activeGroup;
+    renderDashboard();
+  }
   if (tabName === 'exams') renderExams();
   if (tabName === 'schedule') renderSchedule();
   if (tabName === 'planner') renderPlanner();
