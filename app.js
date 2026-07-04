@@ -4,7 +4,7 @@
 
 // ─── State ──────────────────────────────
 let state = {
-  activeGroup: localStorage.getItem('ca_app_prefs_group') || 'group2',
+  activeGroup: localStorage.getItem('ca_app_prefs_group') || 'group1',
   activeTab: 'dashboard',
   activeSchedule: 'earlyMorning',
   plannerDate: new Date(),
