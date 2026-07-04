@@ -340,6 +340,8 @@ function switchTab(tabName) {
   if (tabName === 'dashboard') {
     const gs = document.getElementById('group-selector');
     if(gs) gs.value = state.activeGroup;
+    const gt = document.getElementById('group-title');
+    if(gt) gt.textContent = state.activeGroup === 'group1' ? 'CA Final Group 1' : 'CA Final Group 2';
     renderDashboard();
   }
   if (tabName === 'exams') renderExams();
