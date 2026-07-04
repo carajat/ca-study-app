@@ -42,7 +42,7 @@ function loadDynamicData() {
     }
   }
   
-  // Validate that critical fields exist (to recover from past corrupted states)
+  // Validate that critical fields exist
   if (!parsedData || !parsedData.exam || !parsedData.schedules) {
     console.warn("Corrupted or outdated dynamic data found. Resetting to APP_DATA.");
     
@@ -51,13 +51,11 @@ function loadDynamicData() {
       DYNAMIC_DATA = JSON.parse(JSON.stringify(APP_DATA[state.activeGroup]));
     } catch(e) {
       console.error(e);
-      // Fallback if data.js is somehow old
       DYNAMIC_DATA = JSON.parse(JSON.stringify(APP_DATA.group2 || APP_DATA));
     }
   
   } else {
     DYNAMIC_DATA = parsedData;
-    // Fallback: Ensure all top-level keys from APP_DATA exist in DYNAMIC_DATA
     for (let key in APP_DATA[state.activeGroup]) {
       if (!(key in DYNAMIC_DATA)) {
         DYNAMIC_DATA[key] = JSON.parse(JSON.stringify(APP_DATA[state.activeGroup][key]));
@@ -65,29 +63,20 @@ function loadDynamicData() {
     }
   }
   
-  // Migrate mocks from Object to Array of Series
   if (DYNAMIC_DATA.mocks && !Array.isArray(DYNAMIC_DATA.mocks)) {
     const newMocks = [];
     Object.keys(DYNAMIC_DATA.mocks).forEach((key, idx) => {
-      newMocks.push({
-        id: key,
-        name: `Series ${idx + 1}`,
-        tests: DYNAMIC_DATA.mocks[key]
-      });
+      newMocks.push({ id: key, name: 'Series ' + (idx + 1), tests: DYNAMIC_DATA.mocks[key] });
     });
     DYNAMIC_DATA.mocks = newMocks;
     saveDynamicData();
   }
   
-  
-  // --- SANITIZE BROKEN HTML IN LOCALSTORAGE ---
   if (DYNAMIC_DATA.syllabusSubjects) {
     let changed = false;
     DYNAMIC_DATA.syllabusSubjects.forEach(s => {
       if (s.name && (s.name.includes('<') || s.name.includes('menu_book') || s.name.includes('auto_stories') || s.name.includes('class='))) {
-        // Strip everything that looks like an HTML tag
         s.name = s.name.replace(/<[^>]*>?/gm, '');
-        // Clean up leaked attributes
         s.name = s.name.replace(/onclick="[^"]*"/g, '');
         s.name = s.name.replace(/onchange="[^"]*"/g, '');
         s.name = s.name.replace(/class="[^"]*"/g, '');
@@ -95,8 +84,6 @@ function loadDynamicData() {
         s.name = s.name.replace(/auto_stories /g, '');
         s.name = s.name.replace(/"/g, '');
         s.name = s.name.trim();
-        
-        // Final fallback if name became empty
         if (!s.name || s.name === '') {
           if (s.id === 'dt') s.name = 'Paper 4: DT & International Tax';
           else if (s.id === 'idt') s.name = 'Paper 5: IDT (GST + Customs)';
@@ -110,7 +97,6 @@ function loadDynamicData() {
     }
   }
 
-  // Migrate to unified syllabusSubjects if not present
   if (!DYNAMIC_DATA.syllabusSubjects) {
     DYNAMIC_DATA.syllabusSubjects = [
       { id: 'dt', name: 'Paper 4: DT & International Tax', source: 'CA Aarish Khan', type: 'main', chapters: DYNAMIC_DATA.dtChapters || APP_DATA.dtChapters },
@@ -122,8 +108,8 @@ function loadDynamicData() {
       { id: 'ibs-scpm', name: 'IBS — SC&PM (SPOM B)', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.scpm) ? DYNAMIC_DATA.ibsSubjects.scpm.chapters : APP_DATA.ibsSubjects.scpm.chapters }
     ];
     saveDynamicData();
+  }
   
-  // Migrate flat IBS subjects to Folder structure
   if (DYNAMIC_DATA.syllabusSubjects) {
     const ibsItems = DYNAMIC_DATA.syllabusSubjects.filter(s => (s.type === 'ibs' || s.id.startsWith('ibs-')) && !s.children);
     if (ibsItems.length > 0) {
@@ -139,7 +125,6 @@ function loadDynamicData() {
        saveDynamicData();
     }
   }
-}
 }
 
 function saveDynamicData() {
