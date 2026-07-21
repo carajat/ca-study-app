@@ -1485,7 +1485,14 @@ function openMenuModal() {
 
 function openThemeModal() {
   const currentTheme = localStorage.getItem('ca-theme') || 'default';
+  const mode = document.body.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  const modeIcon = mode === 'light' ? 'dark_mode' : 'light_mode';
+  const modeText = mode === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode';
+  
   openModal('Select Theme', `
+    <button class="menu-btn" style="margin-bottom: 20px; text-align: center; justify-content: center; background: rgba(10,132,255,0.1); color: var(--primary);" onclick="toggleTheme(); openThemeModal();">
+      <span class="material-symbols-rounded menu-btn-icon" style="margin-right: 8px;">${modeIcon}</span> ${modeText}
+    </button>
     <p style="text-align:center; color:var(--text-secondary); margin-bottom: 20px;">Personalize your app colors</p>
     <div class="theme-picker">
       <div class="theme-circle tc-default ${currentTheme === 'default' ? 'active' : ''}" onclick="setTheme('default', this)"></div>
