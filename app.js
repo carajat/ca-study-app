@@ -1982,7 +1982,6 @@ function loadJournal(dateStr) {
   calculateJournalStats();
 }
 
-
 function switchJournalTab(tab) {
   document.getElementById('j-tab-editor').classList.remove('active');
   document.getElementById('j-tab-history').classList.remove('active');
@@ -2008,6 +2007,29 @@ function loadJournalHistory() {
     return;
   }
   
+  // Sort by date descending
+  const dates = Object.keys(DYNAMIC_DATA.journalEntries).sort((a,b) => new Date(b) - new Date(a));
+  
+  dates.forEach(d => {
+    const entry = DYNAMIC_DATA.journalEntries[d];
+    let totalDur = 0;
+    if(entry.rows) {
+      entry.rows.forEach(r => {
+        if(r.duration !== undefined) {
+          totalDur += parseFloat(r.duration || 0);
+        } else {
+          let hh = parseInt(r.durHH) || 0;
+          let mm = parseInt(r.durMM) || 0;
+          totalDur += (hh + mm/60);
+        }
+      });
+    }
+    totalDur = totalDur.toFixed(2);
+    
+    const card = document.createElement('div');
+    card.className = 'history-card';
+    card.onclick = () => {
+      document.getElementById('journal-date-picker').value = d;
       loadJournal(d);
       switchJournalTab('editor');
     };
@@ -2025,7 +2047,6 @@ function loadJournalHistory() {
     container.appendChild(card);
   });
 }
-
 
 window.updateSubjectTopics = function(sel) {
   const tr = sel.closest('tr');
