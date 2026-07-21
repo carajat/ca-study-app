@@ -1466,9 +1466,7 @@ if ('serviceWorker' in navigator) {
 function openMenuModal() {
   openModal('☰ Settings & Tools', `
     
-    <button class="menu-btn" onclick="openAppNavigator()" style="background: rgba(10,132,255,0.1); color: var(--primary);">
-      <span class="material-symbols-rounded menu-btn-icon">explore</span> App Navigator
-    </button>
+    
     <button class="menu-btn" onclick="toggleEditMode(); closeModal()">
       <span class="menu-btn-icon">${isEditMode ? '<span class="material-symbols-rounded icon-sm">check_circle</span>' : '<span class="material-symbols-rounded icon-sm">edit</span>'}</span> Edit Mode: <strong style="color: ${isEditMode ? 'var(--color-primary)' : 'inherit'}">${isEditMode ? 'ON' : 'OFF'}</strong>
     </button>
@@ -2466,7 +2464,7 @@ window.startTutorial = function() {
         onHighlightStarted: () => { switchTab('dashboard'); }
       },
       {
-        element: '.app-header .material-symbols-rounded:contains("menu")', // this will fallback gracefully if not precise
+        element: '#menuBtn',
         popover: {
           title: 'Settings & Tools',
           description: 'Access the Menu (top right) to change Theme colors, toggle Dark/Light Mode, enable Edit Mode, or Export/Import your data backups.',
