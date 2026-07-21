@@ -316,8 +316,8 @@ body {
 /* ─── Glass Card ─────────────────────── */
 .glass-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: var(--border-radius-md);
   padding: 16px;
   margin: 16px;
@@ -336,8 +336,8 @@ body {
   bottom: 0;
   width: 100%;
   background: var(--nav-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   justify-content: space-around;
   padding: 12px 8px 24px;
@@ -491,7 +491,7 @@ body {
   background: rgba(255,255,255,0.02);
   border-radius: 12px;
   cursor: pointer;
-  transition: all var(--transition);
+  transition: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform var(--transition);
 }
 .mock-item:active { background: rgba(108, 60, 225, 0.1); }
 .mock-item.scored { border-left: 3px solid var(--green); }
@@ -523,7 +523,7 @@ body {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition);
+  transition: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform var(--transition);
 }
 .toggle-btn.active {
   background: rgba(108, 60, 225, 0.15);
@@ -545,7 +545,7 @@ body {
 /* ─── Schedule Slots ─────────────────── */
 .schedule-slot {
   position: relative;
-  transition: all var(--transition);
+  transition: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform var(--transition);
 }
 .schedule-slot.slot-type-study { border-left: 3px solid var(--purple); }
 .schedule-slot.slot-type-break { border-left: 3px solid var(--green); }
@@ -609,7 +609,7 @@ body {
   border-radius: 50%;
   cursor: pointer;
   font-size: 14px;
-  transition: all var(--transition);
+  transition: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform var(--transition);
 }
 .cal-nav button:active { background: var(--purple); }
 #cal-month-label { font-size: 15px; font-weight: 700; }
@@ -632,7 +632,7 @@ body {
   color: var(--text-secondary);
   border-radius: 50%;
   cursor: pointer;
-  transition: all var(--transition);
+  transition: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform var(--transition);
 }
 .cal-day.empty { visibility: hidden; }
 .cal-day.today { border: 2px solid var(--purple); color: var(--purple); font-weight: 700; }
@@ -677,7 +677,7 @@ body {
   border-radius: 50%;
   cursor: pointer;
   font-size: 16px;
-  transition: all var(--transition);
+  transition: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform var(--transition);
 }
 .day-nav button:active { background: var(--purple); }
 #planner-day-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
@@ -701,7 +701,7 @@ body {
   border-radius: 12px;
   margin-bottom: 6px;
   cursor: pointer;
-  transition: all var(--transition);
+  transition: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform var(--transition);
 }
 .planner-task:active { background: var(--bg-card-hover); }
 .planner-task.task-done { opacity: 0.5; }
@@ -835,7 +835,7 @@ body {
   padding: 12px 8px;
   border-bottom: 1px solid rgba(255,255,255,0.04);
   cursor: pointer;
-  transition: all var(--transition);
+  transition: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform var(--transition);
 }
 .ss-row:active { background: rgba(108, 60, 225, 0.08); }
 .ss-row.done { opacity: 0.5; }
@@ -849,8 +849,8 @@ body {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: none;
   align-items: flex-end;
   justify-content: center;
@@ -918,7 +918,7 @@ body {
   font-weight: 600;
   z-index: 300;
   opacity: 0;
-  transition: all 0.4s ease;
+  transition: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform 0.4s ease;
   white-space: nowrap;
   box-shadow: 0 4px 20px var(--toast-shadow);
 }
@@ -948,7 +948,7 @@ body {
   border-radius: 12px;
   width: 100%;
   box-sizing: border-box;
-  transition: all var(--transition);
+  transition: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform var(--transition);
 }
 
 .inline-input:focus {
@@ -1121,7 +1121,7 @@ input[type="checkbox"] {
   display: inline-grid;
   place-content: center;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform 0.2s ease-in-out;
 }
 
 input[type="checkbox"]::before {
@@ -1164,7 +1164,7 @@ input[type="checkbox"]:checked::before {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0;
   margin-right: 4px;
 }
@@ -1310,7 +1310,7 @@ input[type="checkbox"]:checked::before {
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform 0.2s ease;
 }
 .st-btn:active {
   transform: scale(0.96);
@@ -1503,7 +1503,7 @@ input[type="checkbox"]:checked::before {
   padding: 10px 12px;
   border-radius: 8px;
   width: 100%;
-  transition: all 0.2s ease;
+  transition: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform 0.2s ease;
 }
 .elegant-input:focus, .elegant-select:focus {
   border-color: var(--primary); background: rgba(255,255,255,0.1); outline: none;
