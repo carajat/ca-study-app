@@ -2117,7 +2117,6 @@ function saveJournal() {
 }
 
 async function generateJournalReport() {
-
   const dateStr = document.getElementById('journal-date-picker').value;
   const opt = {
     margin:       0.5,
@@ -2151,22 +2150,34 @@ async function generateJournalReport() {
   const deleteBtns = element.querySelectorAll('.icon-btn');
   deleteBtns.forEach(b => b.remove());
   
+  // Inject explicit print styles so it ignores dark mode CSS variables
+  const printStyle = document.createElement('style');
+  printStyle.innerHTML = `
+    * { 
+      color: #000000 !important; 
+      background: transparent !important; 
+      box-shadow: none !important; 
+    }
+    .task-card { 
+      border: 1px solid #000000 !important; 
+      padding: 10px !important; 
+      margin-bottom: 10px !important; 
+    }
+    .journal-top-stats, .journal-footer-stats {
+      border: 1px solid #000000 !important; 
+    }
+    span { border-bottom: 1px dashed #ccc !important; min-width: 50px; }
+  `;
+  element.appendChild(printStyle);
+  
   element.style.background = '#ffffff';
-  element.style.color = '#000000';
   element.style.padding = '20px';
   
-  const headers = element.querySelectorAll('h2, h3, label, th, td, div');
-  headers.forEach(h => {
-    h.style.color = '#000000';
-    if(h.tagName === 'TH' || h.tagName === 'TD') {
-       h.style.border = '1px solid #000';
-    }
-  });
-
   const headerTitle = document.createElement('h2');
   headerTitle.innerText = `Daily Journal - ${dateStr}`;
   headerTitle.style.textAlign = 'center';
   headerTitle.style.marginBottom = '20px';
+  headerTitle.style.color = '#000000';
   element.insertBefore(headerTitle, element.firstChild);
 
   showToast('Generating PDF...');
