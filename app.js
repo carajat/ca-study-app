@@ -2008,20 +2008,6 @@ function loadJournalHistory() {
     return;
   }
   
-  // Sort by date descending
-  const dates = Object.keys(DYNAMIC_DATA.journalEntries).sort((a,b) => new Date(b) - new Date(a));
-  
-  dates.forEach(d => {
-    const entry = DYNAMIC_DATA.journalEntries[d];
-    let totalDur = 0;
-    if(entry.rows) {
-      entry.rows.forEach(r => totalDur += parseFloat(r.duration || 0));
-    }
-    
-    const card = document.createElement('div');
-    card.className = 'history-card';
-    card.onclick = () => {
-      document.getElementById('journal-date-picker').value = d;
       loadJournal(d);
       switchJournalTab('editor');
     };
@@ -2040,44 +2026,122 @@ function loadJournalHistory() {
   });
 }
 
+
+window.updateSubjectTopics = function(sel) {
+  const tr = sel.closest('tr');
+  const subjCustom = tr.querySelector('.j-subject-custom');
+  if(sel.value === 'Custom') {
+    subjCustom.style.display = 'block';
+  } else {
+    subjCustom.style.display = 'none';
+  }
+
+  const topicSel = tr.querySelector('.j-topic');
+  const subj = sel.value;
+  topicSel.innerHTML = '<option value="">Select Topic</option>';
+  
+  if (subj && subj !== 'Custom' && APP_DATA[currentGroup]) {
+    const sData = APP_DATA[currentGroup].subjects.find(s => s.name === subj);
+    if (sData && sData.chapters) {
+      sData.chapters.forEach(ch => {
+        const opt = document.createElement('option');
+        opt.value = ch.name;
+        opt.innerText = ch.name;
+        topicSel.appendChild(opt);
+      });
+    }
+  }
+  const customOpt = document.createElement('option');
+  customOpt.value = 'Custom';
+  customOpt.innerText = 'Custom...';
+  topicSel.appendChild(customOpt);
+  
+  window.checkCustomTopic(topicSel);
+  saveJournal();
+};
+
+window.checkCustomTopic = function(topicSel) {
+  const tr = topicSel.closest('tr');
+  let customInput = tr.querySelector('.j-topic-custom');
+  if(topicSel.value === 'Custom') {
+    customInput.style.display = 'block';
+  } else {
+    customInput.style.display = 'none';
+  }
+  saveJournal();
+};
+
 function addJournalRow(data = {}) {
   const tbody = document.getElementById('journal-tbody');
-  const div = document.createElement('div');
-  div.className = 'task-card';
-  div.innerHTML = `
-    <div class="task-row">
-      <input type="text" class="j-subject elegant-input" value="${data.subject || ''}" onchange="saveJournal()" placeholder="Subject">
-      <input type="text" class="j-topic elegant-input" value="${data.topic || ''}" onchange="saveJournal()" placeholder="Topic Covered">
-    </div>
-    <div class="task-row">
-      <input type="text" class="j-tasks elegant-input" value="${data.tasks || ''}" onchange="saveJournal()" placeholder="Tasks Done">
-    </div>
-    <div class="task-row">
-      <input type="number" class="j-duration elegant-input" value="${data.duration || ''}" onchange="saveJournal()" step="0.5" placeholder="Duration (Hrs)">
+  const tr = document.createElement('tr');
+  
+  let subjOptions = '<option value="">Select Subject</option>';
+  if(APP_DATA[currentGroup]) {
+    APP_DATA[currentGroup].subjects.forEach(s => {
+      subjOptions += `<option value="${s.name}" ${data.subject === s.name ? 'selected' : ''}>${s.name}</option>`;
+    });
+  }
+  subjOptions += `<option value="Custom" ${data.subject === 'Custom' ? 'selected' : ''}>Custom...</option>`;
+
+  tr.innerHTML = `
+    <td>
+      <select class="j-subject elegant-select" onchange="window.updateSubjectTopics(this)">
+        ${subjOptions}
+      </select>
+      <input type="text" class="j-subject-custom elegant-input" placeholder="Custom subject" style="display:${data.subject === 'Custom' ? 'block' : 'none'}; margin-top:4px;" value="${data.subjectCustom || ''}" onchange="saveJournal()">
+    </td>
+    <td>
+      <select class="j-topic elegant-select" onchange="window.checkCustomTopic(this)">
+        <option value="${data.topic || ''}">${data.topic || 'Select Topic'}</option>
+      </select>
+      <input type="text" class="j-topic-custom elegant-input" placeholder="Custom topic" style="display:${data.topic === 'Custom' ? 'block' : 'none'}; margin-top:4px;" value="${data.topicCustom || ''}" onchange="saveJournal()">
+    </td>
+    <td><input type="text" class="j-tasks elegant-input" value="${data.tasks || ''}" onchange="saveJournal()" placeholder="Tasks"></td>
+    <td>
+      <div style="display:flex; gap:4px; align-items:center;">
+        <input type="number" class="j-duration-hh elegant-input" value="${data.durHH || ''}" onchange="saveJournal()" min="0" placeholder="HH" style="width:45px; padding:6px; text-align:center;">
+        <span style="font-weight:bold;">:</span>
+        <input type="number" class="j-duration-mm elegant-input" value="${data.durMM || ''}" onchange="saveJournal()" min="0" max="59" placeholder="MM" style="width:45px; padding:6px; text-align:center;">
+      </div>
+    </td>
+    <td>
       <select class="j-status elegant-select" onchange="saveJournal()">
         <option value="Done" ${data.status==='Done'?'selected':''}>Done</option>
         <option value="Pending" ${data.status==='Pending'?'selected':''}>Pending</option>
         <option value="Skipped" ${data.status==='Skipped'?'selected':''}>Skipped</option>
       </select>
-    </div>
-    <div class="task-row">
-      <input type="text" class="j-remarks elegant-input" value="${data.remarks || ''}" onchange="saveJournal()" placeholder="Remarks">
-      <button class="icon-btn" style="color:var(--danger); padding:10px;" onclick="removeJournalRow(this)"><span class="material-symbols-rounded">delete</span></button>
-    </div>
+    </td>
+    <td><button class="icon-btn" style="color:var(--danger);" onclick="removeJournalRow(this)"><span class="material-symbols-rounded">delete</span></button></td>
   `;
-  tbody.appendChild(div);
+  tbody.appendChild(tr);
+  
+  // Trigger population of topic dropdown if subject is already set
+  const subjSel = tr.querySelector('.j-subject');
+  if(data.subject && data.subject !== 'Custom') {
+    window.updateSubjectTopics(subjSel);
+    const topicSel = tr.querySelector('.j-topic');
+    topicSel.value = data.topic || '';
+    window.checkCustomTopic(topicSel);
+  }
+  
   calculateJournalStats();
 }
 
 function removeJournalRow(btn) {
-  btn.closest('.task-card').remove();
+  btn.closest('tr').remove();
   saveJournal();
 }
 
 function calculateJournalStats() {
-  const durations = Array.from(document.querySelectorAll('.j-duration')).map(inp => parseFloat(inp.value) || 0);
-  const totalStudy = durations.reduce((a, b) => a + b, 0);
-  document.getElementById('j-total-time').innerText = totalStudy + 'h';
+  let totalMinutes = 0;
+  Array.from(document.querySelectorAll('#journal-tbody tr')).forEach(tr => {
+    const hh = parseInt(tr.querySelector('.j-duration-hh').value) || 0;
+    const mm = parseInt(tr.querySelector('.j-duration-mm').value) || 0;
+    totalMinutes += (hh * 60) + mm;
+  });
+  
+  const totalStudy = totalMinutes / 60;
+  document.getElementById('j-total-time').innerText = totalStudy.toFixed(2) + 'h';
 
   const sleep = parseFloat(document.getElementById('j-sleep').value) || 0;
   const breaks = parseFloat(document.getElementById('j-breaks').value) || 0;
@@ -2093,14 +2157,16 @@ function saveJournal() {
 
   if (!DYNAMIC_DATA.journalEntries) DYNAMIC_DATA.journalEntries = {};
   
-  const rows = Array.from(document.querySelectorAll('#journal-tbody .task-card')).map(card => {
+  const rows = Array.from(document.querySelectorAll('#journal-tbody tr')).map(tr => {
     return {
-      subject: card.querySelector('.j-subject').value,
-      topic: card.querySelector('.j-topic').value,
-      tasks: card.querySelector('.j-tasks').value,
-      duration: card.querySelector('.j-duration').value,
-      status: card.querySelector('.j-status').value,
-      remarks: card.querySelector('.j-remarks').value
+      subject: tr.querySelector('.j-subject').value,
+      subjectCustom: tr.querySelector('.j-subject-custom').value,
+      topic: tr.querySelector('.j-topic').value,
+      topicCustom: tr.querySelector('.j-topic-custom').value,
+      tasks: tr.querySelector('.j-tasks').value,
+      durHH: tr.querySelector('.j-duration-hh').value,
+      durMM: tr.querySelector('.j-duration-mm').value,
+      status: tr.querySelector('.j-status').value
     };
   });
 
