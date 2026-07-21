@@ -23,6 +23,53 @@
   <!-- ═══════════ TOAST NOTIFICATION ═══════════ -->
   <div id="toast" class="toast"></div>
 
+  <!-- ═══════════ DAILY JOURNAL MODAL ═══════════ -->
+  <div id="journal-modal" class="fullscreen-modal" style="display:none;">
+    <div class="journal-header">
+      <button class="icon-btn" onclick="closeJournal()"><span class="material-symbols-rounded">close</span></button>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button class="icon-btn" onclick="changeJournalDate(-1)"><span class="material-symbols-rounded">chevron_left</span></button>
+        <input type="date" id="journal-date-picker" class="journal-date-picker" onchange="loadJournal(this.value)">
+        <button class="icon-btn" onclick="changeJournalDate(1)"><span class="material-symbols-rounded">chevron_right</span></button>
+      </div>
+      <button class="icon-btn" onclick="generateJournalReport()"><span class="material-symbols-rounded">picture_as_pdf</span></button>
+    </div>
+    <div class="journal-content" id="journal-content-area">
+      <div class="journal-top-stats">
+        <div class="j-stat"><label>Sleep Hours</label><input type="number" id="j-sleep" step="0.5" onchange="saveJournal()"></div>
+        <div class="j-stat"><label>Days Left</label><div id="j-days-left" class="j-val">--</div></div>
+        <div class="j-stat"><label>Hours Left</label><div id="j-hours-left" class="j-val">--</div></div>
+      </div>
+      
+      <div class="journal-table-wrapper">
+        <table class="journal-table">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Topic Covered</th>
+              <th>Tasks Done</th>
+              <th>Duration</th>
+              <th>Status</th>
+              <th>Remarks</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="journal-tbody">
+          </tbody>
+        </table>
+        <button class="btn-secondary" style="margin-top:10px; width:100%" onclick="addJournalRow()">+ Add Row</button>
+      </div>
+
+      <div class="journal-footer-stats">
+        <div class="j-stat"><label>Total Study Time</label><div id="j-total-time" class="j-val">0h</div></div>
+        <div class="j-stat"><label>Breaks (hrs)</label><input type="number" id="j-breaks" step="0.5" onchange="saveJournal()"></div>
+        <div class="j-stat"><label>Wasted (hrs)</label><input type="number" id="j-wasted" step="0.5" onchange="saveJournal()"></div>
+        <div class="j-stat"><label>Overall Feeling</label><input type="text" id="j-feeling" placeholder="Good, Tired..." onchange="saveJournal()"></div>
+      </div>
+    </div>
+  </div>
+
+
   <!-- ═══════════ MODAL OVERLAY ═══════════ -->
   <div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
     <div class="modal-content" onclick="event.stopPropagation()">
@@ -99,6 +146,10 @@
           <div class="stat-label" id="dash-next-mock-label">Next Mock</div>
         </div>
       </div>
+
+      <button class="btn-primary" style="width:100%; margin-bottom:16px; display:flex; justify-content:center; gap:8px;" onclick="openJournal()">
+        <span class="material-symbols-rounded">menu_book</span> Open Daily Journal
+      </button>
 
       <!-- Current Activity -->
       <div class="current-activity glass-card" onclick="switchTab('schedule')">
@@ -232,6 +283,7 @@
       <!-- Add Task Button -->
       <div class="planner-actions">
         <button class="btn-primary" onclick="openAddTaskModal()">+ Add Task</button>
+        <button class="btn-primary" style="background:var(--accent-color)" onclick="openJournal()"><span class="material-symbols-rounded icon-sm">menu_book</span> Daily Journal</button>
         <button class="btn-secondary" onclick="copyToTomorrow()"><span class="material-symbols-rounded icon-sm">content_copy</span> Copy to Tomorrow</button>
       </div>
     </section>
@@ -293,7 +345,8 @@
   <div id="print-section"></div>
 
   <script src="Sortable.min.js"></script>
-  <script src="data.js?v=84"></script>
-  <script src="app.js?v=84"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="data.js?v=85"></script>
+  <script src="app.js?v=85"></script>
 </body>
 </html>
