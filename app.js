@@ -2063,7 +2063,8 @@ window.updateSubjectTopics = function(sel) {
   topicSel.innerHTML = '<option value="">Select Topic</option>';
   
   if (subj && subj !== 'Custom' && APP_DATA[currentGroup]) {
-    const sData = APP_DATA[currentGroup].syllabusSubjects.find(s => s.name === subj);
+    let subjectsArray = APP_DATA[currentGroup].syllabusSubjects || Object.values(APP_DATA[currentGroup].syllabus || {});
+    const sData = subjectsArray.find(s => s.name === subj);
     if (sData && sData.chapters) {
       sData.chapters.forEach(ch => {
         const opt = document.createElement('option');
@@ -2099,7 +2100,8 @@ function addJournalRow(data = {}) {
   
   let subjOptions = '<option value="">Select Subject</option>';
   if(APP_DATA[currentGroup]) {
-    APP_DATA[currentGroup].syllabusSubjects.forEach(s => {
+    let subjectsArray = APP_DATA[currentGroup].syllabusSubjects || Object.values(APP_DATA[currentGroup].syllabus || {});
+    subjectsArray.forEach(s => {
       subjOptions += `<option value="${s.name}" ${data.subject === s.name ? 'selected' : ''}>${s.name}</option>`;
     });
   }
