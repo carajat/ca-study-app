@@ -274,8 +274,8 @@ body.theme-rose {
 .tc-rose { background: #F43F5E; }
 
 .theme-btn {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: rgba(10, 132, 255, 0.1);
+  border: 1px solid rgba(10, 132, 255, 0.2);
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -285,7 +285,11 @@ body.theme-rose {
   font-size: 20px;
   cursor: pointer;
   transition: var(--transition);
-  color: var(--text-primary);
+  color: var(--primary);
+}
+.theme-btn:hover {
+  background: rgba(10, 132, 255, 0.2);
+  transform: scale(1.05);
 }
 .theme-btn svg {
   pointer-events: none;
