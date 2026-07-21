@@ -2342,7 +2342,7 @@ window.deleteTodaysLog = function(idx) {
 window.openManualLogModal = function() {
   const body = document.getElementById('modal-body');
   document.getElementById('modal-title').textContent = 'Add Manual Log';
-  document.getElementById('modal-title').innerHTML = 'Add Manual Log <button class="icon-btn" style="font-size: 11px; padding: 2px 6px; border-radius: 6px; background: rgba(10,132,255,0.1); color: var(--primary); margin-left: 10px; vertical-align: middle;" onclick="openPlannerPickerModal(\'manual\')"><span class="material-symbols-rounded" style="font-size:14px; margin-right:4px; vertical-align:middle;">assignment</span>Planner Task</button>';
+  document.getElementById('modal-title').innerHTML = 'Add Manual Log <button class="icon-btn" style="background: rgba(10,132,255,0.1); color: var(--primary); width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 10px; vertical-align: middle;" title="Pick from Planner" onclick="openPlannerPickerModal(\'manual\')"><span class="material-symbols-rounded" style="font-size:18px;">playlist_add</span></button>';
   
   let subjOptions = '<option value="">Select Subject</option>';
   if(APP_DATA[state.activeGroup]) {
