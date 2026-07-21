@@ -1467,7 +1467,7 @@ function openMenuModal() {
   openModal('☰ Settings & Tools', `
     
     
-    <button class="menu-btn" onclick="toggleEditMode(); closeModal()">
+    <button id="editModeBtn" class="menu-btn" onclick="toggleEditMode(); closeModal()">
       <span class="menu-btn-icon">${isEditMode ? '<span class="material-symbols-rounded icon-sm">check_circle</span>' : '<span class="material-symbols-rounded icon-sm">edit</span>'}</span> Edit Mode: <strong style="color: ${isEditMode ? 'var(--color-primary)' : 'inherit'}">${isEditMode ? 'ON' : 'OFF'}</strong>
     </button>
     <button class="menu-btn" onclick="openThemeModal()">
@@ -2461,16 +2461,29 @@ window.startTutorial = function() {
           description: 'Tap on the title to switch between CA Final Group 1 and Group 2. Your syllabus, planner, and schedule will update automatically.',
           side: "bottom", align: 'start'
         },
-        onHighlightStarted: () => { switchTab('dashboard'); }
+        onHighlightStarted: () => { closeModal(); switchTab('dashboard'); }
       },
       {
         element: '#menuBtn',
         popover: {
           title: 'Settings & Tools',
-          description: 'Access the Menu (top right) to change Theme colors, toggle Dark/Light Mode, enable Edit Mode, or Export/Import your data backups.',
+          description: 'Access the Menu to change Theme colors, Export/Import backups, or turn on Edit Mode.',
           side: "bottom", align: 'end'
         },
-        onHighlightStarted: () => { switchTab('dashboard'); }
+        onHighlightStarted: () => { closeModal(); switchTab('dashboard'); }
+      },
+      {
+        element: '#editModeBtn',
+        popover: {
+          title: 'Edit Mode (Crucial!)',
+          description: 'Turn this ON to edit your syllabus subjects, delete wrong logs, or customize planner tasks. Turn it OFF to prevent accidental clicks.',
+          side: "bottom", align: 'center'
+        },
+        onHighlightStarted: () => { 
+          switchTab('dashboard'); 
+          openMenuModal(); 
+          return new Promise(resolve => setTimeout(resolve, 100)); 
+        }
       },
       {
         element: '#study-tracker-card',
@@ -2479,7 +2492,7 @@ window.startTutorial = function() {
           description: 'Select your subject & topic, then hit Start to track your study sessions live. You can also pick directly from today\'s Planner tasks.',
           side: "bottom", align: 'center'
         },
-        onHighlightStarted: () => { switchTab('dashboard'); }
+        onHighlightStarted: () => { closeModal(); switchTab('dashboard'); }
       },
       {
         element: '#tl-list',
@@ -2488,7 +2501,7 @@ window.startTutorial = function() {
           description: 'Your saved sessions appear here. You can also add manual logs if you forgot to start the timer.',
           side: "top", align: 'center'
         },
-        onHighlightStarted: () => { switchTab('dashboard'); }
+        onHighlightStarted: () => { closeModal(); switchTab('dashboard'); }
       },
       {
         element: '#tab-planner .planner-actions',
@@ -2498,6 +2511,7 @@ window.startTutorial = function() {
           side: "bottom", align: 'center'
         },
         onHighlightStarted: () => { 
+          closeModal();
           switchTab('planner');
           return new Promise(resolve => setTimeout(resolve, 50));
         }
@@ -2510,18 +2524,33 @@ window.startTutorial = function() {
           side: "bottom", align: 'center'
         },
         onHighlightStarted: () => { 
+          closeModal();
           switchTab('syllabus');
+          return new Promise(resolve => setTimeout(resolve, 50));
+        }
+      },
+      {
+        element: '#tab-schedule .schedule-toggle',
+        popover: {
+          title: 'Master Schedule (Routines)',
+          description: 'We have 2 schedules built-in: "Early Morning" for Early Birds, and "Late Night" for Night Owls. Switch between them here!',
+          side: "bottom", align: 'center'
+        },
+        onHighlightStarted: () => { 
+          closeModal();
+          switchTab('schedule');
           return new Promise(resolve => setTimeout(resolve, 50));
         }
       },
       {
         element: '#tab-schedule .tab-header',
         popover: {
-          title: 'Master Schedule',
-          description: 'Plan your long-term timeline, including your first pass, revisions, and mock periods.',
+          title: 'Macro Timetable',
+          description: 'Plan your long-term timeline, including your first pass, revisions, and mock periods down here.',
           side: "bottom", align: 'center'
         },
         onHighlightStarted: () => { 
+          closeModal();
           switchTab('schedule');
           return new Promise(resolve => setTimeout(resolve, 50));
         }
@@ -2534,6 +2563,7 @@ window.startTutorial = function() {
           side: "bottom", align: 'center'
         },
         onHighlightStarted: () => { 
+          closeModal();
           switchTab('exams');
           return new Promise(resolve => setTimeout(resolve, 50));
         }
@@ -2546,6 +2576,7 @@ window.startTutorial = function() {
           side: "top", align: 'center'
         },
         onHighlightStarted: () => { 
+          closeModal();
           switchTab('dashboard');
           return new Promise(resolve => setTimeout(resolve, 50));
         }
