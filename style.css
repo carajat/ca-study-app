@@ -1184,6 +1184,168 @@ input[type="checkbox"]:checked::before {
 }
 
 
+/* ═══════════ STUDY TRACKER WIDGET ═══════════ */
+.study-tracker {
+  margin-bottom: 20px;
+  padding: 20px;
+  border: 1px solid rgba(10, 132, 255, 0.2);
+  background: linear-gradient(135deg, rgba(10, 132, 255, 0.08), rgba(10, 132, 255, 0.02));
+}
+.st-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.st-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+.st-timer-display {
+  text-align: center;
+  padding: 16px 0;
+  margin-bottom: 16px;
+  border-radius: 16px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.st-timer-display span {
+  font-size: 42px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 2px;
+  color: var(--text-primary);
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+.st-timer-display.running {
+  border-color: rgba(48, 209, 88, 0.4);
+  box-shadow: 0 0 20px rgba(48, 209, 88, 0.1);
+}
+.st-timer-display.running span {
+  color: #30d158;
+}
+.st-timer-display.paused {
+  border-color: rgba(255, 159, 10, 0.4);
+}
+.st-timer-display.paused span {
+  color: #ff9f0a;
+  animation: timerBlink 1s ease-in-out infinite;
+}
+@keyframes timerBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.st-selectors {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.st-select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: rgba(255,255,255,0.05);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%23888'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+.st-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  background-color: rgba(255,255,255,0.08);
+}
+.st-select option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+.st-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: rgba(255,255,255,0.05);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  margin-bottom: 14px;
+  box-sizing: border-box;
+}
+.st-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background-color: rgba(255,255,255,0.08);
+}
+.st-input::placeholder {
+  color: var(--text-muted);
+}
+.st-controls {
+  display: flex;
+  gap: 10px;
+}
+.st-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.st-btn:active {
+  transform: scale(0.96);
+}
+.st-btn-start {
+  background: linear-gradient(135deg, #30d158, #28b14c);
+  color: #fff;
+}
+.st-btn-start:hover {
+  box-shadow: 0 4px 16px rgba(48, 209, 88, 0.3);
+}
+.st-btn-pause {
+  background: linear-gradient(135deg, #ff9f0a, #e68a00);
+  color: #fff;
+}
+.st-btn-stop {
+  background: linear-gradient(135deg, #ff453a, #d63630);
+  color: #fff;
+}
+.st-status {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  min-height: 16px;
+}
+@media (prefers-color-scheme: light) {
+  .study-tracker {
+    background: linear-gradient(135deg, rgba(10, 132, 255, 0.06), rgba(10, 132, 255, 0.01));
+  }
+  .st-timer-display {
+    background: rgba(0,0,0,0.04);
+    border-color: rgba(0,0,0,0.1);
+  }
+  .st-timer-display span { color: var(--text-primary); }
+  .st-timer-display.running span { color: #28a745; }
+  .st-timer-display.paused span { color: #e68a00; }
+}
+
 /* ═══════════ DAILY JOURNAL STYLES ═══════════ */
 .fullscreen-modal {
   position: fixed;
