@@ -372,6 +372,7 @@ function switchTab(tabName) {
     const gt = document.getElementById('group-title');
     if(gt) gt.textContent = state.activeGroup === 'group1' ? 'CA Final Group 1' : 'CA Final Group 2';
     renderDashboard();
+    if(window.updateOngoingJournalTask) window.updateOngoingJournalTask();
   }
   if (tabName === 'exams') renderExams();
   if (tabName === 'schedule') renderSchedule();
@@ -2062,7 +2063,7 @@ window.updateSubjectTopics = function(sel) {
   topicSel.innerHTML = '<option value="">Select Topic</option>';
   
   if (subj && subj !== 'Custom' && APP_DATA[currentGroup]) {
-    const sData = APP_DATA[currentGroup].subjects.find(s => s.name === subj);
+    const sData = APP_DATA[currentGroup].syllabusSubjects.find(s => s.name === subj);
     if (sData && sData.chapters) {
       sData.chapters.forEach(ch => {
         const opt = document.createElement('option');
@@ -2098,7 +2099,7 @@ function addJournalRow(data = {}) {
   
   let subjOptions = '<option value="">Select Subject</option>';
   if(APP_DATA[currentGroup]) {
-    APP_DATA[currentGroup].subjects.forEach(s => {
+    APP_DATA[currentGroup].syllabusSubjects.forEach(s => {
       subjOptions += `<option value="${s.name}" ${data.subject === s.name ? 'selected' : ''}>${s.name}</option>`;
     });
   }
@@ -2201,6 +2202,7 @@ function saveJournal() {
 
   calculateJournalStats();
   saveData();
+  if(window.updateOngoingJournalTask) window.updateOngoingJournalTask();
 }
 
 async function generateJournalReport() {
@@ -2272,3 +2274,51 @@ async function generateJournalReport() {
     showToast('PDF downloaded successfully!');
   });
 }
+
+
+window.updateOngoingJournalTask = function() {
+  const ojtWidget = document.getElementById('ongoing-journal-task');
+  if(!ojtWidget) return;
+  
+  const todayStr = getJournalDateString(new Date());
+  if(!DYNAMIC_DATA.journalEntries || !DYNAMIC_DATA.journalEntries[todayStr]) {
+    ojtWidget.style.display = 'none';
+    return;
+  }
+  
+  const entry = DYNAMIC_DATA.journalEntries[todayStr];
+  if(!entry.rows || entry.rows.length === 0) {
+    ojtWidget.style.display = 'none';
+    return;
+  }
+  
+  let ongoingRow = entry.rows.find(r => r.status === 'Pending');
+  if(!ongoingRow) {
+    ongoingRow = entry.rows[entry.rows.length - 1];
+  }
+  
+  if(!ongoingRow || (!ongoingRow.subject && !ongoingRow.topic && !ongoingRow.tasks)) {
+    ojtWidget.style.display = 'none';
+    return;
+  }
+  
+  ojtWidget.style.display = 'block';
+  
+  let subjText = ongoingRow.subject === 'Custom' ? ongoingRow.subjectCustom : ongoingRow.subject;
+  let topicText = ongoingRow.topic === 'Custom' ? ongoingRow.topicCustom : ongoingRow.topic;
+  
+  document.getElementById('ojt-subject').textContent = subjText || 'No Subject';
+  document.getElementById('ojt-topic').textContent = topicText || 'No Topic';
+  document.getElementById('ojt-task').textContent = ongoingRow.tasks || 'No specific task details';
+  
+  let timeStr = '--:--';
+  if(ongoingRow.durHH || ongoingRow.durMM) {
+     timeStr = (ongoingRow.durHH || '00').padStart(2, '0') + ':' + (ongoingRow.durMM || '00').padStart(2, '0');
+  }
+  document.getElementById('ojt-time').textContent = timeStr + ' logged';
+};
+
+// Also trigger on load
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => { if(window.updateOngoingJournalTask) window.updateOngoingJournalTask(); }, 1000);
+});
