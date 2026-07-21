@@ -156,6 +156,10 @@ function loadDynamicData() {
 
 function saveDynamicData() {
   localStorage.setItem(getDynamicDataKey(), JSON.stringify(DYNAMIC_DATA));
+  if (typeof window.syncToCloud === 'function') {
+    window.syncToCloud({ dynamic: DYNAMIC_DATA, state: loadState(), tracker: trackerState });
+  }
+
 }
 
 function toggleEditMode() {
@@ -275,6 +279,10 @@ function saveState(data) {
     const existing = loadState();
     const merged = { ...existing, ...data };
     localStorage.setItem(getStorageKey(), JSON.stringify(merged));
+  if (typeof window.syncToCloud === 'function') {
+    window.syncToCloud({ dynamic: DYNAMIC_DATA, state: loadState(), tracker: trackerState });
+  }
+
   } catch (e) { console.error('Save error:', e); }
 }
 
@@ -2598,10 +2606,12 @@ window.startTutorial = function() {
 
 
 window.reloadAppFromCloud = function(cloudData) {
+  if (!cloudData) return;
+  
   let newDynamic = cloudData.dynamic || cloudData;
+  let newState = cloudData.state || {};
   let newTracker = cloudData.tracker || {};
   
-  // Clean up undefined/null from newTracker to match trackerState stringify
   const cleanTracker = {
     isRunning: !!newTracker.isRunning,
     isPaused: !!newTracker.isPaused,
@@ -2612,6 +2622,24 @@ window.reloadAppFromCloud = function(cloudData) {
     topic: newTracker.topic || '',
     task: newTracker.task || ''
   };
+
+  const localHash = JSON.stringify(DYNAMIC_DATA) + JSON.stringify(loadState()) + JSON.stringify(trackerState);
+  const cloudHash = JSON.stringify(newDynamic) + JSON.stringify(newState) + JSON.stringify(cleanTracker);
+  
+  if (localHash !== cloudHash) {
+    console.log("Cloud data differs. Applying sync and reloading...");
+    localStorage.setItem(getDynamicDataKey(), JSON.stringify(newDynamic));
+    localStorage.setItem(getStorageKey(), JSON.stringify(newState));
+    
+    if (cleanTracker.isRunning || cleanTracker.isPaused) {
+      localStorage.setItem('ca_study_tracker_state', JSON.stringify(cleanTracker));
+    } else {
+      localStorage.removeItem('ca_study_tracker_state');
+    }
+    
+    location.reload();
+  }
+};
 
   const localHash = JSON.stringify(DYNAMIC_DATA) + JSON.stringify(trackerState);
   const cloudHash = JSON.stringify(newDynamic) + JSON.stringify(cleanTracker);
@@ -2625,6 +2653,10 @@ window.reloadAppFromCloud = function(cloudData) {
     } else {
       localStorage.removeItem('ca_study_tracker_state');
     }
+  if (typeof window.syncToCloud === 'function') {
+    window.syncToCloud({ dynamic: DYNAMIC_DATA, state: loadState(), tracker: trackerState });
+  }
+
     
     location.reload();
   } else {
