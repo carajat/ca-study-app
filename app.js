@@ -376,6 +376,8 @@ function switchTab(tabName) {
     if(window.updateOngoingJournalTask) window.updateOngoingJournalTask();
   populateTrackerSubjects();
   restoreTrackerState();
+  renderTodaysLog();
+  renderTodaysLog();
   }
   if (tabName === 'exams') renderExams();
   if (tabName === 'schedule') renderSchedule();
@@ -2148,6 +2150,7 @@ function trackerStop() {
       durHH: String(hh), durMM: String(mm), status: 'Done'
     });
     saveDynamicData();
+    renderTodaysLog();
     document.getElementById('st-status').textContent = '✅ Saved ' + hh + 'h ' + mm + 'm to journal';
   } else {
     document.getElementById('st-status').textContent = 'Session too short (< 1 min), not saved';
@@ -2163,410 +2166,171 @@ function trackerStop() {
   }, 4000);
 }
 
+
 // ==========================================
-// DAILY JOURNAL FEATURE
+// TODAY'S LOG FEATURE (Simplified Journal)
 // ==========================================
 
-var currentJournalDate = new Date();
-
-function getJournalDateString(dateObj) {
+function getTodayStr() {
+  const dateObj = new Date();
   const y = dateObj.getFullYear();
   const m = String(dateObj.getMonth() + 1).padStart(2, '0');
   const d = String(dateObj.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
+  return y + '-' + m + '-' + d;
 }
 
-function openJournal() {
-  document.getElementById('journal-modal').style.display = 'flex';
-  const dateStr = getJournalDateString(currentJournalDate);
-  document.getElementById('journal-date-picker').value = dateStr;
-  loadJournal(dateStr);
-}
-
-function closeJournal() {
-  document.getElementById('journal-modal').style.display = 'none';
-}
-
-function changeJournalDate(delta) {
-  currentJournalDate.setDate(currentJournalDate.getDate() + delta);
-  const dateStr = getJournalDateString(currentJournalDate);
-  document.getElementById('journal-date-picker').value = dateStr;
-  loadJournal(dateStr);
-}
-
-function loadJournal(dateStr) {
-  if (!dateStr) return;
-  const parts = dateStr.split('-');
-  if (parts.length === 3) {
-    currentJournalDate = new Date(parts[0], parts[1]-1, parts[2]);
-  }
+function renderTodaysLog() {
+  const container = document.getElementById('tl-list');
+  const totalEl = document.getElementById('tl-total-time');
+  if (!container) return;
   
-  if (!DYNAMIC_DATA.journalEntries) DYNAMIC_DATA.journalEntries = {};
-  const entry = DYNAMIC_DATA.journalEntries[dateStr] || {
-    sleep: '', breaks: '', wasted: '', feeling: '', rows: []
-  };
-
-  document.getElementById('j-sleep').value = entry.sleep || '';
-  document.getElementById('j-breaks').value = entry.breaks || '';
-  document.getElementById('j-wasted').value = entry.wasted || '';
-  document.getElementById('j-feeling').value = entry.feeling || '';
-
-  const tbody = document.getElementById('journal-tbody');
-  tbody.innerHTML = '';
-  if (entry.rows && entry.rows.length > 0) {
-    entry.rows.forEach(r => addJournalRow(r));
-  } else {
-    addJournalRow(); // add at least one empty row
-  }
-
-  // Calculate Days Left for the currently selected group
-  let targetDateStr = APP_DATA[state.activeGroup].exam.date;
-  let targetDate = new Date(targetDateStr);
-  let timeDiff = targetDate.getTime() - currentJournalDate.getTime();
-  let daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
-  document.getElementById('j-days-left').innerText = daysLeft > 0 ? daysLeft : 0;
-
-  calculateJournalStats();
-}
-
-function switchJournalTab(tab) {
-  document.getElementById('j-tab-editor').classList.remove('active');
-  document.getElementById('j-tab-history').classList.remove('active');
+  const todayStr = getTodayStr();
+  let entries = (DYNAMIC_DATA.journalEntries && DYNAMIC_DATA.journalEntries[todayStr] && DYNAMIC_DATA.journalEntries[todayStr].rows) || [];
   
-  if(tab === 'editor') {
-    document.getElementById('j-tab-editor').classList.add('active');
-    document.getElementById('journal-content-area').style.display = 'flex';
-    document.getElementById('journal-history-area').style.display = 'none';
-  } else {
-    document.getElementById('j-tab-history').classList.add('active');
-    document.getElementById('journal-content-area').style.display = 'none';
-    document.getElementById('journal-history-area').style.display = 'block';
-    loadJournalHistory();
-  }
-}
-
-function loadJournalHistory() {
-  const container = document.getElementById('journal-history-list');
   container.innerHTML = '';
+  let totalMinutes = 0;
   
-  if(!DYNAMIC_DATA.journalEntries || Object.keys(DYNAMIC_DATA.journalEntries).length === 0) {
-    container.innerHTML = '<p style="color:var(--text-muted);text-align:center;">No history found.</p>';
+  if (entries.length === 0) {
+    container.innerHTML = '<div style="text-align:center; padding:15px; color:var(--text-muted); font-size:13px;">No logs today yet. Start studying!</div>';
+    totalEl.textContent = 'Total: 0h 0m';
     return;
   }
   
-  // Sort by date descending
-  const dates = Object.keys(DYNAMIC_DATA.journalEntries).sort((a,b) => new Date(b) - new Date(a));
-  
-  dates.forEach(d => {
-    const entry = DYNAMIC_DATA.journalEntries[d];
-    let totalDur = 0;
-    if(entry.rows) {
-      entry.rows.forEach(r => {
-        if(r.duration !== undefined) {
-          totalDur += parseFloat(r.duration || 0);
-        } else {
-          let hh = parseInt(r.durHH) || 0;
-          let mm = parseInt(r.durMM) || 0;
-          totalDur += (hh + mm/60);
-        }
-      });
-    }
-    totalDur = totalDur.toFixed(2);
+  entries.forEach((row, idx) => {
+    let durText = '';
+    const h = parseInt(row.durHH) || 0;
+    const m = parseInt(row.durMM) || 0;
+    totalMinutes += (h * 60) + m;
     
-    const card = document.createElement('div');
-    card.className = 'history-card';
-    card.onclick = () => {
-      document.getElementById('journal-date-picker').value = d;
-      loadJournal(d);
-      switchJournalTab('editor');
-    };
+    if (h > 0) durText += h + 'h ';
+    if (m > 0 || h === 0) durText += m + 'm';
     
-    card.innerHTML = `
-      <div>
-        <div class="hc-date">${d}</div>
-        <div class="hc-stats">Study: ${totalDur}h | Sleep: ${entry.sleep || 0}h</div>
+    const div = document.createElement('div');
+    div.style.background = 'rgba(255,255,255,0.03)';
+    div.style.border = '1px solid var(--border-color)';
+    div.style.borderRadius = '8px';
+    div.style.padding = '10px';
+    div.style.display = 'flex';
+    div.style.justifyContent = 'space-between';
+    div.style.alignItems = 'flex-start';
+    
+    div.innerHTML = `
+      <div style="flex:1;">
+        <div style="font-weight:600; font-size:14px; color:var(--text-primary);">${row.subject}</div>
+        <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">${row.topic}</div>
+        ${row.tasks ? \`<div style="font-size:12px; color:var(--text-muted); margin-top:4px;"><i>${row.tasks}</i></div>\` : ''}
       </div>
-      <div>
-         <span style="color:var(--primary); font-weight:600;">${entry.feeling || 'Logged'}</span>
-         <span class="material-symbols-rounded" style="vertical-align:middle; font-size:20px; color:var(--text-muted);">arrow_forward_ios</span>
+      <div style="text-align:right;">
+        <div style="font-size:13px; font-weight:600; color:var(--primary); background:rgba(10,132,255,0.1); padding:2px 6px; border-radius:6px; display:inline-block;">${durText}</div>
+        <div style="margin-top:6px;">
+          <button class="icon-btn" style="padding:4px;" onclick="deleteTodaysLog(${idx})" title="Delete Log"><span class="material-symbols-rounded" style="font-size:16px; color:#ff453a;">delete</span></button>
+        </div>
       </div>
     `;
-    container.appendChild(card);
+    container.appendChild(div);
   });
+  
+  const totH = Math.floor(totalMinutes / 60);
+  const totM = totalMinutes % 60;
+  totalEl.textContent = `Total: ${totH}h ${totM}m`;
 }
 
-window.updateSubjectTopics = function(sel) {
-  const tr = sel.closest('tr');
-  const subjCustom = tr.querySelector('.j-subject-custom');
-  if(sel.value === 'Custom') {
-    subjCustom.style.display = 'block';
-  } else {
-    subjCustom.style.display = 'none';
+window.deleteTodaysLog = function(idx) {
+  if(confirm('Are you sure you want to delete this log?')) {
+    const todayStr = getTodayStr();
+    DYNAMIC_DATA.journalEntries[todayStr].rows.splice(idx, 1);
+    saveDynamicData();
+    renderTodaysLog();
   }
-
-  const topicSel = tr.querySelector('.j-topic');
-  const subj = sel.value;
-  topicSel.innerHTML = '<option value="">Select Topic</option>';
-  
-  if (subj && subj !== 'Custom' && APP_DATA[state.activeGroup]) {
-    let subjectsArray = APP_DATA[state.activeGroup].syllabusSubjects || Object.values(APP_DATA[state.activeGroup].syllabus || {});
-    const sData = subjectsArray.find(s => s.name === subj);
-    if (sData && sData.chapters) {
-      sData.chapters.forEach(ch => {
-        const opt = document.createElement('option');
-        opt.value = ch.name;
-        opt.innerText = ch.name;
-        topicSel.appendChild(opt);
-      });
-    }
-  }
-  const customOpt = document.createElement('option');
-  customOpt.value = 'Custom';
-  customOpt.innerText = 'Custom...';
-  topicSel.appendChild(customOpt);
-  
-  window.checkCustomTopic(topicSel);
-  saveJournal();
 };
 
-window.checkCustomTopic = function(topicSel) {
-  const tr = topicSel.closest('tr');
-  let customInput = tr.querySelector('.j-topic-custom');
-  if(topicSel.value === 'Custom') {
-    customInput.style.display = 'block';
-  } else {
-    customInput.style.display = 'none';
-  }
-  saveJournal();
-};
-
-function addJournalRow(data = {}) {
-  const tbody = document.getElementById('journal-tbody');
-  const tr = document.createElement('tr');
+window.openManualLogModal = function() {
+  const body = document.getElementById('modal-body');
+  document.getElementById('modal-title').textContent = 'Add Manual Log';
   
   let subjOptions = '<option value="">Select Subject</option>';
   if(APP_DATA[state.activeGroup]) {
     let subjectsArray = APP_DATA[state.activeGroup].syllabusSubjects || Object.values(APP_DATA[state.activeGroup].syllabus || {});
     subjectsArray.forEach(s => {
-      subjOptions += `<option value="${s.name}" ${data.subject === s.name ? 'selected' : ''}>${s.name}</option>`;
+      subjOptions += `<option value="${s.name}">${s.name}</option>`;
     });
   }
-  subjOptions += `<option value="Custom" ${data.subject === 'Custom' ? 'selected' : ''}>Custom...</option>`;
-
-  tr.innerHTML = `
-    <td>
-      <select class="j-subject elegant-select" onchange="window.updateSubjectTopics(this)">
-        ${subjOptions}
-      </select>
-      <input type="text" class="j-subject-custom elegant-input" placeholder="Custom subject" style="display:${data.subject === 'Custom' ? 'block' : 'none'}; margin-top:4px;" value="${data.subjectCustom || ''}" onchange="saveJournal()">
-    </td>
-    <td>
-      <select class="j-topic elegant-select" onchange="window.checkCustomTopic(this)">
-        <option value="${data.topic || ''}">${data.topic || 'Select Topic'}</option>
-      </select>
-      <input type="text" class="j-topic-custom elegant-input" placeholder="Custom topic" style="display:${data.topic === 'Custom' ? 'block' : 'none'}; margin-top:4px;" value="${data.topicCustom || ''}" onchange="saveJournal()">
-    </td>
-    <td><input type="text" class="j-tasks elegant-input" value="${data.tasks || ''}" onchange="saveJournal()" placeholder="Tasks"></td>
-    <td>
-      <div style="display:flex; gap:4px; align-items:center;">
-        <input type="number" class="j-duration-hh elegant-input" value="${data.durHH || ''}" onchange="saveJournal()" min="0" placeholder="HH" style="width:45px; padding:6px; text-align:center;">
-        <span style="font-weight:bold;">:</span>
-        <input type="number" class="j-duration-mm elegant-input" value="${data.durMM || ''}" onchange="saveJournal()" min="0" max="59" placeholder="MM" style="width:45px; padding:6px; text-align:center;">
+  
+  body.innerHTML = `
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <select id="ml-subj" class="st-select" onchange="onManualLogSubjChange()">${subjOptions}<option value="__custom__">Other...</option></select>
+      <select id="ml-topic" class="st-select"><option value="">Select Topic</option></select>
+      <input type="text" id="ml-task" class="st-input" placeholder="Task Description">
+      <div style="display:flex; gap:10px;">
+        <div style="flex:1"><label style="font-size:12px; color:var(--text-secondary);">Hours</label><input type="number" id="ml-hh" class="st-input" min="0" value="0" style="margin-bottom:0;"></div>
+        <div style="flex:1"><label style="font-size:12px; color:var(--text-secondary);">Minutes</label><input type="number" id="ml-mm" class="st-input" min="0" max="59" value="0" style="margin-bottom:0;"></div>
       </div>
-    </td>
-    <td>
-      <select class="j-status elegant-select" onchange="saveJournal()">
-        <option value="Done" ${data.status==='Done'?'selected':''}>Done</option>
-        <option value="Pending" ${data.status==='Pending'?'selected':''}>Pending</option>
-        <option value="Skipped" ${data.status==='Skipped'?'selected':''}>Skipped</option>
-      </select>
-    </td>
-    <td><button class="icon-btn" style="color:var(--danger);" onclick="removeJournalRow(this)"><span class="material-symbols-rounded">delete</span></button></td>
+      <button class="btn-primary" style="margin-top:10px; border-radius:10px;" onclick="saveManualLog()">Save Log</button>
+    </div>
   `;
-  tbody.appendChild(tr);
-  
-  // Trigger population of topic dropdown if subject is already set
-  const subjSel = tr.querySelector('.j-subject');
-  if(data.subject && data.subject !== 'Custom') {
-    window.updateSubjectTopics(subjSel);
-    const topicSel = tr.querySelector('.j-topic');
-    topicSel.value = data.topic || '';
-    window.checkCustomTopic(topicSel);
-  }
-  
-  calculateJournalStats();
-}
-
-function removeJournalRow(btn) {
-  btn.closest('tr').remove();
-  saveJournal();
-}
-
-function calculateJournalStats() {
-  let totalMinutes = 0;
-  Array.from(document.querySelectorAll('#journal-tbody tr')).forEach(tr => {
-    const hh = parseInt(tr.querySelector('.j-duration-hh').value) || 0;
-    const mm = parseInt(tr.querySelector('.j-duration-mm').value) || 0;
-    totalMinutes += (hh * 60) + mm;
-  });
-  
-  const totalStudy = totalMinutes / 60;
-  document.getElementById('j-total-time').innerText = totalStudy.toFixed(2) + 'h';
-
-  const sleep = parseFloat(document.getElementById('j-sleep').value) || 0;
-  const breaks = parseFloat(document.getElementById('j-breaks').value) || 0;
-  const wasted = parseFloat(document.getElementById('j-wasted').value) || 0;
-  
-  const hoursLeft = 24 - sleep - breaks - wasted - totalStudy;
-  document.getElementById('j-hours-left').innerText = hoursLeft.toFixed(1) + 'h';
-}
-
-function saveJournal() {
-  const dateStr = document.getElementById('journal-date-picker').value;
-  if (!dateStr) return;
-
-  if (!DYNAMIC_DATA.journalEntries) DYNAMIC_DATA.journalEntries = {};
-  
-  const rows = Array.from(document.querySelectorAll('#journal-tbody tr')).map(tr => {
-    return {
-      subject: tr.querySelector('.j-subject').value,
-      subjectCustom: tr.querySelector('.j-subject-custom').value,
-      topic: tr.querySelector('.j-topic').value,
-      topicCustom: tr.querySelector('.j-topic-custom').value,
-      tasks: tr.querySelector('.j-tasks').value,
-      durHH: tr.querySelector('.j-duration-hh').value,
-      durMM: tr.querySelector('.j-duration-mm').value,
-      status: tr.querySelector('.j-status').value
-    };
-  });
-
-  DYNAMIC_DATA.journalEntries[dateStr] = {
-    sleep: document.getElementById('j-sleep').value,
-    breaks: document.getElementById('j-breaks').value,
-    wasted: document.getElementById('j-wasted').value,
-    feeling: document.getElementById('j-feeling').value,
-    rows: rows
-  };
-
-  calculateJournalStats();
-  saveData();
-  if(window.updateOngoingJournalTask) window.updateOngoingJournalTask();
-}
-
-async function generateJournalReport() {
-  const dateStr = document.getElementById('journal-date-picker').value;
-  const opt = {
-    margin:       0.5,
-    filename:     `Daily_Journal_${dateStr}.pdf`,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true },
-    jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
-  };
-  
-  // Clone the modal content for PDF generation
-  const element = document.getElementById('journal-content-area').cloneNode(true);
-  
-  // Clean up UI for print
-  const inputs = element.querySelectorAll('input, select');
-  const originals = document.getElementById('journal-content-area').querySelectorAll('input, select');
-  
-  for(let i=0; i<inputs.length; i++) {
-    const val = originals[i].value;
-    const span = document.createElement('span');
-    span.innerText = val;
-    span.style.padding = '6px';
-    span.style.display = 'inline-block';
-    if(originals[i].tagName === 'SELECT') {
-      span.style.fontWeight = 'bold';
-    }
-    inputs[i].parentNode.replaceChild(span, inputs[i]);
-  }
-  
-  const addBtn = element.querySelector('button');
-  if(addBtn) addBtn.remove();
-  const deleteBtns = element.querySelectorAll('.icon-btn');
-  deleteBtns.forEach(b => b.remove());
-  
-  // Inject explicit print styles so it ignores dark mode CSS variables
-  const printStyle = document.createElement('style');
-  printStyle.innerHTML = `
-    * { 
-      color: #000000 !important; 
-      background: transparent !important; 
-      box-shadow: none !important; 
-    }
-    .task-card { 
-      border: 1px solid #000000 !important; 
-      padding: 10px !important; 
-      margin-bottom: 10px !important; 
-    }
-    .journal-top-stats, .journal-footer-stats {
-      border: 1px solid #000000 !important; 
-    }
-    span { border-bottom: 1px dashed #ccc !important; min-width: 50px; }
-  `;
-  element.appendChild(printStyle);
-  
-  element.style.background = '#ffffff';
-  element.style.padding = '20px';
-  
-  const headerTitle = document.createElement('h2');
-  headerTitle.innerText = `Daily Journal - ${dateStr}`;
-  headerTitle.style.textAlign = 'center';
-  headerTitle.style.marginBottom = '20px';
-  headerTitle.style.color = '#000000';
-  element.insertBefore(headerTitle, element.firstChild);
-
-  showToast('Generating PDF...');
-  html2pdf().set(opt).from(element).save().then(() => {
-    showToast('PDF downloaded successfully!');
-  });
-}
-
-
-window.updateOngoingJournalTask = function() {
-  const ojtWidget = document.getElementById('ongoing-journal-task');
-  if(!ojtWidget) return;
-  
-  const todayStr = getJournalDateString(new Date());
-  if(!DYNAMIC_DATA.journalEntries || !DYNAMIC_DATA.journalEntries[todayStr]) {
-    ojtWidget.style.display = 'none';
-    return;
-  }
-  
-  const entry = DYNAMIC_DATA.journalEntries[todayStr];
-  if(!entry.rows || entry.rows.length === 0) {
-    ojtWidget.style.display = 'none';
-    return;
-  }
-  
-  let ongoingRow = entry.rows.find(r => r.status === 'Pending');
-  if(!ongoingRow) {
-    ongoingRow = entry.rows[entry.rows.length - 1];
-  }
-  
-  if(!ongoingRow || (!ongoingRow.subject && !ongoingRow.topic && !ongoingRow.tasks)) {
-    ojtWidget.style.display = 'none';
-    return;
-  }
-  
-  ojtWidget.style.display = 'block';
-  
-  let subjText = ongoingRow.subject === 'Custom' ? ongoingRow.subjectCustom : ongoingRow.subject;
-  let topicText = ongoingRow.topic === 'Custom' ? ongoingRow.topicCustom : ongoingRow.topic;
-  
-  document.getElementById('ojt-subject').textContent = subjText || 'No Subject';
-  document.getElementById('ojt-topic').textContent = topicText || 'No Topic';
-  document.getElementById('ojt-task').textContent = ongoingRow.tasks || 'No specific task details';
-  
-  let timeStr = '--:--';
-  if(ongoingRow.durHH || ongoingRow.durMM) {
-     timeStr = (ongoingRow.durHH || '00').padStart(2, '0') + ':' + (ongoingRow.durMM || '00').padStart(2, '0');
-  }
-  document.getElementById('ojt-time').textContent = timeStr + ' logged';
+  document.getElementById('modal-overlay').style.display = 'flex';
+  document.getElementById('modal-overlay').classList.add('show'); // Make sure it animates correctly if using .show
 };
 
-// Also trigger on load
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => { if(window.updateOngoingJournalTask) window.updateOngoingJournalTask(); }, 1000);
-});
+window.onManualLogSubjChange = function() {
+  const subSel = document.getElementById('ml-subj');
+  const topSel = document.getElementById('ml-topic');
+  if (!subSel || !topSel) return;
+  const subj = subSel.value;
+  topSel.innerHTML = '<option value="">Select Topic</option>';
+  
+  if (subj === '__custom__') {
+    const name = prompt('Enter subject name:');
+    if (name) {
+      const opt = document.createElement('option');
+      opt.value = name; opt.textContent = name;
+      subSel.insertBefore(opt, subSel.querySelector('[value="__custom__"]'));
+      subSel.value = name;
+    } else { subSel.value = ''; return; }
+  }
+  
+  if (subj && subj !== '__custom__') {
+    const group = APP_DATA[state.activeGroup];
+    if (group) {
+      const subjects = group.syllabusSubjects || Object.values(group.syllabus || {});
+      const sData = subjects.find(s => s.name === subj);
+      if (sData && sData.chapters) {
+        sData.chapters.forEach(ch => {
+          const opt = document.createElement('option');
+          opt.value = ch.name; opt.textContent = ch.name;
+          topSel.appendChild(opt);
+        });
+      }
+    }
+  }
+};
+
+window.saveManualLog = function() {
+  const subj = document.getElementById('ml-subj').value;
+  const topic = document.getElementById('ml-topic').value;
+  const task = document.getElementById('ml-task').value;
+  const hh = parseInt(document.getElementById('ml-hh').value) || 0;
+  const mm = parseInt(document.getElementById('ml-mm').value) || 0;
+  
+  if (!subj) { alert('Please select a subject'); return; }
+  if (hh === 0 && mm === 0) { alert('Please enter duration'); return; }
+  
+  const todayStr = getTodayStr();
+  if (!DYNAMIC_DATA.journalEntries) DYNAMIC_DATA.journalEntries = {};
+  if (!DYNAMIC_DATA.journalEntries[todayStr]) {
+    DYNAMIC_DATA.journalEntries[todayStr] = { sleep: '', breaks: '', wasted: '', feeling: '', rows: [] };
+  }
+  
+  DYNAMIC_DATA.journalEntries[todayStr].rows.push({
+    subject: subj,
+    topic: topic,
+    tasks: task,
+    durHH: String(hh),
+    durMM: String(mm),
+    status: 'Done'
+  });
+  
+  saveDynamicData();
+  closeModal();
+  renderTodaysLog();
+};

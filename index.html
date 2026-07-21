@@ -11,7 +11,7 @@
   <title>CA Final Tracker</title>
   <link rel="manifest" href="manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300,0,0" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=99">
+  <link rel="stylesheet" href="style.css?v=100">
   <!-- Mobile Drag and Drop Polyfill -->
   
   
@@ -23,66 +23,7 @@
   <!-- ═══════════ TOAST NOTIFICATION ═══════════ -->
   <div id="toast" class="toast"></div>
 
-  <!-- ═══════════ DAILY JOURNAL MODAL ═══════════ -->
-  <div id="journal-modal" class="fullscreen-modal" style="display:none;">
-    <div class="journal-header">
-      <button class="icon-btn" onclick="closeJournal()"><span class="material-symbols-rounded">close</span></button>
-      
-      <!-- Journal Tabs (History vs Editor) -->
-      <div class="journal-tabs">
-        <button id="j-tab-editor" class="j-tab-btn active" onclick="switchJournalTab('editor')">Today's Log</button>
-        <button id="j-tab-history" class="j-tab-btn" onclick="switchJournalTab('history')">History</button>
-      </div>
-
-      <button class="icon-btn" onclick="generateJournalReport()"><span class="material-symbols-rounded">picture_as_pdf</span></button>
-    </div>
-    
-    <!-- EDITOR VIEW -->
-    <div class="journal-content" id="journal-content-area">
-      <div class="journal-date-bar">
-        <button class="icon-btn" onclick="changeJournalDate(-1)"><span class="material-symbols-rounded">chevron_left</span></button>
-        <input type="date" id="journal-date-picker" class="journal-date-picker" onchange="loadJournal(this.value)">
-        <button class="icon-btn" onclick="changeJournalDate(1)"><span class="material-symbols-rounded">chevron_right</span></button>
-      </div>
-
-      <div class="journal-top-stats">
-        <div class="j-stat"><label>Sleep Hours</label><input type="number" id="j-sleep" step="0.5" onchange="saveJournal()"></div>
-        <div class="j-stat"><label>Days Left</label><div id="j-days-left" class="j-val">--</div></div>
-        <div class="j-stat"><label>Hours Left</label><div id="j-hours-left" class="j-val">--</div></div>
-      </div>
-      
-      <div class="journal-table-wrapper">
-        <table class="journal-table" id="journal-table">
-          <thead>
-            <tr>
-              <th>Subject</th>
-              <th>Topic / Chapter</th>
-              <th>Tasks Done</th>
-              <th style="width:110px;">Duration</th>
-              <th style="width:100px;">Status</th>
-              <th style="width:40px;"></th>
-            </tr>
-          </thead>
-          <tbody id="journal-tbody">
-            <!-- Rows injected here via JS -->
-          </tbody>
-        </table>
-      </div>
-      <button class="btn-primary" style="margin-top:10px; width:100%; border-radius:100px; font-weight:600;" onclick="addJournalRow()">+ Add Row</button>
-
-      <div class="journal-footer-stats">
-        <div class="j-stat"><label>Total Study Time</label><div id="j-total-time" class="j-val">0h</div></div>
-        <div class="j-stat"><label>Breaks (hrs)</label><input type="number" id="j-breaks" step="0.5" onchange="saveJournal()"></div>
-        <div class="j-stat"><label>Wasted (hrs)</label><input type="number" id="j-wasted" step="0.5" onchange="saveJournal()"></div>
-        <div class="j-stat"><label>Overall Feeling</label><input type="text" id="j-feeling" placeholder="Good, Tired..." onchange="saveJournal()"></div>
-      </div>
-    </div>
-
-    <!-- HISTORY VIEW -->
-    <div class="journal-content" id="journal-history-area" style="display:none;">
-       <div id="journal-history-list" style="display:flex; flex-direction:column; gap:12px;"></div>
-    </div>
-  </div>
+  <!-- Daily Journal Modal Removed (integrated into dashboard) -->
 
 
   <!-- ═══════════ MODAL OVERLAY ═══════════ -->
@@ -169,9 +110,6 @@
             <span class="material-symbols-rounded" style="font-size:20px; color:var(--primary);">timer</span>
             <span>Study Tracker</span>
           </div>
-          <button class="icon-btn" onclick="openJournal()" title="Open Daily Journal">
-            <span class="material-symbols-rounded" style="font-size:20px;">menu_book</span>
-          </button>
         </div>
 
         <!-- Timer Display -->
@@ -211,6 +149,23 @@
         <!-- Status line -->
         <div id="st-status" class="st-status"></div>
       </div>
+
+      <!-- Today's Log -->
+      <div class="todays-log-container glass-card" style="margin-bottom: 20px;">
+        <div class="tl-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h3 style="margin: 0; font-size: 15px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+            <span class="material-symbols-rounded icon-sm">list_alt</span> Today's Log
+          </h3>
+          <span id="tl-total-time" style="font-size: 13px; font-weight: 600; color: var(--primary);">Total: 0h 0m</span>
+        </div>
+        <div id="tl-list" style="display: flex; flex-direction: column; gap: 8px;">
+          <!-- Logs will be rendered here -->
+        </div>
+        <button class="btn-secondary" style="width: 100%; margin-top: 12px; padding: 10px; border-radius: 10px; font-size: 13px;" onclick="openManualLogModal()">
+          <span class="material-symbols-rounded icon-sm">add</span> Add Manual Log
+        </button>
+      </div>
+
 
       <!-- Current Activity -->
       <div class="current-activity glass-card" onclick="switchTab('schedule')">
@@ -407,7 +362,7 @@
 
   <script src="Sortable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="data.js?v=99"></script>
-  <script src="app.js?v=99"></script>
+  <script src="data.js?v=100"></script>
+  <script src="app.js?v=100"></script>
 </body>
 </html>
