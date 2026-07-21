@@ -1975,7 +1975,7 @@ function loadJournal(dateStr) {
   }
 
   // Calculate Days Left for the currently selected group
-  let targetDateStr = APP_DATA[currentGroup].exam.date;
+  let targetDateStr = APP_DATA[state.activeGroup].exam.date;
   let targetDate = new Date(targetDateStr);
   let timeDiff = targetDate.getTime() - currentJournalDate.getTime();
   let daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
@@ -2063,8 +2063,8 @@ window.updateSubjectTopics = function(sel) {
   const subj = sel.value;
   topicSel.innerHTML = '<option value="">Select Topic</option>';
   
-  if (subj && subj !== 'Custom' && APP_DATA[currentGroup]) {
-    let subjectsArray = APP_DATA[currentGroup].syllabusSubjects || Object.values(APP_DATA[currentGroup].syllabus || {});
+  if (subj && subj !== 'Custom' && APP_DATA[state.activeGroup]) {
+    let subjectsArray = APP_DATA[state.activeGroup].syllabusSubjects || Object.values(APP_DATA[state.activeGroup].syllabus || {});
     const sData = subjectsArray.find(s => s.name === subj);
     if (sData && sData.chapters) {
       sData.chapters.forEach(ch => {
@@ -2100,8 +2100,8 @@ function addJournalRow(data = {}) {
   const tr = document.createElement('tr');
   
   let subjOptions = '<option value="">Select Subject</option>';
-  if(APP_DATA[currentGroup]) {
-    let subjectsArray = APP_DATA[currentGroup].syllabusSubjects || Object.values(APP_DATA[currentGroup].syllabus || {});
+  if(APP_DATA[state.activeGroup]) {
+    let subjectsArray = APP_DATA[state.activeGroup].syllabusSubjects || Object.values(APP_DATA[state.activeGroup].syllabus || {});
     subjectsArray.forEach(s => {
       subjOptions += `<option value="${s.name}" ${data.subject === s.name ? 'selected' : ''}>${s.name}</option>`;
     });
