@@ -11,7 +11,7 @@
   <title>CA Final Tracker</title>
   <link rel="manifest" href="manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300,0,0" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=121">
+  <link rel="stylesheet" href="style.css?v=122">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
   <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
   <!-- Mobile Drag and Drop Polyfill -->
@@ -42,6 +42,7 @@
       <input type="email" id="login-email" class="st-input" placeholder="Email Address" style="margin-bottom: 10px;">
       <input type="password" id="login-pass" class="st-input" placeholder="Password" style="margin-bottom: 20px;">
       
+      <div id="login-error" style="color: #ff453a; margin-bottom: 15px; font-size: 13px; font-weight: bold; min-height: 18px;"></div>
       <button id="login-btn" class="btn-primary" onclick="loginToCloud()" style="width: 100%; margin-bottom: 15px;">Login / Sync</button>
       <button class="btn-secondary" onclick="continueOffline()" style="width: 100%; background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);">Continue without Login (Offline)</button>
     </div>
@@ -393,7 +394,7 @@
 
   <script src="Sortable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="data.js?v=121"></script>
-  <script src="app.js?v=121"></script>
+  <script src="data.js?v=122"></script>
+  <script src="app.js?v=122"></script>
 </body>
 </html>

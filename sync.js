@@ -1,3 +1,10 @@
+
+function showLoginError(msg) {
+  const errDiv = document.getElementById('login-error');
+  if (errDiv) errDiv.innerText = msg;
+  else alert(msg);
+}
+
 // sync.js
 
 const firebaseConfig = {
@@ -60,10 +67,10 @@ if (auth && db) {
 }
 
 window.loginToCloud = function() {
-  if (!auth) return alert("Firebase not loaded. Check internet or AdBlocker.");
+  if (!auth) return showLoginError("Firebase not loaded. Check internet.");
   const email = document.getElementById('login-email').value;
   const pass = document.getElementById('login-pass').value;
-  if(!email || !pass) return alert("Enter email and password");
+  if(!email || !pass) return showLoginError("Please enter email and password.");
   
   const btn = document.getElementById('login-btn');
   btn.textContent = "Logging in...";
@@ -72,7 +79,7 @@ window.loginToCloud = function() {
   auth.signInWithEmailAndPassword(email, pass)
     .then((userCredential) => {})
     .catch((error) => {
-      alert("Login failed: " + error.message);
+      showLoginError("Error: " + error.message);
       btn.textContent = "Login";
       btn.disabled = false;
     });
