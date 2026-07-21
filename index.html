@@ -11,7 +11,7 @@
   <title>CA Final Tracker</title>
   <link rel="manifest" href="manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300,0,0" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=101">
+  <link rel="stylesheet" href="style.css?v=102">
   <!-- Mobile Drag and Drop Polyfill -->
   
   
@@ -119,6 +119,11 @@
 
         <!-- Subject & Topic Selection -->
         <div class="st-selectors">
+          <div style="display: flex; justify-content: flex-end; margin-bottom: -4px;">
+            <button class="icon-btn" style="font-size: 11px; padding: 4px 8px; border-radius: 6px; background: rgba(10,132,255,0.1); color: var(--primary);" onclick="openPlannerPickerModal()">
+              <span class="material-symbols-rounded" style="font-size:14px; margin-right:4px; vertical-align:middle;">assignment</span>Pick from Planner
+            </button>
+          </div>
           <select id="st-subject" class="st-select" onchange="onTrackerSubjectChange()">
             <option value="">Select Subject</option>
           </select>
@@ -361,7 +366,7 @@
 
   <script src="Sortable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="data.js?v=101"></script>
-  <script src="app.js?v=101"></script>
+  <script src="data.js?v=102"></script>
+  <script src="app.js?v=102"></script>
 </body>
 </html>
