@@ -2171,7 +2171,7 @@ function trackerStop() {
 
 // ==========================================
 
-window.openPlannerPickerModal = function() {
+window.openPlannerPickerModal = function(target = 'tracker') {
   const dateStr = getTodayStr();
   const tasksObj = getPlannerTasks();
   const todayTasks = tasksObj[dateStr] || [];
@@ -2184,17 +2184,26 @@ window.openPlannerPickerModal = function() {
   
   let html = '<div style="display:flex; flex-direction:column; gap:8px;">';
   pending.forEach((t, idx) => {
-    // Escape quotes for inline onclick
-    const subj = (t.subject || '').replace(/'/g, "\'");
-    let topic = (t.chapterId || '').replace(/'/g, "\'");
-    // Actually we need the real chapter name from chapterId, but often chapterId is the name or close to it.
-    // Let's just use what we have, if topic doesn't match a dropdown option, we might need to add it as custom.
-    const name = (t.name || '').replace(/'/g, "\'");
+    let subjName = t.subject || '';
+    let topicName = t.chapterId || '';
+    
+    const sObj = findSubj(t.subject);
+    if (sObj) {
+      subjName = sObj.name;
+      if (t.chapterId && sObj.chapters) {
+        const cObj = sObj.chapters.find(c => c.id === t.chapterId);
+        if (cObj) topicName = cObj.name;
+      }
+    }
+    
+    const subj = subjName.replace(/'/g, "\\'");
+    const topic = topicName.replace(/'/g, "\\'");
+    const name = (t.name || '').replace(/'/g, "\\'");
     
     html += `
-      <div class="glass-card" style="padding:10px; cursor:pointer; border:1px solid rgba(10,132,255,0.2);" onclick="pickPlannerTask('${subj}', '${topic}', '${name}')">
+      <div class="glass-card" style="padding:10px; cursor:pointer; border:1px solid rgba(10,132,255,0.2);" onclick="pickPlannerTask('${subj}', '${topic}', '${name}', '${target}')">
         <div style="font-weight:600; font-size:14px;">${t.name}</div>
-        <div style="font-size:12px; color:var(--text-secondary);">${t.subject || 'No Subject'}</div>
+        <div style="font-size:12px; color:var(--text-secondary);">${subjName || 'No Subject'} ${topicName ? '— ' + topicName : ''}</div>
       </div>
     `;
   });
@@ -2203,45 +2212,54 @@ window.openPlannerPickerModal = function() {
   openModal('Select a Task', html);
 };
 
-window.pickPlannerTask = function(subj, topic, taskName) {
+window.pickPlannerTask = function(subj, topic, taskName, target) {
   closeModal();
   
-  // Set Subject
-  const subSel = document.getElementById('st-subject');
-  if (subj && subSel.querySelector(`option[value="${subj}"]`)) {
-    subSel.value = subj;
-  } else if (subj) {
-    // Add as custom if not found
-    const opt = document.createElement('option');
-    opt.value = subj;
-    opt.textContent = subj;
-    subSel.insertBefore(opt, subSel.querySelector('[value="__custom__"]'));
-    subSel.value = subj;
+  const isManual = (target === 'manual');
+  const subjId = isManual ? 'ml-subj' : 'st-subject';
+  const topicId = isManual ? 'ml-topic' : 'st-topic';
+  const taskId = isManual ? 'ml-task' : 'st-task-desc';
+  
+  if (isManual) {
+    openManualLogModal();
+    setTimeout(() => populateFields(), 50);
+  } else {
+    populateFields();
   }
   
-  // Populate Topics for Subject
-  onTrackerSubjectChange(true);
-  
-  // Set Topic
-  const topSel = document.getElementById('st-topic');
-  if (topic && topSel.querySelector(`option[value="${topic}"]`)) {
-    topSel.value = topic;
-  } else if (topic) {
-    const opt = document.createElement('option');
-    opt.value = topic;
-    opt.textContent = topic;
-    topSel.appendChild(opt);
-    topSel.value = topic;
+  function populateFields() {
+    const subSel = document.getElementById(subjId);
+    if (subj && subSel.querySelector(`option[value="${subj}"]`)) {
+      subSel.value = subj;
+    } else if (subj) {
+      const opt = document.createElement('option');
+      opt.value = subj; opt.textContent = subj;
+      subSel.insertBefore(opt, subSel.querySelector('[value="__custom__"]'));
+      subSel.value = subj;
+    }
+    
+    if (isManual) onManualLogSubjChange();
+    else onTrackerSubjectChange(true);
+    
+    const topSel = document.getElementById(topicId);
+    if (topic && topSel.querySelector(`option[value="${topic}"]`)) {
+      topSel.value = topic;
+    } else if (topic) {
+      const opt = document.createElement('option');
+      opt.value = topic; opt.textContent = topic;
+      topSel.appendChild(opt);
+      topSel.value = topic;
+    }
+    
+    document.getElementById(taskId).value = taskName;
+    
+    if (!isManual) {
+      trackerState.subject = subSel.value;
+      trackerState.topic = topSel.value;
+      trackerState.task = taskName;
+      saveTrackerState();
+    }
   }
-  
-  // Set Task Name
-  document.getElementById('st-task-desc').value = taskName;
-  
-  // Update state
-  trackerState.subject = subSel.value;
-  trackerState.topic = topSel.value;
-  trackerState.task = taskName;
-  saveTrackerState();
 };
 
 // ==========================================
@@ -2324,6 +2342,7 @@ window.deleteTodaysLog = function(idx) {
 window.openManualLogModal = function() {
   const body = document.getElementById('modal-body');
   document.getElementById('modal-title').textContent = 'Add Manual Log';
+  document.getElementById('modal-title').innerHTML = 'Add Manual Log <button class="icon-btn" style="font-size: 11px; padding: 2px 6px; border-radius: 6px; background: rgba(10,132,255,0.1); color: var(--primary); margin-left: 10px; vertical-align: middle;" onclick="openPlannerPickerModal(\'manual\')"><span class="material-symbols-rounded" style="font-size:14px; margin-right:4px; vertical-align:middle;">assignment</span>Planner Task</button>';
   
   let subjOptions = '<option value="">Select Subject</option>';
   if(APP_DATA[state.activeGroup]) {
