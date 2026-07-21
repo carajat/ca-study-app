@@ -2491,6 +2491,18 @@ window.startTutorial = function() {
         onHighlightStarted: () => { switchTab('dashboard'); }
       },
       {
+        element: '#tab-planner .planner-actions',
+        popover: {
+          title: 'Daily Planner',
+          description: 'Add your goals for the day. You can even copy unfinished tasks to tomorrow!',
+          side: "bottom", align: 'center'
+        },
+        onHighlightStarted: () => { 
+          switchTab('planner');
+          return new Promise(resolve => setTimeout(resolve, 50));
+        }
+      },
+      {
         element: '#tab-syllabus .tab-header',
         popover: {
           title: 'Track Syllabus',
@@ -2499,18 +2511,6 @@ window.startTutorial = function() {
         },
         onHighlightStarted: () => { 
           switchTab('syllabus');
-          return new Promise(resolve => setTimeout(resolve, 50));
-        }
-      },
-      {
-        element: '#tab-exams .tab-header',
-        popover: {
-          title: 'Mock Exams',
-          description: 'Log your mock test scores and analyze your performance across different attempts.',
-          side: "bottom", align: 'center'
-        },
-        onHighlightStarted: () => { 
-          switchTab('exams');
           return new Promise(resolve => setTimeout(resolve, 50));
         }
       },
@@ -2527,14 +2527,14 @@ window.startTutorial = function() {
         }
       },
       {
-        element: '#tab-planner .planner-actions',
+        element: '#tab-exams .tab-header',
         popover: {
-          title: 'Daily Planner',
-          description: 'Add your goals for the day. You can even copy unfinished tasks to tomorrow!',
-          side: "top", align: 'center'
+          title: 'Mock Exams',
+          description: 'Log your mock test scores and analyze your performance across different attempts.',
+          side: "bottom", align: 'center'
         },
         onHighlightStarted: () => { 
-          switchTab('planner');
+          switchTab('exams');
           return new Promise(resolve => setTimeout(resolve, 50));
         }
       },
@@ -2542,7 +2542,7 @@ window.startTutorial = function() {
         element: '.bottom-nav',
         popover: {
           title: 'Navigation Tabs',
-          description: 'Switch between Dashboard, Syllabus, Exams, Schedule, and Planner anytime. You are ready to crush your CA Finals!',
+          description: 'Switch between Dashboard, Planner, Syllabus, Timetable, and Exams anytime. You are ready to crush your CA Finals!',
           side: "top", align: 'center'
         },
         onHighlightStarted: () => { 
