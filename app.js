@@ -2598,11 +2598,34 @@ window.startTutorial = function() {
 
 
 window.reloadAppFromCloud = function(cloudData) {
-  const localHash = JSON.stringify(DYNAMIC_DATA);
-  const cloudHash = JSON.stringify(cloudData);
+  let newDynamic = cloudData.dynamic || cloudData;
+  let newTracker = cloudData.tracker || {};
+  
+  // Clean up undefined/null from newTracker to match trackerState stringify
+  const cleanTracker = {
+    isRunning: !!newTracker.isRunning,
+    isPaused: !!newTracker.isPaused,
+    startTime: newTracker.startTime || null,
+    pausedTime: newTracker.pausedTime || 0,
+    pauseStart: newTracker.pauseStart || null,
+    subject: newTracker.subject || '',
+    topic: newTracker.topic || '',
+    task: newTracker.task || ''
+  };
+
+  const localHash = JSON.stringify(DYNAMIC_DATA) + JSON.stringify(trackerState);
+  const cloudHash = JSON.stringify(newDynamic) + JSON.stringify(cleanTracker);
+  
   if (localHash !== cloudHash) {
-    console.log("Cloud data differs from local data. Applying sync and reloading...");
-    localStorage.setItem('ca-study-data', cloudHash);
+    console.log("Cloud data differs. Applying sync and reloading...");
+    localStorage.setItem('ca-study-data', JSON.stringify(newDynamic));
+    
+    if (cleanTracker.isRunning || cleanTracker.isPaused) {
+      localStorage.setItem('ca_study_tracker_state', JSON.stringify(cleanTracker));
+    } else {
+      localStorage.removeItem('ca_study_tracker_state');
+    }
+    
     location.reload();
   } else {
     console.log("Cloud data is identical. No reload needed.");
