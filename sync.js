@@ -30,6 +30,7 @@ if (auth && db) {
   // Listen to auth state
   auth.onAuthStateChanged((user) => {
     currentUser = user;
+    window.isCloudLoggedIn = !!user;
     if (user) {
       console.log("Logged in as:", user.email);
       const overlay = document.getElementById('welcome-overlay');
