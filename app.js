@@ -1470,6 +1470,10 @@ function openMenuModal() {
     <button id="editModeBtn" class="menu-btn" onclick="toggleEditMode(); closeModal()">
       <span class="menu-btn-icon">${isEditMode ? '<span class="material-symbols-rounded icon-sm">check_circle</span>' : '<span class="material-symbols-rounded icon-sm">edit</span>'}</span> Edit Mode: <strong style="color: ${isEditMode ? 'var(--color-primary)' : 'inherit'}">${isEditMode ? 'ON' : 'OFF'}</strong>
     </button>
+    
+    <button class="menu-btn" onclick="closeModal(); if(typeof logoutFromCloud === 'function') logoutFromCloud(); else alert('Login logic not loaded');">
+      <span class="material-symbols-rounded menu-btn-icon">logout</span> Logout (Cloud Sync)
+    </button>
     <button class="menu-btn" onclick="openThemeModal()">
       <span class="material-symbols-rounded menu-btn-icon">palette</span> Customize Theme
     </button>
@@ -2587,3 +2591,15 @@ window.startTutorial = function() {
   driverObj.drive();
 };
 
+
+window.reloadAppFromCloud = function(cloudData) {
+  const localHash = JSON.stringify(DYNAMIC_DATA);
+  const cloudHash = JSON.stringify(cloudData);
+  if (localHash !== cloudHash) {
+    console.log("Cloud data differs from local data. Applying sync and reloading...");
+    localStorage.setItem('ca-study-data', cloudHash);
+    location.reload();
+  } else {
+    console.log("Cloud data is identical. No reload needed.");
+  }
+};
