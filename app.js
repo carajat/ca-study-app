@@ -1,18 +1,4 @@
 
-// FORCE UPDATE LOGIC v95
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(function(registrations) {
-    let shouldReload = false;
-    for(let registration of registrations) {
-      registration.unregister();
-      shouldReload = true;
-    }
-    if (shouldReload && !window.location.href.includes('v=95')) {
-      window.location.href = window.location.pathname + '?v=95';
-    }
-  });
-}
-
 // ========================================
 // CA Final Study Companion — App Logic
 // ========================================
@@ -1936,7 +1922,7 @@ function moveScheduleSlot(scheduleKey, idx, dir) {
 // DAILY JOURNAL FEATURE
 // ==========================================
 
-let currentJournalDate = new Date();
+var currentJournalDate = new Date();
 
 function getJournalDateString(dateObj) {
   const y = dateObj.getFullYear();
@@ -1964,7 +1950,6 @@ function changeJournalDate(delta) {
 }
 
 function loadJournal(dateStr) {
-  try {
   if (!dateStr) return;
   const parts = dateStr.split('-');
   if (parts.length === 3) {
@@ -1997,7 +1982,6 @@ function loadJournal(dateStr) {
   document.getElementById('j-days-left').innerText = daysLeft > 0 ? daysLeft : 0;
 
   calculateJournalStats();
-  } catch (e) { alert("ERROR IN LOADJOURNAL: " + e.stack); }
 }
 
 function switchJournalTab(tab) {
@@ -2112,7 +2096,6 @@ window.checkCustomTopic = function(topicSel) {
 };
 
 function addJournalRow(data = {}) {
-  try {
   const tbody = document.getElementById('journal-tbody');
   const tr = document.createElement('tr');
   
@@ -2167,7 +2150,6 @@ function addJournalRow(data = {}) {
   }
   
   calculateJournalStats();
-  } catch (e) { alert("ERROR IN ADDROW: " + e.stack); }
 }
 
 function removeJournalRow(btn) {
