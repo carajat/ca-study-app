@@ -2443,57 +2443,70 @@ window.startTutorial = function() {
   const driverObj = window.driver.js.driver({
     showProgress: true,
     animate: true,
-    overlayColor: 'rgba(0, 0, 0, 0.7)',
+    overlayColor: 'rgba(0, 0, 0, 0.8)',
     steps: [
       {
-        element: '#group-selector',
+        element: '.app-header h1', // targeting the header text instead of invisible select
         popover: {
           title: 'Select CA Final Group',
-          description: 'Tap here to switch between CA Final Group 1 and Group 2. Your syllabus, planner, and schedule will update automatically.',
-          side: "bottom",
-          align: 'start'
-        }
+          description: 'Tap on the title to switch between CA Final Group 1 and Group 2. Your syllabus, planner, and schedule will update automatically.',
+          side: "bottom", align: 'start'
+        },
+        onHighlightStarted: () => { switchTab('dashboard'); }
       },
       {
         element: '#study-tracker-card',
         popover: {
           title: 'Live Study Tracker',
-          description: 'This is where the magic happens! Select your subject and topic, then hit Start to track your study sessions live.',
-          side: "bottom",
-          align: 'start'
-        }
-      },
-      {
-        element: '#study-tracker-card .st-selectors > div:first-child button',
-        popover: {
-          title: 'Pick from Planner',
-          description: 'Use this handy shortcut to instantly load tasks you have set in today\'s Planner into the Tracker.',
-          side: "left",
-          align: 'start'
-        }
+          description: 'Select your subject & topic, then hit Start to track your study sessions live. You can also pick directly from today\'s Planner tasks.',
+          side: "bottom", align: 'center'
+        },
+        onHighlightStarted: () => { switchTab('dashboard'); }
       },
       {
         element: '#tl-list',
         popover: {
           title: "Today's Log",
-          description: 'Once you save a session in the tracker, it appears here. You can see your total hours for the day at a glance.',
-          side: "top",
-          align: 'start'
+          description: 'Your saved sessions appear here. You can also add manual logs if you forgot to start the timer.',
+          side: "top", align: 'center'
+        },
+        onHighlightStarted: () => { switchTab('dashboard'); }
+      },
+      {
+        element: '#tab-syllabus .tab-header',
+        popover: {
+          title: 'Track Syllabus',
+          description: 'Mark chapters as done when you finish Concepts, Q-Bank, or Revision Videos.',
+          side: "bottom", align: 'center'
+        },
+        onHighlightStarted: () => { 
+          switchTab('syllabus');
+          // small delay for transition
+          return new Promise(resolve => setTimeout(resolve, 50));
         }
       },
       {
+        element: '#tab-planner .planner-actions',
         popover: {
-          title: 'Manual Entry',
-          description: 'Missed tracking a session live? Tap the "Planner Task" icon next to "Add Manual Log" (below) to manually enter study hours.',
+          title: 'Daily Planner',
+          description: 'Add your goals for the day. You can even copy unfinished tasks to tomorrow!',
+          side: "top", align: 'center'
+        },
+        onHighlightStarted: () => { 
+          switchTab('planner');
+          return new Promise(resolve => setTimeout(resolve, 50));
         }
       },
       {
         element: '.bottom-nav',
         popover: {
           title: 'Navigation Tabs',
-          description: 'Switch between Dashboard, Syllabus (to track chapter completion), Exams (mock scores), Schedule, and Planner. You are ready to crush your CA Finals!',
-          side: "top",
-          align: 'center'
+          description: 'Switch between Dashboard, Syllabus, Exams (Mock scores), Schedule, and Planner anytime!',
+          side: "top", align: 'center'
+        },
+        onHighlightStarted: () => { 
+          switchTab('dashboard');
+          return new Promise(resolve => setTimeout(resolve, 50));
         }
       }
     ]
