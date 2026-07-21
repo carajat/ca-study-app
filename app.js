@@ -2457,11 +2457,20 @@ window.startTutorial = function() {
     overlayColor: 'rgba(0, 0, 0, 0.8)',
     steps: [
       {
-        element: '.app-header h1', // targeting the header text instead of invisible select
+        element: '.app-header h1',
         popover: {
           title: 'Select CA Final Group',
           description: 'Tap on the title to switch between CA Final Group 1 and Group 2. Your syllabus, planner, and schedule will update automatically.',
           side: "bottom", align: 'start'
+        },
+        onHighlightStarted: () => { switchTab('dashboard'); }
+      },
+      {
+        element: '.app-header .material-symbols-rounded:contains("menu")', // this will fallback gracefully if not precise
+        popover: {
+          title: 'Settings & Tools',
+          description: 'Access the Menu (top right) to change Theme colors, toggle Dark/Light Mode, enable Edit Mode, or Export/Import your data backups.',
+          side: "bottom", align: 'end'
         },
         onHighlightStarted: () => { switchTab('dashboard'); }
       },
@@ -2492,7 +2501,30 @@ window.startTutorial = function() {
         },
         onHighlightStarted: () => { 
           switchTab('syllabus');
-          // small delay for transition
+          return new Promise(resolve => setTimeout(resolve, 50));
+        }
+      },
+      {
+        element: '#tab-exams .tab-header',
+        popover: {
+          title: 'Mock Exams',
+          description: 'Log your mock test scores and analyze your performance across different attempts.',
+          side: "bottom", align: 'center'
+        },
+        onHighlightStarted: () => { 
+          switchTab('exams');
+          return new Promise(resolve => setTimeout(resolve, 50));
+        }
+      },
+      {
+        element: '#tab-schedule .tab-header',
+        popover: {
+          title: 'Master Schedule',
+          description: 'Plan your long-term timeline, including your first pass, revisions, and mock periods.',
+          side: "bottom", align: 'center'
+        },
+        onHighlightStarted: () => { 
+          switchTab('schedule');
           return new Promise(resolve => setTimeout(resolve, 50));
         }
       },
@@ -2512,7 +2544,7 @@ window.startTutorial = function() {
         element: '.bottom-nav',
         popover: {
           title: 'Navigation Tabs',
-          description: 'Switch between Dashboard, Syllabus, Exams (Mock scores), Schedule, and Planner anytime!',
+          description: 'Switch between Dashboard, Syllabus, Exams, Schedule, and Planner anytime. You are ready to crush your CA Finals!',
           side: "top", align: 'center'
         },
         onHighlightStarted: () => { 
@@ -2526,55 +2558,3 @@ window.startTutorial = function() {
   driverObj.drive();
 };
 
-window.openAppNavigator = function() {
-  const html = `
-    <div style="display:flex; flex-direction:column; gap:8px;">
-      <p style="text-align:center; color:var(--text-secondary); margin-bottom:10px; font-size:13px;">Jump to any feature instantly</p>
-      
-      <div class="glass-card" style="padding:12px; cursor:pointer;" onclick="switchTab('dashboard'); closeModal();">
-        <div style="font-weight:600; color:var(--primary); display:flex; align-items:center; gap:6px;">
-          <span class="material-symbols-rounded" style="font-size:18px;">home</span> Dashboard (Home)
-        </div>
-        <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">Live tracker, Today's logs, and quick actions</div>
-      </div>
-      
-      <div class="glass-card" style="padding:12px; cursor:pointer;" onclick="switchTab('syllabus'); closeModal();">
-        <div style="font-weight:600; color:var(--primary); display:flex; align-items:center; gap:6px;">
-          <span class="material-symbols-rounded" style="font-size:18px;">menu_book</span> Syllabus Tracker
-        </div>
-        <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">Track chapter-wise completion (Concepts, Q-Bank, Revision)</div>
-      </div>
-      
-      <div class="glass-card" style="padding:12px; cursor:pointer;" onclick="switchTab('planner'); closeModal();">
-        <div style="font-weight:600; color:var(--primary); display:flex; align-items:center; gap:6px;">
-          <span class="material-symbols-rounded" style="font-size:18px;">fact_check</span> Daily Planner
-        </div>
-        <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">Set and track goals for specific days</div>
-      </div>
-
-      <div class="glass-card" style="padding:12px; cursor:pointer;" onclick="switchTab('exams'); closeModal();">
-        <div style="font-weight:600; color:var(--primary); display:flex; align-items:center; gap:6px;">
-          <span class="material-symbols-rounded" style="font-size:18px;">analytics</span> Mock Exams
-        </div>
-        <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">Log your mock test scores and analyze performance</div>
-      </div>
-
-      <div class="glass-card" style="padding:12px; cursor:pointer;" onclick="switchTab('schedule'); closeModal();">
-        <div style="font-weight:600; color:var(--primary); display:flex; align-items:center; gap:6px;">
-          <span class="material-symbols-rounded" style="font-size:18px;">calendar_month</span> Master Schedule
-        </div>
-        <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">Long-term timeline (First pass, Revisions, Mocks)</div>
-      </div>
-      
-      <div class="glass-card" style="padding:12px; cursor:pointer;" onclick="closeModal(); startTutorial();">
-        <div style="font-weight:600; color:var(--primary); display:flex; align-items:center; gap:6px;">
-          <span class="material-symbols-rounded" style="font-size:18px;">help</span> App Tour
-        </div>
-        <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">Restart the interactive walkthrough of the app</div>
-      </div>
-      
-      <button class="btn-primary" style="margin-top:10px;" onclick="openMenuModal()">Back to Settings</button>
-    </div>
-  `;
-  openModal('App Navigator', html);
-};
