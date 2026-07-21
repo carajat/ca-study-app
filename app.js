@@ -2218,7 +2218,7 @@ function renderTodaysLog() {
       <div style="flex:1;">
         <div style="font-weight:600; font-size:14px; color:var(--text-primary);">${row.subject}</div>
         <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">${row.topic}</div>
-        ${row.tasks ? \`<div style="font-size:12px; color:var(--text-muted); margin-top:4px;"><i>${row.tasks}</i></div>\` : ''}
+        ${row.tasks ? '<div style="font-size:12px; color:var(--text-muted); margin-top:4px;"><i>' + row.tasks + '</i></div>' : ''}
       </div>
       <div style="text-align:right;">
         <div style="font-size:13px; font-weight:600; color:var(--primary); background:rgba(10,132,255,0.1); padding:2px 6px; border-radius:6px; display:inline-block;">${durText}</div>
