@@ -25,39 +25,43 @@ const SHARED_PATH = '/sharedData/coupleRoom/';
 let isSyncing = false; // flag to prevent infinite loops when receiving data
 let currentUser = null;
 
-// Listen to auth state
-auth.onAuthStateChanged((user) => {
-  currentUser = user;
-  if (user) {
-    console.log("Logged in as:", user.email);
-    document.getElementById('welcome-overlay').style.display = 'none';
-    
-    // Start listening to the shared database path
-    db.ref(SHARED_PATH).on('value', (snapshot) => {
-      const cloudData = snapshot.val();
-      if (cloudData && !isSyncing) {
-        // Data came from cloud, reload the app
-        isSyncing = true;
-        if (typeof window.reloadAppFromCloud === 'function') {
-          window.reloadAppFromCloud(cloudData);
-        }
-        setTimeout(() => { isSyncing = false; }, 500); // Debounce local saves
-      }
-    });
-  } else {
-    console.log("User is signed out (Offline Mode)");
-    // If not skipped login previously, show overlay
-    if (localStorage.getItem('ca-skip-login') !== 'true') {
-      document.getElementById('welcome-overlay').style.display = 'flex';
-    }
-  }
-});
 
-// Function called by UI to login
+if (auth && db) {
+  // Listen to auth state
+  auth.onAuthStateChanged((user) => {
+    currentUser = user;
+    if (user) {
+      console.log("Logged in as:", user.email);
+      const overlay = document.getElementById('welcome-overlay');
+      if (overlay) overlay.style.display = 'none';
+      
+      // Start listening to the shared database path
+      db.ref(SHARED_PATH).on('value', (snapshot) => {
+        const cloudData = snapshot.val();
+        if (cloudData && !isSyncing) {
+          isSyncing = true;
+          if (typeof window.reloadAppFromCloud === 'function') {
+            window.reloadAppFromCloud(cloudData);
+          }
+          setTimeout(() => { isSyncing = false; }, 500);
+        }
+      });
+    } else {
+      console.log("User is signed out (Offline Mode)");
+      if (localStorage.getItem('ca-skip-login') !== 'true') {
+        const overlay = document.getElementById('welcome-overlay');
+        if (overlay) overlay.style.display = 'flex';
+      }
+    }
+  });
+} else {
+  console.warn("Firebase Auth or DB not initialized. Running in strict offline mode.");
+}
+
 window.loginToCloud = function() {
+  if (!auth) return alert("Firebase not loaded. Check internet or AdBlocker.");
   const email = document.getElementById('login-email').value;
   const pass = document.getElementById('login-pass').value;
-  
   if(!email || !pass) return alert("Enter email and password");
   
   const btn = document.getElementById('login-btn');
@@ -65,9 +69,7 @@ window.loginToCloud = function() {
   btn.disabled = true;
 
   auth.signInWithEmailAndPassword(email, pass)
-    .then((userCredential) => {
-      // Success - onAuthStateChanged will handle hiding the overlay
-    })
+    .then((userCredential) => {})
     .catch((error) => {
       alert("Login failed: " + error.message);
       btn.textContent = "Login";
@@ -75,27 +77,28 @@ window.loginToCloud = function() {
     });
 }
 
-// Function called by UI to continue offline
 window.continueOffline = function() {
   localStorage.setItem('ca-skip-login', 'true');
-  document.getElementById('welcome-overlay').style.display = 'none';
+  const overlay = document.getElementById('welcome-overlay');
+  if (overlay) overlay.style.display = 'none';
 }
 
 window.logoutFromCloud = function() {
-  auth.signOut().then(() => {
-    localStorage.removeItem('ca-skip-login');
-    alert("Logged out successfully");
+  localStorage.removeItem('ca-skip-login');
+  if (auth && auth.currentUser) {
+    auth.signOut().then(() => {
+      alert("Logged out successfully");
+      location.reload();
+    });
+  } else {
     location.reload();
-  });
+  }
 }
 
-// Function called by app.js whenever saveState() runs
 window.syncToCloud = function(data) {
-  if (!currentUser) return; // Not logged in, don't sync
-  if (isSyncing) return; // Prevent echoing back what we just received
-  
-  // We upload to Firebase
+  if (!currentUser || !db) return; 
+  if (isSyncing) return; 
   db.ref(SHARED_PATH).set(data).catch(err => {
-    console.error("Firebase sync error. Probably Read-Only mode.", err.message);
+    console.error("Firebase sync error.", err.message);
   });
 }
