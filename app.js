@@ -2640,26 +2640,3 @@ window.reloadAppFromCloud = function(cloudData) {
     location.reload();
   }
 };
-
-  const localHash = JSON.stringify(DYNAMIC_DATA) + JSON.stringify(trackerState);
-  const cloudHash = JSON.stringify(newDynamic) + JSON.stringify(cleanTracker);
-  
-  if (localHash !== cloudHash) {
-    console.log("Cloud data differs. Applying sync and reloading...");
-    localStorage.setItem('ca-study-data', JSON.stringify(newDynamic));
-    
-    if (cleanTracker.isRunning || cleanTracker.isPaused) {
-      localStorage.setItem('ca_study_tracker_state', JSON.stringify(cleanTracker));
-    } else {
-      localStorage.removeItem('ca_study_tracker_state');
-    }
-  if (typeof window.syncToCloud === 'function') {
-    window.syncToCloud({ dynamic: DYNAMIC_DATA, state: loadState(), tracker: trackerState });
-  }
-
-    
-    location.reload();
-  } else {
-    console.log("Cloud data is identical. No reload needed.");
-  }
-};
