@@ -11,7 +11,7 @@
   <title>CA Final Tracker</title>
   <link rel="manifest" href="manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300,0,0" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=120">
+  <link rel="stylesheet" href="style.css?v=121">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
   <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
   <!-- Mobile Drag and Drop Polyfill -->
@@ -28,7 +28,12 @@
 <body>
 
   <!-- Welcome / Login Overlay -->
-  <div id="welcome-overlay" class="modal-overlay" style="display:none; z-index:9999; flex-direction:column; justify-content:center; padding:20px; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);">
+  <div id="welcome-overlay" class="modal-overlay" style="display:flex; z-index:9999; flex-direction:column; justify-content:center; padding:20px; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);">
+    <script>
+      if(localStorage.getItem('ca-skip-login') === 'true') {
+        document.getElementById('welcome-overlay').style.display = 'none';
+      }
+    </script>
     <div class="glass-card" style="max-width: 400px; width: 100%; text-align: center; margin: 0 auto; padding: 30px 20px;">
       <span class="material-symbols-rounded" style="font-size: 48px; color: var(--primary); margin-bottom: 10px;">cloud_sync</span>
       <h2 style="margin-bottom: 10px; font-size: 22px;">Welcome to CA Tracker</h2>
@@ -388,7 +393,7 @@
 
   <script src="Sortable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="data.js?v=120"></script>
-  <script src="app.js?v=120"></script>
+  <script src="data.js?v=121"></script>
+  <script src="app.js?v=121"></script>
 </body>
 </html>
