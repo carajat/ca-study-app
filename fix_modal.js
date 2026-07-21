@@ -1,18 +1,23 @@
 const fs = require('fs');
+let appJs = fs.readFileSync('app.js', 'utf8');
 
-let app = fs.readFileSync('app.js', 'utf8');
-const oldOptions = '<option value="study">Study Session</option><option value="revision">Revision</option><option value="mock">Mock Test</option><option value="personal">Personal / Break</option>';
-const newOptions = '<option value="primary">Primary Subject</option><option value="secondary">Secondary Subject</option><option value="quick">Quick Task</option>';
-app = app.replace(oldOptions, newOptions);
-fs.writeFileSync('app.js', app);
+appJs = appJs.replace(
+  "document.getElementById('modal-overlay').style.display = 'flex';\r\n  document.getElementById('modal-overlay').classList.add('show');",
+  "document.getElementById('modal-overlay').classList.add('show');"
+);
+appJs = appJs.replace(
+  "document.getElementById('modal-overlay').style.display = 'flex';\n  document.getElementById('modal-overlay').classList.add('show');",
+  "document.getElementById('modal-overlay').classList.add('show');"
+);
 
-let sw = fs.readFileSync('sw.js', 'utf8');
-sw = sw.replace(/v66/g, 'v67');
-sw = sw.replace(/v=65/g, 'v=67');
-fs.writeFileSync('sw.js', sw);
+appJs = appJs.replace(
+  "function closeModal() {\r\n  document.getElementById('modal-overlay').classList.remove('show');\r\n}",
+  "function closeModal() {\r\n  const overlay = document.getElementById('modal-overlay');\r\n  overlay.classList.remove('show');\r\n  overlay.style.display = '';\r\n}"
+);
+appJs = appJs.replace(
+  "function closeModal() {\n  document.getElementById('modal-overlay').classList.remove('show');\n}",
+  "function closeModal() {\n  const overlay = document.getElementById('modal-overlay');\n  overlay.classList.remove('show');\n  overlay.style.display = '';\n}"
+);
 
-let html = fs.readFileSync('index.html', 'utf8');
-html = html.replace(/v=65/g, 'v=67');
-fs.writeFileSync('index.html', html);
-
-console.log('BUMPED to v67');
+fs.writeFileSync('app.js', appJs);
+console.log("Modal fixed");

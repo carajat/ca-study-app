@@ -320,7 +320,9 @@ function openModal(title, bodyHtml) {
 }
 
 function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('show');
+  const overlay = document.getElementById('modal-overlay');
+  overlay.classList.remove('show');
+  overlay.style.display = '';
 }
 
 window.activeFormCallback = null;
@@ -2268,7 +2270,6 @@ window.openManualLogModal = function() {
       <button class="btn-primary" style="margin-top:10px; border-radius:10px;" onclick="saveManualLog()">Save Log</button>
     </div>
   `;
-  document.getElementById('modal-overlay').style.display = 'flex';
   document.getElementById('modal-overlay').classList.add('show'); // Make sure it animates correctly if using .show
 };
 
