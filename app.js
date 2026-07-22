@@ -2664,12 +2664,13 @@ function smartRepairSyllabusData() {
         DYNAMIC_DATA.syllabusSubjects.push(subj);
       } else {
         subj.chapters = JSON.parse(JSON.stringify(defaultObj.chapters || []));
+        subj.type = defaultObj.type; // Force restore type to 'main'
       }
     };
     
-    enforceG1('fr', { id: 'fr', name: 'Paper 1: Financial Reporting', type: 'subject', chapters: APP_DATA.group1.syllabusSubjects.find(s => s.id === 'fr').chapters });
-    enforceG1('afm', { id: 'afm', name: 'Paper 2: AFM', type: 'subject', chapters: APP_DATA.group1.syllabusSubjects.find(s => s.id === 'afm').chapters });
-    enforceG1('audit', { id: 'audit', name: 'Paper 3: Advanced Auditing', type: 'subject', chapters: APP_DATA.group1.syllabusSubjects.find(s => s.id === 'audit').chapters });
+    enforceG1('fr', { id: 'fr', name: 'Paper 1: Financial Reporting', type: 'main', chapters: APP_DATA.group1.syllabusSubjects.find(s => s.id === 'fr').chapters });
+    enforceG1('afm', { id: 'afm', name: 'Paper 2: AFM', type: 'main', chapters: APP_DATA.group1.syllabusSubjects.find(s => s.id === 'afm').chapters });
+    enforceG1('audit', { id: 'audit', name: 'Paper 3: Advanced Auditing', type: 'main', chapters: APP_DATA.group1.syllabusSubjects.find(s => s.id === 'audit').chapters });
 
     saveDynamicData();
     return;
@@ -2692,6 +2693,7 @@ function smartRepairSyllabusData() {
       DYNAMIC_DATA.syllabusSubjects.push(subj);
     } else {
       subj.chapters = JSON.parse(JSON.stringify(defaultObj.chapters || []));
+      subj.type = defaultObj.type; // Force restore type
     }
   };
 
