@@ -410,21 +410,9 @@ const APP_DATA_GROUP1 = {
     { subject: "Audit", date: "2026-05-06T14:00:00+05:30" }
   ],
   syllabusSubjects: [
-    { id: "fr", name: "Paper 1: Financial Reporting", type: "subject", chapters: [
-      { id: "fr1", name: "Intro to Ind AS" },
-      { id: "fr2", name: "Financial Instruments" },
-      { id: "fr3", name: "Consolidation" }
-    ]},
-    { id: "afm", name: "Paper 2: AFM", type: "subject", chapters: [
-      { id: "afm1", name: "Forex" },
-      { id: "afm2", name: "Derivatives" },
-      { id: "afm3", name: "Portfolio Management" }
-    ]},
-    { id: "audit", name: "Paper 3: Advanced Auditing", type: "subject", chapters: [
-      { id: "au1", name: "Professional Ethics" },
-      { id: "au2", name: "Audit Planning" },
-      { id: "au3", name: "Company Audit" }
-    ]}
+    { id: "fr", name: "Paper 1: Financial Reporting", type: "subject", chapters: APP_DATA_GROUP2.ibsSubjects.fr.chapters },
+    { id: "afm", name: "Paper 2: AFM", type: "subject", chapters: APP_DATA_GROUP2.ibsSubjects.afm.chapters },
+    { id: "audit", name: "Paper 3: Advanced Auditing", type: "subject", chapters: APP_DATA_GROUP2.ibsSubjects.audit.chapters }
   ],
   quotes: APP_DATA_GROUP2.quotes
 };

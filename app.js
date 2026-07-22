@@ -2651,9 +2651,26 @@ function smartRepairSyllabusData() {
   if (state.activeGroup === 'group1') {
     // Group 1 should NOT have DT, IDT, or IBS
     DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => {
-      // Keep only fr, afm, audit (or any other non-group2 specific ones)
-      return ['fr', 'afm', 'audit'].includes(s.id) || (!['dt', 'idt', 'ibs-folder', 'ibs'].includes(s.id) && !(s.id && s.id.startsWith('ibs-')));
+      // Keep only fr, afm, audit
+      return ['fr', 'afm', 'audit'].includes(s.id);
     });
+    
+    // Enforce full chapters for Group 1
+    const g1Flat = DYNAMIC_DATA.syllabusSubjects;
+    const enforceG1 = (id, defaultObj) => {
+      let subj = g1Flat.find(s => s && s.id === id);
+      if (!subj) {
+        subj = JSON.parse(JSON.stringify(defaultObj));
+        DYNAMIC_DATA.syllabusSubjects.push(subj);
+      } else {
+        subj.chapters = JSON.parse(JSON.stringify(defaultObj.chapters || []));
+      }
+    };
+    
+    enforceG1('fr', { id: 'fr', name: 'Paper 1: Financial Reporting', type: 'subject', chapters: APP_DATA.group1.syllabusSubjects.find(s => s.id === 'fr').chapters });
+    enforceG1('afm', { id: 'afm', name: 'Paper 2: AFM', type: 'subject', chapters: APP_DATA.group1.syllabusSubjects.find(s => s.id === 'afm').chapters });
+    enforceG1('audit', { id: 'audit', name: 'Paper 3: Advanced Auditing', type: 'subject', chapters: APP_DATA.group1.syllabusSubjects.find(s => s.id === 'audit').chapters });
+
     saveDynamicData();
     return;
   }
