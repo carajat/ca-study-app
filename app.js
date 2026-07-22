@@ -2724,6 +2724,7 @@ function smartRepairSyllabusData() {
     } else {
       subj.chapters = JSON.parse(JSON.stringify(defaultObj.chapters || []));
       subj.type = defaultObj.type; // Force restore type
+      subj.name = defaultObj.name; // Force restore name to clear emojis
     }
   };
 
