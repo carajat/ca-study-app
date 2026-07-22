@@ -2397,7 +2397,9 @@ window.deleteTodaysLog = function(idx) {
 window.openManualLogModal = function() {
   const body = document.getElementById('modal-body');
   document.getElementById('modal-title').textContent = 'Add Manual Log';
-  document.getElementById('modal-title').innerHTML = 'Add Manual Log <button class="icon-btn" style="background: rgba(10,132,255,0.1); color: var(--primary); width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 10px; vertical-align: middle;" title="Pick from Planner" onclick="openPlannerPickerModal(\'manual\')"><span class="material-symbols-rounded" style="font-size:18px;">playlist_add</span></button>';
+  document.getElementById('modal-title').innerHTML = 'Add Manual Log ' +
+    '<button class="icon-btn" style="background: rgba(255,149,0,0.1); color: var(--accent); width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 10px; vertical-align: middle;" title="Pick Mock" onclick="openMockPickerModal(\'manual\')"><span class="material-symbols-rounded" style="font-size:18px;">quiz</span></button>' +
+    '<button class="icon-btn" style="background: rgba(10,132,255,0.1); color: var(--primary); width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; vertical-align: middle;" title="Pick from Planner" onclick="openPlannerPickerModal(\'manual\')"><span class="material-symbols-rounded" style="font-size:18px;">playlist_add</span></button>';
   
   let subjOptions = '<option value="">Select Subject</option>';
   let subjectsArray = [];
