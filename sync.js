@@ -117,10 +117,17 @@ window.syncToCloud = function(data) {
   if (syncTimeout) clearTimeout(syncTimeout);
   
   syncTimeout = setTimeout(() => {
-    db.ref(SHARED_PATH).set(cleanData).catch(err => {
-      console.error("Firebase sync error.", err.message); 
-      if(typeof showToast === "function") showToast("Sync Error: " + err.message);
-    });
+    db.ref(SHARED_PATH).set(cleanData)
+      .then(() => {
+        let debugEl = document.getElementById('debug-sync');
+        if (debugEl) debugEl.innerHTML += '<br><span style="color:yellow">SYNC SUCCESS (isRunning: ' + cleanData.tracker.isRunning + ')</span>';
+      })
+      .catch(err => {
+        console.error("Sync to cloud failed:", err);
+        let debugEl = document.getElementById('debug-sync');
+        if (debugEl) debugEl.innerHTML += '<br><span style="color:red">SYNC FAILED: ' + err.message + '</span>';
+        if(typeof showToast === 'function') showToast("Error syncing data to cloud", true);
+      });
   }, 300);
 }
 
