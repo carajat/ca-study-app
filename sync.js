@@ -123,3 +123,15 @@ window.syncToCloud = function(data) {
     });
   }, 300);
 }
+
+// Server Time Offset Logic for perfectly synced timers
+window.serverTimeOffset = 0;
+if (db) {
+  db.ref('.info/serverTimeOffset').on('value', function(snapshot) {
+    window.serverTimeOffset = snapshot.val() || 0;
+  });
+}
+window.getGlobalTime = function() {
+  return Date.now() + window.serverTimeOffset;
+};
+

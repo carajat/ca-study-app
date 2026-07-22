@@ -2133,7 +2133,7 @@ function onTrackerTopicChange() {
 
 function getElapsedMs() {
   if (!trackerState.startTime) return 0;
-  var now = Date.now();
+  var now = (typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now());
   var elapsed = now - trackerState.startTime - trackerState.pausedTime;
   if (trackerState.isPaused && trackerState.pauseStart) elapsed -= (now - trackerState.pauseStart);
   return Math.max(0, elapsed);
@@ -2191,7 +2191,7 @@ function trackerStart() {
     return;
   }
   trackerState.isRunning = true; trackerState.isPaused = false;
-  trackerState.startTime = Date.now(); trackerState.pausedTime = 0; trackerState.pauseStart = null;
+  trackerState.startTime = (typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now()); trackerState.pausedTime = 0; trackerState.pauseStart = null;
   trackerState.subject = document.getElementById('st-subject').value;
   trackerState.topic = document.getElementById('st-topic').value;
   trackerState.task = document.getElementById('st-task-desc').value;
@@ -2202,13 +2202,13 @@ function trackerStart() {
 
 function trackerPause() {
   trackerState.isRunning = false; trackerState.isPaused = true;
-  trackerState.pauseStart = Date.now();
+  trackerState.pauseStart = (typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now());
   clearInterval(trackerState.intervalId);
   updateTrackerUI('paused'); saveTrackerState();
 }
 
 function trackerResume() {
-  if (trackerState.pauseStart) trackerState.pausedTime += (Date.now() - trackerState.pauseStart);
+  if (trackerState.pauseStart) trackerState.pausedTime += ((typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now()) - trackerState.pauseStart);
   trackerState.pauseStart = null; trackerState.isRunning = true; trackerState.isPaused = false;
   updateTrackerUI('running');
   trackerState.intervalId = setInterval(updateTimerDisplay, 1000);
@@ -2217,7 +2217,7 @@ function trackerResume() {
 
 function trackerStop() {
   if (trackerState.isPaused && trackerState.pauseStart) {
-    trackerState.pausedTime += (Date.now() - trackerState.pauseStart);
+    trackerState.pausedTime += ((typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now()) - trackerState.pauseStart);
     trackerState.pauseStart = null;
   }
   var elapsedMs = getElapsedMs();
