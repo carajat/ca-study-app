@@ -33,10 +33,10 @@ function switchGroup(groupId) {
     Object.keys(DYNAMIC_DATA.schedules).forEach(key => {
       const slots = DYNAMIC_DATA.schedules[key].slots || [];
       slots.forEach(slot => {
-        if (slot.icon === '☀️') { slot.icon = '<span class="material-symbols-rounded icon-sm">wb_sunny</span>'; emojisModified = true; }
-        if (slot.icon === '☕') { slot.icon = '<span class="material-symbols-rounded icon-sm">local_cafe</span>'; emojisModified = true; }
-        if (slot.icon === '🍽️') { slot.icon = '<span class="material-symbols-rounded icon-sm">restaurant</span>'; emojisModified = true; }
-        if (slot.icon === '😴') { slot.icon = '<span class="material-symbols-rounded icon-sm">bedtime</span>'; emojisModified = true; }
+        if (slot.icon === '☀️') { slot.icon = 'wb_sunny'; emojisModified = true; }
+        if (slot.icon === '☕') { slot.icon = 'local_cafe'; emojisModified = true; }
+        if (slot.icon === '🍽️') { slot.icon = 'restaurant'; emojisModified = true; }
+        if (slot.icon === '😴') { slot.icon = 'bedtime'; emojisModified = true; }
       });
     });
   }
@@ -45,9 +45,9 @@ function switchGroup(groupId) {
     DYNAMIC_DATA.goals.forEach(goal => {
       let g = goal;
       if (typeof g === 'string') {
-        if (g.startsWith('📖 ')) { g = '<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">menu_book</span> ' + g.substring(3); emojisModified = true; }
-        if (g.startsWith('✍️ ')) { g = '<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">edit_document</span> ' + g.substring(3); emojisModified = true; }
-        if (g.startsWith('💾 ')) { g = '<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">save</span> ' + g.substring(3); emojisModified = true; }
+        if (g.startsWith('📖 ') || g.includes('menu_book</span>')) { g = 'Give Primary Subject at least 8 hours'; emojisModified = true; }
+        if (g.startsWith('✍️ ') || g.includes('edit_document</span>')) { g = 'Solve/Write at least 1 Question by hand'; emojisModified = true; }
+        if (g.startsWith('💾 ') || g.includes('save</span>')) { g = 'Keep Study Content downloaded, if any'; emojisModified = true; }
       }
       newGoals.push(g);
     });
@@ -2169,7 +2169,7 @@ function updateTrackerUI(mode) {
     btnStart.style.display = 'none'; btnPause.style.display = 'flex';
     btnResume.style.display = 'none'; btnStop.style.display = 'flex';
     subSel.disabled = true; topSel.disabled = true; taskInp.disabled = false;
-    statusEl.textContent = '<span class="material-symbols-rounded icon-sm" style="color:var(--success-color); vertical-align:middle; font-size:16px;">radio_button_checked</span> Studying...';
+    statusEl.innerHTML = '<span class="material-symbols-rounded icon-sm" style="color:var(--success-color); vertical-align:middle; font-size:16px;">radio_button_checked</span> Studying...';
   } else if (mode === 'paused') {
     timerDisp.classList.add('paused');
     btnStart.style.display = 'none'; btnPause.style.display = 'none';
@@ -2182,7 +2182,7 @@ function updateTrackerUI(mode) {
 function trackerStart() {
   var subj = document.getElementById('st-subject').value;
   if (!subj) {
-    document.getElementById('st-status').textContent = '<span class="material-symbols-rounded icon-sm" style="color:var(--accent); vertical-align:middle; font-size:16px;">warning</span> Please select a subject first';
+    document.getElementById('st-status').innerHTML = '<span class="material-symbols-rounded icon-sm" style="color:var(--accent); vertical-align:middle; font-size:16px;">warning</span> Please select a subject first';
     return;
   }
   trackerState.isRunning = true; trackerState.isPaused = false;
@@ -2237,7 +2237,7 @@ function trackerStop() {
     });
     saveDynamicData();
     renderTodaysLog();
-    document.getElementById('st-status').textContent = '<span class="material-symbols-rounded icon-sm" style="color:var(--success-color); vertical-align:middle; font-size:16px;">check_circle</span> Saved ' + hh + 'h ' + mm + 'm to journal';
+    document.getElementById('st-status').innerHTML = '<span class="material-symbols-rounded icon-sm" style="color:var(--success-color); vertical-align:middle; font-size:16px;">check_circle</span> Saved ' + hh + 'h ' + mm + 'm to journal';
   } else {
     document.getElementById('st-status').textContent = 'Session too short (< 1 min), not saved';
   }
@@ -2425,7 +2425,7 @@ window.deleteTodaysLog = function(idx) {
 
 window.openManualLogModal = function() {
   const body = document.getElementById('modal-body');
-  document.getElementById('modal-title').textContent = 'Add Manual Log';
+  document.getElementById('modal-title').innerHTML = 'Add Manual Log';
   document.getElementById('modal-title').innerHTML = 'Add Manual Log ' +
     '<button class="icon-btn" style="background: rgba(255,149,0,0.1); color: var(--accent); width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 10px; vertical-align: middle;" title="Pick Mock" onclick="openMockPickerModal(\'manual\')"><span class="material-symbols-rounded" style="font-size:18px;">quiz</span></button>' +
     '<button class="icon-btn" style="background: rgba(10,132,255,0.1); color: var(--primary); width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; vertical-align: middle;" title="Pick from Planner" onclick="openPlannerPickerModal(\'manual\')"><span class="material-symbols-rounded" style="font-size:18px;">playlist_add</span></button>';
