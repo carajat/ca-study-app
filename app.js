@@ -2078,8 +2078,8 @@ function populateTrackerSubjects() {
   sel.innerHTML = '<option value="">Select Subject</option>';
   var subjects = [];
   (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
+    subjects.push(s);
     if (s.type === 'folder' && s.children) subjects = subjects.concat(s.children);
-    else subjects.push(s);
   });
   subjects.forEach(function(s) {
     var opt = document.createElement('option');
@@ -2109,12 +2109,13 @@ function onTrackerSubjectChange(restoring) {
   if (subj && subj !== '__custom__') {
     var subjects = [];
     (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
-      if (s.type === 'folder' && s.children) subjects = subjects.concat(s.children);
-      else subjects.push(s);
+      subjects.push(s);
+    if (s.type === 'folder' && s.children) subjects = subjects.concat(s.children);
     });
     var sData = subjects.find(function(s) { return s.name === subj; });
-    if (sData && sData.chapters) {
-      sData.chapters.forEach(function(ch) {
+    if (sData) {
+      let arr = sData.chapters || sData.children || [];
+      arr.forEach(function(ch) {
         var opt = document.createElement('option');
         opt.value = ch.name; opt.textContent = ch.name;
         topSel.appendChild(opt);
@@ -2436,8 +2437,8 @@ window.openManualLogModal = function() {
   let subjOptions = '<option value="">Select Subject</option>';
   let subjectsArray = [];
   (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
+    subjectsArray.push(s);
     if (s.type === 'folder' && s.children) subjectsArray = subjectsArray.concat(s.children);
-    else subjectsArray.push(s);
   });
   subjectsArray.forEach(s => {
     subjOptions += `<option value="${s.name}">${s.name}</option>`;
@@ -2478,8 +2479,8 @@ window.onManualLogSubjChange = function() {
   if (subj && subj !== '__custom__') {
     let subjects = [];
     (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
-      if (s.type === 'folder' && s.children) subjects = subjects.concat(s.children);
-      else subjects.push(s);
+      subjects.push(s);
+    if (s.type === 'folder' && s.children) subjects = subjects.concat(s.children);
     });
     const sData = subjects.find(s => s.name === subj);
     if (sData && sData.chapters) {
@@ -2847,8 +2848,8 @@ window.pickMockTask = function(seriesName, mockSubject, target) {
     let actualSubjName = mockSubject;
     let flat = [];
     (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
+       flat.push(s);
        if (s.type === 'folder' && s.children) flat = flat.concat(s.children);
-       else flat.push(s);
     });
     let matchedSubj = flat.find(s => s.name.toLowerCase().includes(mockSubject.toLowerCase()));
     if (matchedSubj) actualSubjName = matchedSubj.name;
@@ -2886,8 +2887,8 @@ window.pickMockTask = function(seriesName, mockSubject, target) {
       let actualSubjName = mockSubject;
       let flat = [];
       (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
-         if (s.type === 'folder' && s.children) flat = flat.concat(s.children);
-         else flat.push(s);
+         flat.push(s);
+       if (s.type === 'folder' && s.children) flat = flat.concat(s.children);
       });
       let matchedSubj = flat.find(s => s.name.toLowerCase().includes(mockSubject.toLowerCase()));
       if (matchedSubj) actualSubjName = matchedSubj.name;
