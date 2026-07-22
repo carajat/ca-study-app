@@ -2728,6 +2728,22 @@ window.reloadAppFromCloud = function(cloudData) {
   const cloudHash = JSON.stringify(normalizeForHash(newDynamic)) + JSON.stringify(normalizeForHash(newState)) + JSON.stringify(normalizeForHash(cleanTracker));
   
   if (localHash !== cloudHash) {
+    let reloads = parseInt(sessionStorage.getItem('sync_reloads') || '0');
+    if (reloads > 1) {
+      document.body.innerHTML = `
+        <div style="background:black; color:white; padding:20px; font-family:monospace; height:100vh; overflow:auto;">
+          <h1 style="color:red">Sync Loop Detected</h1>
+          <button onclick="sessionStorage.removeItem('sync_reloads'); location.reload()" style="padding:10px; margin-bottom:20px">Clear & Reload</button>
+          <div style="display:flex; gap:20px">
+            <div style="flex:1; border:2px solid red; padding:10px"><h3>LOCAL (Red)</h3>${localHash}</div>
+            <div style="flex:1; border:2px solid green; padding:10px"><h3>CLOUD (Green)</h3>${cloudHash}</div>
+          </div>
+        </div>
+      `;
+      return;
+    }
+    sessionStorage.setItem('sync_reloads', (reloads + 1).toString());
+
     console.log("Cloud data differs. Applying sync and reloading...");
     localStorage.setItem(getDynamicDataKey(), JSON.stringify(newDynamic));
     localStorage.setItem(getStorageKey(), JSON.stringify(newState));
