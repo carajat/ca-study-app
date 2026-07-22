@@ -1029,8 +1029,20 @@ function openAddTaskModal() {
   };
   const subjects = flattenSubjects(DYNAMIC_DATA.syllabusSubjects).map(s => ({ value: s.id, label: s.name }));
   
-  openModal('<span class="material-symbols-rounded icon-sm">add</span> Add Task', '<div class="form-group"><label>Date</label><input type="date" id="task-date" value="' + dateKey(state.plannerDate) + '"></div><div class="form-group"><label>Category</label><select id="task-category"><option value="primary">Primary Subject</option><option value="secondary">Secondary Subject</option><option value="quick">Quick Task</option></select></div><div class="form-group"><label>Subject (Optional)</label><select id="task-subject" onchange="onTaskSubjectChange()"><option value="">— Select —</option>' + subjects.map(s => '<option value="' + s.value + '">' + s.label + '</option>').join('') + '</select></div><div class="form-group" id="task-chapter-group" style="display:none;"><label>Chapter (Optional)</label><select id="task-chapter" onchange="onTaskChapterChange()"><option value="">— Select —</option></select></div><div class="form-group" id="task-activity-group" style="display:none;"><label>Activity (Optional)</label><select id="task-activity" onchange="onTaskChapterChange()"><option value="">— Select —</option><option value="conceptBook">Book (Concepts)</option><option value="questionBank">Question Bank</option><option value="revisionVideo">Revision Video</option></select></div><div class="form-group"><label>Task Description</label><input type="text" id="task-name" placeholder="e.g. Complete pending questions"></div><button class="btn-primary" onclick="addPlannerTask()">Add Task <span class="material-symbols-rounded icon-sm">check_circle</span></button>');
+  openModal('<span class="material-symbols-rounded icon-sm">add</span> Add Task', '<div class="form-group"><label>Date</label><input type="date" id="task-date" value="' + dateKey(state.plannerDate) + '"></div><div class="form-group"><label>Category</label><select id="task-category" onchange="onTaskCategoryChange()"><option value="primary">Primary Subject</option><option value="secondary">Secondary Subject</option><option value="quick">Quick Task</option></select></div><div id="task-study-fields"><div class="form-group"><label>Subject</label><select id="task-subject" onchange="onTaskSubjectChange()"><option value="">— Select —</option>' + subjects.map(s => '<option value="' + s.value + '">' + s.label + '</option>').join('') + '</select></div><div class="form-group" id="task-chapter-group" style="display:none;"><label>Chapter</label><select id="task-chapter" onchange="onTaskChapterChange()"><option value="">— Select —</option></select></div><div class="form-group" id="task-activity-group" style="display:none;"><label>Activity</label><select id="task-activity" onchange="onTaskChapterChange()"><option value="">— Select —</option><option value="conceptBook">Book (Concepts)</option><option value="questionBank">Question Bank</option><option value="revisionVideo">Revision Video</option></select></div></div><div class="form-group"><label>Task Description</label><input type="text" id="task-name" placeholder="e.g. Complete pending questions"></div><button class="btn-primary" onclick="addPlannerTask()">Add Task <span class="material-symbols-rounded icon-sm">check_circle</span></button>');
 }
+
+window.onTaskCategoryChange = function() {
+  const cat = document.getElementById('task-category').value;
+  const fields = document.getElementById('task-study-fields');
+  if (fields) {
+    if (cat === 'quick') {
+      fields.style.display = 'none';
+    } else {
+      fields.style.display = 'block';
+    }
+  }
+};
 
 function onTaskSubjectChange() {
   const subj = document.getElementById('task-subject').value;
@@ -1105,6 +1117,17 @@ function addPlannerTask() {
   // For IBS subjects (no activity dropdown), implicitly set activity to 'done'
   if (subject && subject.toLowerCase().startsWith('ibs-') && chapterId) {
     activityType = 'done';
+  }
+  
+  if (category !== 'quick') {
+    if (!subject) { showToast('Please select a Subject! <span class="material-symbols-rounded icon-sm">warning</span>'); return; }
+    if (!chapterId) { showToast('Please select a Chapter! <span class="material-symbols-rounded icon-sm">warning</span>'); return; }
+    if (!activityType) { showToast('Please select an Activity! <span class="material-symbols-rounded icon-sm">warning</span>'); return; }
+  } else {
+    // If it's a quick task, clear out subject/chapter/activity if any were selected before changing category
+    document.getElementById('task-subject').value = '';
+    if (document.getElementById('task-chapter')) document.getElementById('task-chapter').value = '';
+    if (document.getElementById('task-activity')) document.getElementById('task-activity').value = '';
   }
   
   if (!name) { showToast('Please enter a task name! <span class="material-symbols-rounded icon-sm">warning</span>'); return; }
