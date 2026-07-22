@@ -2708,9 +2708,9 @@ window.reloadAppFromCloud = function(cloudData) {
     startTime: newTracker.startTime || null,
     pausedTime: newTracker.pausedTime || 0,
     pauseStart: newTracker.pauseStart || null,
-    subject: newTracker.subject || '',
-    topic: newTracker.topic || '',
-    task: newTracker.task || ''
+    subject: (newTracker.isRunning || newTracker.isPaused) ? (newTracker.subject || '') : '',
+    topic: (newTracker.isRunning || newTracker.isPaused) ? (newTracker.topic || '') : '',
+    task: (newTracker.isRunning || newTracker.isPaused) ? (newTracker.task || '') : ''
   };
 
   const cleanLocalTracker = {
@@ -2719,9 +2719,9 @@ window.reloadAppFromCloud = function(cloudData) {
     startTime: trackerState.startTime || null,
     pausedTime: trackerState.pausedTime || 0,
     pauseStart: trackerState.pauseStart || null,
-    subject: trackerState.subject || '',
-    topic: trackerState.topic || '',
-    task: trackerState.task || ''
+    subject: (trackerState.isRunning || trackerState.isPaused) ? (trackerState.subject || '') : '',
+    topic: (trackerState.isRunning || trackerState.isPaused) ? (trackerState.topic || '') : '',
+    task: (trackerState.isRunning || trackerState.isPaused) ? (trackerState.task || '') : ''
   };
 
   const localHash = JSON.stringify(normalizeForHash(DYNAMIC_DATA)) + JSON.stringify(normalizeForHash(loadState())) + JSON.stringify(normalizeForHash(cleanLocalTracker));
