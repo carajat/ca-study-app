@@ -14,8 +14,8 @@ const firebaseConfig = {
   storageBucket: "castudyapp8.firebasestorage.app",
   messagingSenderId: "940782971883",
   appId: "1:940782971883:web:a7f8d55c6807de66ee87ae",
-  // Fallback DB URL (will try asia-southeast1 first as requested, then default)
-  databaseURL: "https://castudyapp8-default-rtdb.asia-southeast1.firebasedatabase.app" 
+  // Fallback DB URL
+  databaseURL: "https://castudyapp8-default-rtdb.firebaseio.com" 
 };
 
 // Initialize Firebase

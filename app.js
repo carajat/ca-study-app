@@ -188,7 +188,7 @@ function loadDynamicData() {
 }
 
 function saveDynamicData() {
-  if (window.isReadOnlyMode) { console.log("Read-only mode: Not saving to local storage"); return; }
+  if (window.isReadOnlyMode) { if(typeof showToast === "function") showToast("Read-Only Mode: Changes will not be saved."); return; }
   localStorage.setItem(getDynamicDataKey(), JSON.stringify(DYNAMIC_DATA));
   if (typeof window.syncToCloud === 'function') {
     window.syncToCloud({ dynamic: DYNAMIC_DATA, state: loadState(), tracker: trackerState });
