@@ -188,6 +188,7 @@ function loadDynamicData() {
 }
 
 function saveDynamicData() {
+  if (window.isReadOnlyMode) { console.log("Read-only mode: Not saving to local storage"); return; }
   localStorage.setItem(getDynamicDataKey(), JSON.stringify(DYNAMIC_DATA));
   if (typeof window.syncToCloud === 'function') {
     window.syncToCloud({ dynamic: DYNAMIC_DATA, state: loadState(), tracker: trackerState });
@@ -1529,7 +1530,7 @@ if ('serviceWorker' in navigator) {
 //  MENU, THEMES & DATA SHARING
 // ═══════════════════════════════════════════
 function openMenuModal() {
-  openModal('<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">settings</span> Settings & Tools', `
+  openModal('<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">settings</span> Settings & Tools' + (window.isReadOnlyMode ? ' <span style="color:var(--error-color); font-size:12px; margin-left:10px;">(GF Read-Only)</span>' : ''), `
     
     
     ${(window.isCloudLoggedIn) 

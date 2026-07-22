@@ -28,6 +28,9 @@ try {
   console.error("Firebase init failed:", e);
 }
 
+window.GF_EMAIL = 'shrutiagrrawal@gmail.com';
+window.isReadOnlyMode = false;
+
 const SHARED_PATH = '/sharedData/coupleRoom/';
 let isSyncing = false; // flag to prevent infinite loops when receiving data
 let currentUser = null;
@@ -38,6 +41,8 @@ if (auth && db) {
   auth.onAuthStateChanged((user) => {
     currentUser = user;
     window.isCloudLoggedIn = !!user;
+    window.isReadOnlyMode = user ? (user.email === window.GF_EMAIL) : false;
+    if (window.isReadOnlyMode) { document.body.classList.add('read-only-mode'); } else { document.body.classList.remove('read-only-mode'); }
     if (user) {
       console.log("Logged in as:", user.email);
       const overlay = document.getElementById('welcome-overlay');
@@ -105,7 +110,8 @@ window.logoutFromCloud = function() {
 
 window.syncToCloud = function(data) {
   if (!currentUser || !db) return; 
-  if (isSyncing) return; 
+  if (isSyncing) return;
+  if (window.isReadOnlyMode) { console.log("Read-only mode: Sync prevented"); return; } 
   db.ref(SHARED_PATH).set(data).catch(err => {
     console.error("Firebase sync error.", err.message);
   });
