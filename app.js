@@ -2966,8 +2966,13 @@ window.openLogHistoryModal = function() {
           
           totalMinutes += mins;
           
-          if (!subjectStats[row.subject]) subjectStats[row.subject] = 0;
-          subjectStats[row.subject] += mins;
+          let aggSubject = row.subject;
+          if (aggSubject && (aggSubject.toLowerCase().startsWith('ibs') || aggSubject.toLowerCase().includes('paper 6'))) {
+            aggSubject = 'Paper 6: IBS (Integrated Business Solutions)';
+          }
+          
+          if (!subjectStats[aggSubject]) subjectStats[aggSubject] = 0;
+          subjectStats[aggSubject] += mins;
         });
       }
     });
@@ -2976,7 +2981,20 @@ window.openLogHistoryModal = function() {
   // Build stats HTML
   let statsHtml = '<div style="display:flex; flex-direction:column; gap:8px;">';
   
-  const sortedSubjects = Object.keys(subjectStats).sort((a, b) => subjectStats[b] - subjectStats[a]);
+  function getSubjWeight(name) {
+    const n = name.toLowerCase();
+    if (n.includes('direct tax') || n === 'dt' || n.includes('paper 4')) return 1;
+    if (n.includes('indirect tax') || n === 'idt' || n.includes('paper 5')) return 2;
+    if (n.includes('ibs') || n.includes('paper 6')) return 3;
+    return 99;
+  }
+  
+  const sortedSubjects = Object.keys(subjectStats).sort((a, b) => {
+    const wa = getSubjWeight(a);
+    const wb = getSubjWeight(b);
+    if (wa !== wb) return wa - wb;
+    return subjectStats[b] - subjectStats[a]; // then by time descending
+  });
   
   if (sortedSubjects.length === 0) {
     statsHtml += '<div style="text-align:center; padding:15px; color:var(--text-muted); font-size:13px;">No study data logged yet.</div>';
