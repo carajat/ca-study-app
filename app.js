@@ -191,7 +191,7 @@ function saveDynamicData() {
   if (window.isReadOnlyMode) { if(typeof showToast === "function") showToast("Read-Only Mode: Changes will not be saved."); return; }
   localStorage.setItem(getDynamicDataKey(), JSON.stringify(DYNAMIC_DATA));
   if (typeof window.syncToCloud === 'function') {
-    window.syncToCloud({ dynamic: DYNAMIC_DATA, state: loadState() });
+    window.syncToCloud({ dynamic: DYNAMIC_DATA, state: loadState(), tracker: trackerState });
   }
 
 }
@@ -314,7 +314,7 @@ function saveState(data) {
     const merged = { ...existing, ...data };
     localStorage.setItem(getStorageKey(), JSON.stringify(merged));
   if (typeof window.syncToCloud === 'function') {
-    window.syncToCloud({ dynamic: DYNAMIC_DATA, state: loadState() });
+    window.syncToCloud({ dynamic: DYNAMIC_DATA, state: loadState(), tracker: trackerState });
   }
 
   } catch (e) { console.error('Save error:', e); }
@@ -418,8 +418,10 @@ function switchTab(tabName) {
     if(gt) gt.textContent = state.activeGroup === 'group1' ? 'CA Final Group 1' : 'CA Final Group 2';
     renderDashboard();
     if(window.updateOngoingJournalTask) window.updateOngoingJournalTask();
-    populateTrackerSubjects();
-    renderTodaysLog();
+  populateTrackerSubjects();
+  restoreTrackerState();
+  renderTodaysLog();
+  renderTodaysLog();
   }
   if (tabName === 'exams') renderExams();
   if (tabName === 'schedule') renderSchedule();
@@ -577,15 +579,9 @@ function updateDashboardPlanner() {
 }
 
 function updateQuote() {
-  const quotes = DYNAMIC_DATA.quotes && DYNAMIC_DATA.quotes.length ? DYNAMIC_DATA.quotes : [
-    "The secret of getting ahead is getting started.",
-    "It always seems impossible until it's done.",
-    "Don't watch the clock; do what it does. Keep going.",
-    "Success is the sum of small efforts, repeated day-in and day-out."
-  ];
   const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-  const quoteIdx = dayOfYear % quotes.length;
-  document.getElementById('daily-quote').textContent = '"' + quotes[quoteIdx] + '"';
+  const quoteIdx = dayOfYear % DYNAMIC_DATA.quotes.length;
+  document.getElementById('daily-quote').textContent = '"' + DYNAMIC_DATA.quotes[quoteIdx] + '"';
 }
 
 // ═══════════════════════════════════════════
@@ -2720,28 +2716,49 @@ window.reloadAppFromCloud = function(cloudData) {
   
   let newDynamic = cloudData.dynamic || cloudData;
   let newState = cloudData.state || {};
-  const localHash = JSON.stringify(normalizeForHash(DYNAMIC_DATA)) + JSON.stringify(normalizeForHash(loadState()));
-  const cloudHash = JSON.stringify(normalizeForHash(newDynamic)) + JSON.stringify(normalizeForHash(newState));
+  let newTracker = cloudData.tracker || {};
   
+  const cleanTracker = {
+    isRunning: !!newTracker.isRunning,
+    isPaused: !!newTracker.isPaused,
+    startTime: newTracker.startTime || null,
+    pausedTime: newTracker.pausedTime || 0,
+    pauseStart: newTracker.pauseStart || null,
+    subject: (newTracker.isRunning || newTracker.isPaused) ? (newTracker.subject || '') : '',
+    topic: (newTracker.isRunning || newTracker.isPaused) ? (newTracker.topic || '') : '',
+    task: (newTracker.isRunning || newTracker.isPaused) ? (newTracker.task || '') : ''
+  };
 
+  const cleanLocalTracker = {
+    isRunning: !!trackerState.isRunning,
+    isPaused: !!trackerState.isPaused,
+    startTime: trackerState.startTime || null,
+    pausedTime: trackerState.pausedTime || 0,
+    pauseStart: trackerState.pauseStart || null,
+    subject: (trackerState.isRunning || trackerState.isPaused) ? (trackerState.subject || '') : '',
+    topic: (trackerState.isRunning || trackerState.isPaused) ? (trackerState.topic || '') : '',
+    task: (trackerState.isRunning || trackerState.isPaused) ? (trackerState.task || '') : ''
+  };
+
+  const localHash = JSON.stringify(normalizeForHash(DYNAMIC_DATA)) + JSON.stringify(normalizeForHash(loadState())) + JSON.stringify(normalizeForHash(cleanLocalTracker));
+  const cloudHash = JSON.stringify(normalizeForHash(newDynamic)) + JSON.stringify(normalizeForHash(newState)) + JSON.stringify(normalizeForHash(cleanTracker));
+  
   if (localHash !== cloudHash) {
     console.log("Cloud data differs. Applying sync...");
     localStorage.setItem(getDynamicDataKey(), JSON.stringify(newDynamic));
     localStorage.setItem(getStorageKey(), JSON.stringify(newState));
     
+    if (cleanTracker.isRunning || cleanTracker.isPaused) {
+      localStorage.setItem('ca_study_tracker_state', JSON.stringify(cleanTracker));
+    } else {
+      localStorage.removeItem('ca_study_tracker_state');
+    }
+    
     // Soft reload to apply changes without refreshing the browser
     loadDynamicData();
     loadState();
-    if (state.activeTab === 'dashboard') {
-      updateDashboardPlanner();
-      updateDashboardStats();
-    } else if (state.activeTab === 'planner') {
-      renderPlanner();
-    } else if (state.activeTab === 'ibs') {
-      renderIBS();
-    } else if (state.activeTab === 'journal') {
-      renderJournal();
-    }
+    restoreTrackerState();
+    switchTab(state.activeTab);
     
     if (typeof showToast === 'function') {
       showToast("Data synced from cloud! <span class='material-symbols-rounded icon-sm' style='vertical-align:middle'>cloud_done</span>");

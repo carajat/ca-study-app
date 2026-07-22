@@ -1,17 +1,13 @@
-const CACHE_NAME = 'ca-final-companion-v186';
+const CACHE_NAME = 'ca-final-companion-v187';
 const ASSETS = [
   '/',
-  '/index.html?v=186',
-  '/style.css?v=186',
-  '/data.js?v=186',
-  '/app.js?v=186',
-  '/sync.js?v=186',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
-  'https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300,0,0',
-  'https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css',
-  'https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js'
+  '/index.html?v=187',
+  '/style.css?v=187',
+  '/app.js?v=187',
+  '/data.js?v=187',
+  '/sync.js?v=187',
+  '/Sortable.min.js',
+  '/manifest.json'
 ];
 
 self.addEventListener('install', event => {

@@ -118,8 +118,8 @@ window.syncToCloud = function(data) {
   
   syncTimeout = setTimeout(() => {
     db.ref(SHARED_PATH).set(cleanData).catch(err => {
-      console.error("Sync to cloud failed:", err);
-      if(typeof showToast === 'function') showToast("Error syncing data to cloud", true);
+      console.error("Firebase sync error.", err.message); 
+      if(typeof showToast === "function") showToast("Sync Error: " + err.message);
     });
   }, 300);
 }
