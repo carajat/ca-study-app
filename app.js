@@ -1530,7 +1530,7 @@ if ('serviceWorker' in navigator) {
 //  MENU, THEMES & DATA SHARING
 // ═══════════════════════════════════════════
 function openMenuModal() {
-  openModal('<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">settings</span> Settings & Tools' + (window.isReadOnlyMode ? ' <span style="color:var(--error-color); font-size:12px; margin-left:10px;">(GF Read-Only)</span>' : ''), `
+  openModal('<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">settings</span> Settings & Tools' + (window.isReadOnlyMode ? ' <span style="color:var(--error-color); font-size:12px; margin-left:10px;">(Read-Only)</span>' : ''), `
     
     
     ${(window.isCloudLoggedIn) 
