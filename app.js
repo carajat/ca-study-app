@@ -2044,9 +2044,11 @@ function populateTrackerSubjects() {
   var sel = document.getElementById('st-subject');
   if (!sel) return;
   sel.innerHTML = '<option value="">Select Subject</option>';
-  var group = APP_DATA[state.activeGroup];
-  if (!group) return;
-  var subjects = group.syllabusSubjects || Object.values(group.syllabus || {});
+  var subjects = [];
+  (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
+    if (s.type === 'folder' && s.children) subjects = subjects.concat(s.children);
+    else subjects.push(s);
+  });
   subjects.forEach(function(s) {
     var opt = document.createElement('option');
     opt.value = s.name; opt.textContent = s.name;
@@ -2073,17 +2075,18 @@ function onTrackerSubjectChange(restoring) {
     } else { subSel.value = ''; return; }
   }
   if (subj && subj !== '__custom__') {
-    var group = APP_DATA[state.activeGroup];
-    if (group) {
-      var subjects = group.syllabusSubjects || Object.values(group.syllabus || {});
-      var sData = subjects.find(function(s) { return s.name === subj; });
-      if (sData && sData.chapters) {
-        sData.chapters.forEach(function(ch) {
-          var opt = document.createElement('option');
-          opt.value = ch.name; opt.textContent = ch.name;
-          topSel.appendChild(opt);
-        });
-      }
+    var subjects = [];
+    (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
+      if (s.type === 'folder' && s.children) subjects = subjects.concat(s.children);
+      else subjects.push(s);
+    });
+    var sData = subjects.find(function(s) { return s.name === subj; });
+    if (sData && sData.chapters) {
+      sData.chapters.forEach(function(ch) {
+        var opt = document.createElement('option');
+        opt.value = ch.name; opt.textContent = ch.name;
+        topSel.appendChild(opt);
+      });
     }
   }
   if (!restoring) { trackerState.subject = subSel.value; saveTrackerState(); }
@@ -2397,12 +2400,14 @@ window.openManualLogModal = function() {
   document.getElementById('modal-title').innerHTML = 'Add Manual Log <button class="icon-btn" style="background: rgba(10,132,255,0.1); color: var(--primary); width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 10px; vertical-align: middle;" title="Pick from Planner" onclick="openPlannerPickerModal(\'manual\')"><span class="material-symbols-rounded" style="font-size:18px;">playlist_add</span></button>';
   
   let subjOptions = '<option value="">Select Subject</option>';
-  if(APP_DATA[state.activeGroup]) {
-    let subjectsArray = APP_DATA[state.activeGroup].syllabusSubjects || Object.values(APP_DATA[state.activeGroup].syllabus || {});
-    subjectsArray.forEach(s => {
-      subjOptions += `<option value="${s.name}">${s.name}</option>`;
-    });
-  }
+  let subjectsArray = [];
+  (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
+    if (s.type === 'folder' && s.children) subjectsArray = subjectsArray.concat(s.children);
+    else subjectsArray.push(s);
+  });
+  subjectsArray.forEach(s => {
+    subjOptions += `<option value="${s.name}">${s.name}</option>`;
+  });
   
   body.innerHTML = `
     <div style="display:flex; flex-direction:column; gap:10px;">
@@ -2437,17 +2442,18 @@ window.onManualLogSubjChange = function() {
   }
   
   if (subj && subj !== '__custom__') {
-    const group = APP_DATA[state.activeGroup];
-    if (group) {
-      const subjects = group.syllabusSubjects || Object.values(group.syllabus || {});
-      const sData = subjects.find(s => s.name === subj);
-      if (sData && sData.chapters) {
-        sData.chapters.forEach(ch => {
-          const opt = document.createElement('option');
-          opt.value = ch.name; opt.textContent = ch.name;
-          topSel.appendChild(opt);
-        });
-      }
+    let subjects = [];
+    (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
+      if (s.type === 'folder' && s.children) subjects = subjects.concat(s.children);
+      else subjects.push(s);
+    });
+    const sData = subjects.find(s => s.name === subj);
+    if (sData && sData.chapters) {
+      sData.chapters.forEach(ch => {
+        const opt = document.createElement('option');
+        opt.value = ch.name; opt.textContent = ch.name;
+        topSel.appendChild(opt);
+      });
     }
   }
 };
