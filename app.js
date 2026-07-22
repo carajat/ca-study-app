@@ -2774,3 +2774,105 @@ function smartRepairSyllabusData() {
 
   saveDynamicData();
 }
+
+
+window.openMockPickerModal = function(target) {
+  let html = '<div style="max-height: 60vh; overflow-y: auto;">';
+  const mocks = DYNAMIC_DATA.mockSeries || [];
+  if (mocks.length === 0) {
+    html += '<div style="text-align:center; color:var(--text-secondary); padding:20px;">No Mock Series found in Exams tab.</div>';
+  } else {
+    mocks.forEach(series => {
+      html += '<div style="margin-bottom: 15px;">' +
+        '<h4 style="margin-top:0; margin-bottom: 8px; color:var(--primary-color);">' + series.name + '</h4>' +
+        '<div style="display:flex; flex-direction:column; gap:8px;">';
+      (series.exams || []).forEach(ex => {
+        html += '<div class="glass-card" style="display:flex; justify-content:space-between; align-items:center; padding: 10px;">' +
+          '<div>' +
+            '<div style="font-weight:600; font-size:14px;">' + ex.subject + '</div>' +
+            '<div style="font-size:12px; color:var(--text-secondary);">' + formatDateFull(new Date(ex.date)) + '</div>' +
+          '</div>' +
+          '<button class="btn-primary" style="padding:6px 12px; font-size:12px; border-radius:6px;" onclick="pickMockTask(\'' + series.name + '\', \'' + ex.subject + '\', \'' + target + '\')">Select</button>' +
+        '</div>';
+      });
+      html += '</div></div>';
+    });
+  }
+  html += '</div>';
+  openModal('Select Mock', html);
+};
+
+window.pickMockTask = function(seriesName, mockSubject, target) {
+  closeModal();
+  const mockTaskName = mockSubject + ' Mock';
+  const mockTopic = seriesName;
+  
+  if (target === 'tracker') {
+    const subSel = document.getElementById('st-subject');
+    const topSel = document.getElementById('st-topic');
+    const descInput = document.getElementById('st-task-desc');
+    
+    let actualSubjName = mockSubject;
+    let flat = [];
+    (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
+       if (s.type === 'folder' && s.children) flat = flat.concat(s.children);
+       else flat.push(s);
+    });
+    let matchedSubj = flat.find(s => s.name.toLowerCase().includes(mockSubject.toLowerCase()));
+    if (matchedSubj) actualSubjName = matchedSubj.name;
+    
+    if (!Array.from(subSel.options).some(o => o.value === actualSubjName)) {
+      const opt = document.createElement('option');
+      opt.value = actualSubjName;
+      opt.textContent = actualSubjName;
+      subSel.appendChild(opt);
+    }
+    subSel.value = actualSubjName;
+    onTrackerSubjectChange();
+    
+    if (!Array.from(topSel.options).some(o => o.value === mockTopic)) {
+      const tOpt = document.createElement('option');
+      tOpt.value = mockTopic;
+      tOpt.textContent = mockTopic;
+      topSel.appendChild(tOpt);
+    }
+    topSel.value = mockTopic;
+    onTrackerTopicChange();
+    
+    descInput.value = mockTaskName;
+    trackerState.taskDesc = mockTaskName;
+    saveTrackerState();
+    
+  } else if (target === 'manual') {
+    const subSel = document.getElementById('ml-subj');
+    const topSel = document.getElementById('ml-topic');
+    const taskInput = document.getElementById('ml-task');
+    
+    let actualSubjName = mockSubject;
+    let flat = [];
+    (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
+       if (s.type === 'folder' && s.children) flat = flat.concat(s.children);
+       else flat.push(s);
+    });
+    let matchedSubj = flat.find(s => s.name.toLowerCase().includes(mockSubject.toLowerCase()));
+    if (matchedSubj) actualSubjName = matchedSubj.name;
+    
+    if (!Array.from(subSel.options).some(o => o.value === actualSubjName)) {
+      const opt = document.createElement('option');
+      opt.value = actualSubjName;
+      opt.textContent = actualSubjName;
+      subSel.insertBefore(opt, subSel.querySelector('option[value="__custom__"]'));
+    }
+    subSel.value = actualSubjName;
+    onManualLogSubjChange();
+    
+    if (!Array.from(topSel.options).some(o => o.value === mockTopic)) {
+      const tOpt = document.createElement('option');
+      tOpt.value = mockTopic;
+      tOpt.textContent = mockTopic;
+      topSel.appendChild(tOpt);
+    }
+    topSel.value = mockTopic;
+    taskInput.value = mockTaskName;
+  }
+};
