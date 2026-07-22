@@ -2173,6 +2173,7 @@ function trackerStop() {
     if (!DYNAMIC_DATA.journalEntries[todayStr]) {
       DYNAMIC_DATA.journalEntries[todayStr] = { sleep: '', breaks: '', wasted: '', feeling: '', rows: [] };
     }
+        if (!DYNAMIC_DATA.journalEntries[todayStr].rows) { DYNAMIC_DATA.journalEntries[todayStr].rows = []; }
     DYNAMIC_DATA.journalEntries[todayStr].rows.push({
       subject: subject, topic: topic, tasks: task,
       durHH: String(hh), durMM: String(mm), status: 'Done'
@@ -2442,7 +2443,8 @@ window.saveManualLog = function() {
     DYNAMIC_DATA.journalEntries[todayStr] = { sleep: '', breaks: '', wasted: '', feeling: '', rows: [] };
   }
   
-  DYNAMIC_DATA.journalEntries[todayStr].rows.push({
+      if (!DYNAMIC_DATA.journalEntries[todayStr].rows) { DYNAMIC_DATA.journalEntries[todayStr].rows = []; }
+    DYNAMIC_DATA.journalEntries[todayStr].rows.push({
     subject: subj,
     topic: topic,
     tasks: task,
