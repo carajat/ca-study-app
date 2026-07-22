@@ -418,9 +418,8 @@ function switchTab(tabName) {
     if(gt) gt.textContent = state.activeGroup === 'group1' ? 'CA Final Group 1' : 'CA Final Group 2';
     renderDashboard();
     if(window.updateOngoingJournalTask) window.updateOngoingJournalTask();
-  populateTrackerSubjects();
-  renderTodaysLog();
-  renderTodaysLog();
+    populateTrackerSubjects();
+    renderTodaysLog();
   }
   if (tabName === 'exams') renderExams();
   if (tabName === 'schedule') renderSchedule();
@@ -578,9 +577,15 @@ function updateDashboardPlanner() {
 }
 
 function updateQuote() {
+  const quotes = DYNAMIC_DATA.quotes && DYNAMIC_DATA.quotes.length ? DYNAMIC_DATA.quotes : [
+    "The secret of getting ahead is getting started.",
+    "It always seems impossible until it's done.",
+    "Don't watch the clock; do what it does. Keep going.",
+    "Success is the sum of small efforts, repeated day-in and day-out."
+  ];
   const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-  const quoteIdx = dayOfYear % DYNAMIC_DATA.quotes.length;
-  document.getElementById('daily-quote').textContent = '"' + DYNAMIC_DATA.quotes[quoteIdx] + '"';
+  const quoteIdx = dayOfYear % quotes.length;
+  document.getElementById('daily-quote').textContent = '"' + quotes[quoteIdx] + '"';
 }
 
 // ═══════════════════════════════════════════
