@@ -1532,18 +1532,18 @@ function openMenuModal() {
   openModal('<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">settings</span> Settings & Tools', `
     
     
+    ${(window.isCloudLoggedIn) 
+      ? `<button class="menu-btn" onclick="closeModal(); if(typeof logoutFromCloud === 'function') logoutFromCloud();">
+          <span class="material-symbols-rounded menu-btn-icon">logout</span> Logout
+         </button>` 
+      : `<button class="menu-btn" onclick="closeModal(); document.getElementById('welcome-overlay').style.display='flex';">
+          <span class="material-symbols-rounded menu-btn-icon">login</span> Login
+         </button>`
+    }
+    
     <button id="editModeBtn" class="menu-btn" onclick="toggleEditMode(); closeModal()">
       <span class="menu-btn-icon">${isEditMode ? '<span class="material-symbols-rounded icon-sm">check_circle</span>' : '<span class="material-symbols-rounded icon-sm">edit</span>'}</span> Edit Mode: <strong style="color: ${isEditMode ? 'var(--color-primary)' : 'inherit'}">${isEditMode ? 'ON' : 'OFF'}</strong>
     </button>
-    
-    ${(window.isCloudLoggedIn) 
-      ? `<button class="menu-btn" onclick="closeModal(); if(typeof logoutFromCloud === 'function') logoutFromCloud();">
-          <span class="material-symbols-rounded menu-btn-icon">logout</span> Logout (Cloud Sync)
-         </button>` 
-      : `<button class="menu-btn" onclick="closeModal(); document.getElementById('welcome-overlay').style.display='flex';">
-          <span class="material-symbols-rounded menu-btn-icon">cloud_sync</span> Login (Cloud Sync)
-         </button>`
-    }
     <button class="menu-btn" onclick="openThemeModal()">
       <span class="material-symbols-rounded menu-btn-icon">palette</span> Customize Theme
     </button>
