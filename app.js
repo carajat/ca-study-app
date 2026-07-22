@@ -191,7 +191,7 @@ function saveDynamicData() {
   if (window.isReadOnlyMode) { if(typeof showToast === "function") showToast("Read-Only Mode: Changes will not be saved."); return; }
   localStorage.setItem(getDynamicDataKey(), JSON.stringify(DYNAMIC_DATA));
   if (typeof window.syncToCloud === 'function') {
-    window.syncToCloud({ dynamic: DYNAMIC_DATA, state: loadState(), tracker: trackerState });
+    window.syncToCloud({ dynamic: DYNAMIC_DATA, state: loadState() });
   }
 
 }
@@ -314,7 +314,7 @@ function saveState(data) {
     const merged = { ...existing, ...data };
     localStorage.setItem(getStorageKey(), JSON.stringify(merged));
   if (typeof window.syncToCloud === 'function') {
-    window.syncToCloud({ dynamic: DYNAMIC_DATA, state: loadState(), tracker: trackerState });
+    window.syncToCloud({ dynamic: DYNAMIC_DATA, state: loadState() });
   }
 
   } catch (e) { console.error('Save error:', e); }
@@ -419,7 +419,6 @@ function switchTab(tabName) {
     renderDashboard();
     if(window.updateOngoingJournalTask) window.updateOngoingJournalTask();
   populateTrackerSubjects();
-  restoreTrackerState();
   renderTodaysLog();
   renderTodaysLog();
   }
@@ -2716,32 +2715,8 @@ window.reloadAppFromCloud = function(cloudData) {
   
   let newDynamic = cloudData.dynamic || cloudData;
   let newState = cloudData.state || {};
-  let newTracker = cloudData.tracker || {};
-  
-  const cleanTracker = {
-    isRunning: !!newTracker.isRunning,
-    isPaused: !!newTracker.isPaused,
-    startTime: newTracker.startTime || null,
-    pausedTime: newTracker.pausedTime || 0,
-    pauseStart: newTracker.pauseStart || null,
-    subject: (newTracker.isRunning || newTracker.isPaused) ? (newTracker.subject || '') : '',
-    topic: (newTracker.isRunning || newTracker.isPaused) ? (newTracker.topic || '') : '',
-    task: (newTracker.isRunning || newTracker.isPaused) ? (newTracker.task || '') : ''
-  };
-
-  const cleanLocalTracker = {
-    isRunning: !!trackerState.isRunning,
-    isPaused: !!trackerState.isPaused,
-    startTime: trackerState.startTime || null,
-    pausedTime: trackerState.pausedTime || 0,
-    pauseStart: trackerState.pauseStart || null,
-    subject: (trackerState.isRunning || trackerState.isPaused) ? (trackerState.subject || '') : '',
-    topic: (trackerState.isRunning || trackerState.isPaused) ? (trackerState.topic || '') : '',
-    task: (trackerState.isRunning || trackerState.isPaused) ? (trackerState.task || '') : ''
-  };
-
-  const localHash = JSON.stringify(normalizeForHash(DYNAMIC_DATA)) + JSON.stringify(normalizeForHash(loadState())) + JSON.stringify(normalizeForHash(cleanLocalTracker));
-  const cloudHash = JSON.stringify(normalizeForHash(newDynamic)) + JSON.stringify(normalizeForHash(newState)) + JSON.stringify(normalizeForHash(cleanTracker));
+  const localHash = JSON.stringify(normalizeForHash(DYNAMIC_DATA)) + JSON.stringify(normalizeForHash(loadState()));
+  const cloudHash = JSON.stringify(normalizeForHash(newDynamic)) + JSON.stringify(normalizeForHash(newState));
   
   // DEBUG INJECTION
   let debugEl = document.getElementById('debug-sync');
@@ -2757,12 +2732,6 @@ window.reloadAppFromCloud = function(cloudData) {
     console.log("Cloud data differs. Applying sync...");
     localStorage.setItem(getDynamicDataKey(), JSON.stringify(newDynamic));
     localStorage.setItem(getStorageKey(), JSON.stringify(newState));
-    
-    if (cleanTracker.isRunning || cleanTracker.isPaused) {
-      localStorage.setItem('ca_study_tracker_state', JSON.stringify(cleanTracker));
-    } else {
-      localStorage.removeItem('ca_study_tracker_state');
-    }
     
     // Soft reload to apply changes without refreshing the browser
     loadDynamicData();
