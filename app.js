@@ -2760,9 +2760,14 @@ function smartRepairSyllabusData() {
     DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => !(s.type === 'ibs' || (s.id && s.id.startsWith('ibs-') && !s.children)));
   }
   
-  // Sort the folder children
+  // Force strict ordering by re-creating the array
   if (folder.children && folder.children.length > 0) {
-    folder.children.sort((a, b) => ibsOrder.indexOf(a.id) - ibsOrder.indexOf(b.id));
+    const newChildren = [];
+    ibsOrder.forEach(id => {
+      const child = folder.children.find(c => c.id === id);
+      if (child) newChildren.push(child);
+    });
+    folder.children = newChildren;
   }
 
   saveDynamicData();
