@@ -34,6 +34,8 @@ function switchGroup(groupId) {
       const slots = DYNAMIC_DATA.schedules[key].slots || [];
       slots.forEach(slot => {
         if (slot.icon === '☀️') { slot.icon = 'wb_sunny'; emojisModified = true; }
+        if (slot.icon === 'book') { slot.icon = 'menu_book'; emojisModified = true; }
+        if (slot.icon === '📚') { slot.icon = 'menu_book'; emojisModified = true; }
         if (slot.icon === '☕') { slot.icon = 'local_cafe'; emojisModified = true; }
         if (slot.icon === '🍽️') { slot.icon = 'restaurant'; emojisModified = true; }
         if (slot.icon === '😴') { slot.icon = 'bedtime'; emojisModified = true; }
