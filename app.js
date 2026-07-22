@@ -28,34 +28,35 @@ function switchGroup(groupId) {
   loadDynamicData();
 
   // Migrate Emojis for existing users
-  let emojisModified = false;
-  if (DYNAMIC_DATA.schedules) {
-    Object.keys(DYNAMIC_DATA.schedules).forEach(key => {
-      const slots = DYNAMIC_DATA.schedules[key].slots || [];
-      slots.forEach(slot => {
-        if (slot.icon === '☀️') { slot.icon = 'wb_sunny'; emojisModified = true; }
-        if (slot.icon === 'book') { slot.icon = 'menu_book'; emojisModified = true; }
-        if (slot.icon === '📚') { slot.icon = 'menu_book'; emojisModified = true; }
-        if (slot.icon === '☕') { slot.icon = 'local_cafe'; emojisModified = true; }
-        if (slot.icon === '🍽️') { slot.icon = 'restaurant'; emojisModified = true; }
-        if (slot.icon === '😴') { slot.icon = 'bedtime'; emojisModified = true; }
-      });
-    });
-  }
-  if (DYNAMIC_DATA.goals) {
-    const newGoals = [];
-    DYNAMIC_DATA.goals.forEach(goal => {
-      let g = goal;
-      if (typeof g === 'string') {
-        if (g.startsWith('📖 ') || g.includes('menu_book</span>')) { g = 'Give Primary Subject at least 8 hours'; emojisModified = true; }
-        if (g.startsWith('✍️ ') || g.includes('edit_document</span>')) { g = 'Solve/Write at least 1 Question by hand'; emojisModified = true; }
-        if (g.startsWith('💾 ') || g.includes('save</span>')) { g = 'Keep Study Content downloaded, if any'; emojisModified = true; }
-      }
-      newGoals.push(g);
-    });
-    DYNAMIC_DATA.goals = newGoals;
-  }
-  if (emojisModified) saveDynamicData();
+  
+  // ULTIMATE EMOJI TO MATERIAL ICON MIGRATION
+  let dataStr = JSON.stringify(DYNAMIC_DATA);
+  const emojiMap = {
+    '☀️': 'wb_sunny', '☕': 'local_cafe', '🍽️': 'restaurant', '😴': 'bedtime',
+    '📚': 'menu_book', '📖': 'menu_book', '✍️': 'edit_document', '💾': 'save',
+    '🏋️': 'fitness_center', '📱': 'phone_iphone', '📺': 'tv', '🟢': 'radio_button_checked',
+    '⚠️': 'warning', '✅': 'check_circle', '📅': 'calendar_month', '📊': 'bar_chart',
+    '⏱️': 'timer', '📝': 'edit_document', '📁': 'folder', '📘': 'menu_book',
+    '💪': 'fitness_center', '🏃': 'directions_run', '🧘': 'self_improvement',
+    '🚿': 'shower', '🚌': 'directions_bus', '🚗': 'directions_car'
+  };
+  
+  // Replace all known mapped emojis with their material icon equivalents in strings
+  Object.keys(emojiMap).forEach(emoji => {
+    const regex = new RegExp(emoji, 'g');
+    dataStr = dataStr.replace(regex, emojiMap[emoji]);
+  });
+  
+  // Strip any remaining emojis globally
+  const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F200}-\u{1F251}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}]/gu;
+  dataStr = dataStr.replace(emojiRegex, '');
+  
+  // Also clean up any 'book' ligatures that act as emojis
+  dataStr = dataStr.replace(/"icon":"book"/g, '"icon":"menu_book"');
+  
+  DYNAMIC_DATA = JSON.parse(dataStr);
+  saveDynamicData();
+
 
   smartRepairSyllabusData();
   const groupSel = document.getElementById('group-selector');
