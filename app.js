@@ -26,7 +26,7 @@ function switchGroup(groupId) {
   state.activeGroup = groupId;
   localStorage.setItem('ca_app_prefs_group', groupId);
   loadDynamicData();
-  repairSyllabusData();
+  smartRepairSyllabusData();
   const groupSel = document.getElementById('group-selector');
   if (groupSel) groupSel.value = state.activeGroup;
   switchTab('dashboard'); // This will also re-render everything
@@ -2645,7 +2645,7 @@ window.reloadAppFromCloud = function(cloudData) {
 };
 
 
-function repairSyllabusData() {
+function smartRepairSyllabusData() {
   if (!DYNAMIC_DATA.syllabusSubjects) return;
   let flat = [];
   const flatten = (arr) => {
@@ -2656,16 +2656,43 @@ function repairSyllabusData() {
   };
   flatten(DYNAMIC_DATA.syllabusSubjects);
   
+  const mergeChapters = (subj, defaultChapters) => {
+    if (!subj.chapters || !Array.isArray(subj.chapters)) {
+      subj.chapters = [];
+    }
+    
+    // Clean up nulls
+    subj.chapters = subj.chapters.filter(c => c && c.id);
+    
+    const existingIds = new Set(subj.chapters.map(c => c.id));
+    
+    let added = false;
+    defaultChapters.forEach(defCh => {
+      if (!existingIds.has(defCh.id)) {
+        subj.chapters.push(JSON.parse(JSON.stringify(defCh)));
+        added = true;
+      }
+    });
+    
+    if (added) {
+      subj.chapters.sort((a, b) => {
+        let idxA = defaultChapters.findIndex(c => c.id === a.id);
+        let idxB = defaultChapters.findIndex(c => c.id === b.id);
+        if (idxA === -1) idxA = 9999;
+        if (idxB === -1) idxB = 9999;
+        return idxA - idxB;
+      });
+    }
+  };
+
   const ensureSubject = (id, defaultObj) => {
-    let subj = flat.find(s => s.id === id);
+    let subj = flat.find(s => s && s.id === id);
     if (!subj) {
       subj = JSON.parse(JSON.stringify(defaultObj));
       DYNAMIC_DATA.syllabusSubjects.push(subj);
       flat.push(subj);
     }
-    if (!subj.chapters || subj.chapters.length === 0) {
-      subj.chapters = JSON.parse(JSON.stringify(defaultObj.chapters || []));
-    }
+    mergeChapters(subj, defaultObj.chapters || []);
   };
 
   ensureSubject('dt', { id: 'dt', name: 'Paper 4: DT & International Tax', source: 'CA Aarish Khan', type: 'main', chapters: APP_DATA.dtChapters });
@@ -2674,26 +2701,6 @@ function repairSyllabusData() {
   ['afm', 'fr', 'audit', 'law', 'scpm'].forEach(key => {
     let nameMap = { afm: 'IBS — AFM', fr: '📋 IBS — FR', audit: 'IBS — Audit', law: '⚖️ IBS — Law (SPOM A)', scpm: 'IBS — SC&PM (SPOM B)' };
     ensureSubject('ibs-' + key, { id: 'ibs-' + key, name: nameMap[key], source: '', type: 'ibs', chapters: APP_DATA.ibsSubjects[key].chapters });
-  });
-
-  // Re-run the folder logic to ensure they are grouped properly
-  const ibsItems = DYNAMIC_DATA.syllabusSubjects.filter(s => (s.type === 'ibs' || (s.id.startsWith('ibs-') && !s.children)));
-  if (ibsItems.length > 0) {
-     const folder = { id: 'ibs-folder', name: 'Paper 6: IBS (MCS)', source: 'Multidisciplinary Case Study', type: 'folder', children: ibsItems };
-     DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => !(s.type === 'ibs' || (s.id.startsWith('ibs-') && !s.children)));
-     
-     // Remove existing ibs-folder if it exists to avoid duplicates
-     DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => s.id !== 'ibs-folder');
-     
-     DYNAMIC_DATA.syllabusSubjects.push(folder);
-  }
-  
-  // Final deduplication just in case
-  let uniqueIds = new Set();
-  DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => {
-    if(uniqueIds.has(s.id)) return false;
-    uniqueIds.add(s.id);
-    return true;
   });
 
   saveDynamicData();
