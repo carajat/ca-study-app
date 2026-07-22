@@ -2674,6 +2674,26 @@ window.startTutorial = function() {
 };
 
 
+
+function normalizeForHash(data) {
+  if (Array.isArray(data)) {
+    const arr = data.map(normalizeForHash).filter(v => v !== undefined && v !== null);
+    return arr.length > 0 ? arr : undefined;
+  } else if (typeof data === 'object' && data !== null) {
+    const newObj = {};
+    let hasKeys = false;
+    for (let k in data) {
+      const val = normalizeForHash(data[k]);
+      if (val !== undefined && val !== null) {
+        newObj[k] = val;
+        hasKeys = true;
+      }
+    }
+    return hasKeys ? newObj : undefined;
+  }
+  return data;
+}
+
 window.reloadAppFromCloud = function(cloudData) {
   if (!cloudData) return;
   
@@ -2692,8 +2712,8 @@ window.reloadAppFromCloud = function(cloudData) {
     task: newTracker.task || ''
   };
 
-  const localHash = JSON.stringify(DYNAMIC_DATA) + JSON.stringify(loadState()) + JSON.stringify(trackerState);
-  const cloudHash = JSON.stringify(newDynamic) + JSON.stringify(newState) + JSON.stringify(cleanTracker);
+  const localHash = JSON.stringify(normalizeForHash(DYNAMIC_DATA)) + JSON.stringify(normalizeForHash(loadState())) + JSON.stringify(normalizeForHash(trackerState));
+  const cloudHash = JSON.stringify(normalizeForHash(newDynamic)) + JSON.stringify(normalizeForHash(newState)) + JSON.stringify(normalizeForHash(cleanTracker));
   
   if (localHash !== cloudHash) {
     console.log("Cloud data differs. Applying sync and reloading...");
