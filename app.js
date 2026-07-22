@@ -2039,11 +2039,13 @@ function restoreTrackerState() {
         if (s.isPaused) {
           trackerState.isPaused = true;
           trackerState.pauseStart = s.pauseStart;
+          if (trackerState.intervalId) { clearInterval(trackerState.intervalId); trackerState.intervalId = null; }
           updateTrackerUI('paused');
           updateTimerDisplay();
         } else {
           trackerState.isRunning = true;
           updateTrackerUI('running');
+          if (trackerState.intervalId) clearInterval(trackerState.intervalId);
           trackerState.intervalId = setInterval(updateTimerDisplay, 1000);
         }
         var subSel = document.getElementById('st-subject');
@@ -2054,6 +2056,16 @@ function restoreTrackerState() {
         var taskInp = document.getElementById('st-task-desc');
         if (taskInp) taskInp.value = trackerState.task;
       }
+    } else {
+      trackerState.isRunning = false;
+      trackerState.isPaused = false;
+      trackerState.startTime = null;
+      trackerState.pausedTime = 0;
+      trackerState.pauseStart = null;
+      if (trackerState.intervalId) { clearInterval(trackerState.intervalId); trackerState.intervalId = null; }
+      updateTrackerUI('idle');
+      var el = document.getElementById('st-timer-value');
+      if (el) el.textContent = '00:00:00';
     }
   } catch(e) { console.error('restoreTrackerState', e); }
 }
