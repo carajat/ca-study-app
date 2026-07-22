@@ -108,12 +108,18 @@ window.logoutFromCloud = function() {
   }
 }
 
+let syncTimeout = null;
 window.syncToCloud = function(data) {
   if (!currentUser || !db) return; 
-  if (isSyncing) return;
   if (window.isReadOnlyMode) { console.log("Read-only mode: Sync prevented"); return; } 
+  
   const cleanData = JSON.parse(JSON.stringify(data));
-  db.ref(SHARED_PATH).set(cleanData).catch(err => {
-    console.error("Firebase sync error.", err.message); if(typeof showToast === "function") showToast("Sync Error: " + err.message);
-  });
+  if (syncTimeout) clearTimeout(syncTimeout);
+  
+  syncTimeout = setTimeout(() => {
+    db.ref(SHARED_PATH).set(cleanData).catch(err => {
+      console.error("Firebase sync error.", err.message); 
+      if(typeof showToast === "function") showToast("Sync Error: " + err.message);
+    });
+  }, 300);
 }
