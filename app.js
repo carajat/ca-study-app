@@ -2682,7 +2682,8 @@ function normalizeForHash(data) {
   } else if (typeof data === 'object' && data !== null) {
     const newObj = {};
     let hasKeys = false;
-    for (let k in data) {
+    const keys = Object.keys(data).sort();
+    for (let k of keys) {
       const val = normalizeForHash(data[k]);
       if (val !== undefined && val !== null) {
         newObj[k] = val;
