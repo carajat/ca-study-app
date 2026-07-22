@@ -1438,6 +1438,7 @@ function init() {
   
   // Load dynamic data
   loadDynamicData();
+  smartRepairSyllabusData();
   
   // Load saved schedule preference
   const saved = loadState();
