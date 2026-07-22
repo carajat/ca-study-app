@@ -2647,6 +2647,9 @@ window.reloadAppFromCloud = function(cloudData) {
 
 function smartRepairSyllabusData() {
   if (!DYNAMIC_DATA.syllabusSubjects) return;
+  
+  // Force reset DT and IDT chapters to match exactly with full APP_DATA lists
+  // This preserves progress because progress is stored separately in DYNAMIC_DATA.progress
   let flat = [];
   const flatten = (arr) => {
     arr.forEach(s => {
@@ -2656,52 +2659,39 @@ function smartRepairSyllabusData() {
   };
   flatten(DYNAMIC_DATA.syllabusSubjects);
   
-  const mergeChapters = (subj, defaultChapters) => {
-    if (!subj.chapters || !Array.isArray(subj.chapters)) {
-      subj.chapters = [];
-    }
-    
-    // Clean up nulls
-    subj.chapters = subj.chapters.filter(c => c && c.id);
-    
-    const existingIds = new Set(subj.chapters.map(c => c.id));
-    
-    let added = false;
-    defaultChapters.forEach(defCh => {
-      if (!existingIds.has(defCh.id)) {
-        subj.chapters.push(JSON.parse(JSON.stringify(defCh)));
-        added = true;
-      }
-    });
-    
-    if (added) {
-      subj.chapters.sort((a, b) => {
-        let idxA = defaultChapters.findIndex(c => c.id === a.id);
-        let idxB = defaultChapters.findIndex(c => c.id === b.id);
-        if (idxA === -1) idxA = 9999;
-        if (idxB === -1) idxB = 9999;
-        return idxA - idxB;
-      });
-    }
-  };
-
-  const ensureSubject = (id, defaultObj) => {
+  const enforceSubject = (id, defaultObj) => {
     let subj = flat.find(s => s && s.id === id);
     if (!subj) {
       subj = JSON.parse(JSON.stringify(defaultObj));
       DYNAMIC_DATA.syllabusSubjects.push(subj);
-      flat.push(subj);
+    } else {
+      // Overwrite chapters completely to remove the truncated 14-chapter junk
+      subj.chapters = JSON.parse(JSON.stringify(defaultObj.chapters || []));
     }
-    mergeChapters(subj, defaultObj.chapters || []);
   };
 
-  ensureSubject('dt', { id: 'dt', name: 'Paper 4: DT & International Tax', source: 'CA Aarish Khan', type: 'main', chapters: APP_DATA.group2.dtChapters });
-  ensureSubject('idt', { id: 'idt', name: 'Paper 5: IDT (GST + Customs)', source: 'VB Sir', type: 'main', chapters: APP_DATA.group2.idtChapters });
+  enforceSubject('dt', { id: 'dt', name: 'Paper 4: DT & International Tax', source: 'CA Aarish Khan', type: 'main', chapters: APP_DATA.group2.dtChapters });
+  enforceSubject('idt', { id: 'idt', name: 'Paper 5: IDT (GST + Customs)', source: 'VB Sir', type: 'main', chapters: APP_DATA.group2.idtChapters });
   
   ['afm', 'fr', 'audit', 'law', 'scpm'].forEach(key => {
     let nameMap = { afm: 'IBS — AFM', fr: '📋 IBS — FR', audit: 'IBS — Audit', law: '⚖️ IBS — Law (SPOM A)', scpm: 'IBS — SC&PM (SPOM B)' };
-    ensureSubject('ibs-' + key, { id: 'ibs-' + key, name: nameMap[key], source: '', type: 'ibs', chapters: APP_DATA.group2.ibsSubjects[key].chapters });
+    enforceSubject('ibs-' + key, { id: 'ibs-' + key, name: nameMap[key], source: '', type: 'ibs', chapters: APP_DATA.group2.ibsSubjects[key].chapters });
   });
+
+  // Remove the rogue 'ibs' subject that came from the old hardcoded array
+  DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => {
+    if (s.id === 'ibs') return false; 
+    return true;
+  });
+
+  // Group IBS subjects into folder
+  const ibsItems = DYNAMIC_DATA.syllabusSubjects.filter(s => (s.type === 'ibs' || (s.id && s.id.startsWith('ibs-') && !s.children)));
+  if (ibsItems.length > 0) {
+     const folder = { id: 'ibs-folder', name: 'Paper 6: IBS (MCS)', source: 'Multidisciplinary Case Study', type: 'folder', children: ibsItems };
+     DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => !(s.type === 'ibs' || (s.id && s.id.startsWith('ibs-') && !s.children)));
+     DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => s.id !== 'ibs-folder');
+     DYNAMIC_DATA.syllabusSubjects.push(folder);
+  }
 
   saveDynamicData();
 }
