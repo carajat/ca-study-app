@@ -2743,6 +2743,16 @@ window.reloadAppFromCloud = function(cloudData) {
   const localHash = JSON.stringify(normalizeForHash(DYNAMIC_DATA)) + JSON.stringify(normalizeForHash(loadState())) + JSON.stringify(normalizeForHash(cleanLocalTracker));
   const cloudHash = JSON.stringify(normalizeForHash(newDynamic)) + JSON.stringify(normalizeForHash(newState)) + JSON.stringify(normalizeForHash(cleanTracker));
   
+  // DEBUG INJECTION
+  let debugEl = document.getElementById('debug-sync');
+  if (!debugEl) {
+    debugEl = document.createElement('div');
+    debugEl.id = 'debug-sync';
+    debugEl.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:rgba(0,0,0,0.8);color:lime;font-family:monospace;font-size:10px;z-index:99999;padding:5px;pointer-events:none;word-break:break-all;';
+    document.body.appendChild(debugEl);
+  }
+  debugEl.innerHTML = 'v182<br>TRK: ' + JSON.stringify(newTracker) + '<br>L-TRK: ' + JSON.stringify(cleanLocalTracker) + '<br>MATCH? ' + (localHash === cloudHash);
+
   if (localHash !== cloudHash) {
     console.log("Cloud data differs. Applying sync...");
     localStorage.setItem(getDynamicDataKey(), JSON.stringify(newDynamic));
