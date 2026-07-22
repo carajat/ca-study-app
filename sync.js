@@ -114,6 +114,6 @@ window.syncToCloud = function(data) {
   if (window.isReadOnlyMode) { console.log("Read-only mode: Sync prevented"); return; } 
   const cleanData = JSON.parse(JSON.stringify(data));
   db.ref(SHARED_PATH).set(cleanData).catch(err => {
-    console.error("Firebase sync error.", err.message);
+    console.error("Firebase sync error.", err.message); if(typeof showToast === "function") showToast("Sync Error: " + err.message);
   });
 }
