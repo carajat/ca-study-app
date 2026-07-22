@@ -2876,3 +2876,175 @@ window.pickMockTask = function(seriesName, mockSubject, target) {
     taskInput.value = mockTaskName;
   }
 };
+
+
+window.switchLogModalTab = function(tabName) {
+  document.getElementById('log-tab-stats').classList.toggle('active', tabName === 'stats');
+  document.getElementById('log-tab-history').classList.toggle('active', tabName === 'history');
+  
+  document.getElementById('log-modal-stats').style.display = tabName === 'stats' ? 'block' : 'none';
+  document.getElementById('log-modal-history').style.display = tabName === 'history' ? 'block' : 'none';
+};
+
+window.renderHistoryForDate = function(dateStr) {
+  const container = document.getElementById('log-history-list');
+  if (!dateStr) {
+    container.innerHTML = '<div style="text-align:center; padding:15px; color:var(--text-muted); font-size:13px;">Please select a date.</div>';
+    return;
+  }
+  
+  const d = new Date(dateStr);
+  const formattedDate = formatDate(d); // e.g. "Mon, 22 Jul 2026"
+  const isoDate = d.toISOString().split('T')[0]; // "2026-07-22"
+  
+  // DYNAMIC_DATA.journalEntries uses strings like "Mon, 22 Jul 2026" or similar format from getTodayStr()
+  // Wait, getTodayStr() returns formatDate(new Date())! So the key is formattedDate.
+  
+  let entries = (DYNAMIC_DATA.journalEntries && DYNAMIC_DATA.journalEntries[formattedDate] && DYNAMIC_DATA.journalEntries[formattedDate].rows) || [];
+  
+  if (entries.length === 0) {
+    // Try iso date as fallback just in case
+    entries = (DYNAMIC_DATA.journalEntries && DYNAMIC_DATA.journalEntries[isoDate] && DYNAMIC_DATA.journalEntries[isoDate].rows) || [];
+  }
+  
+  container.innerHTML = '';
+  let totalMinutes = 0;
+  
+  if (entries.length === 0) {
+    container.innerHTML = '<div style="text-align:center; padding:15px; color:var(--text-muted); font-size:13px;">No logs found for this date.</div>';
+    document.getElementById('log-history-total').textContent = 'Total: 0h 0m';
+    return;
+  }
+  
+  entries.forEach((row) => {
+    let durText = '';
+    const h = parseInt(row.durHH) || 0;
+    const m = parseInt(row.durMM) || 0;
+    totalMinutes += (h * 60) + m;
+    
+    if (h > 0) durText += h + 'h ';
+    if (m > 0 || h === 0) durText += m + 'm';
+    
+    const div = document.createElement('div');
+    div.style.background = 'rgba(255,255,255,0.03)';
+    div.style.border = '1px solid var(--border-color)';
+    div.style.borderRadius = '8px';
+    div.style.padding = '10px';
+    div.style.display = 'flex';
+    div.style.justifyContent = 'space-between';
+    div.style.alignItems = 'flex-start';
+    
+    div.innerHTML = `
+      <div style="flex:1;">
+        <div style="font-weight:600; font-size:14px; color:var(--text-primary);">${row.subject}</div>
+        <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">${row.topic}</div>
+        ${row.taskDesc ? `<div style="font-size:11px; color:var(--text-muted); margin-top:4px;">${row.taskDesc}</div>` : ''}
+      </div>
+      <div style="font-size:13px; font-weight:bold; color:var(--primary-color); white-space:nowrap; margin-left:10px;">${durText}</div>
+    `;
+    container.appendChild(div);
+  });
+  
+  const th = Math.floor(totalMinutes / 60);
+  const tm = totalMinutes % 60;
+  document.getElementById('log-history-total').textContent = `Total: ${th}h ${tm}m`;
+};
+
+window.openLogHistoryModal = function() {
+  const subjectStats = {};
+  let totalMinutes = 0;
+  
+  // Aggregate stats
+  if (DYNAMIC_DATA.journalEntries) {
+    Object.keys(DYNAMIC_DATA.journalEntries).forEach(dateKey => {
+      const dayData = DYNAMIC_DATA.journalEntries[dateKey];
+      if (dayData && dayData.rows) {
+        dayData.rows.forEach(row => {
+          const h = parseInt(row.durHH) || 0;
+          const m = parseInt(row.durMM) || 0;
+          const mins = (h * 60) + m;
+          
+          totalMinutes += mins;
+          
+          if (!subjectStats[row.subject]) subjectStats[row.subject] = 0;
+          subjectStats[row.subject] += mins;
+        });
+      }
+    });
+  }
+  
+  // Build stats HTML
+  let statsHtml = '<div style="display:flex; flex-direction:column; gap:8px;">';
+  
+  const sortedSubjects = Object.keys(subjectStats).sort((a, b) => subjectStats[b] - subjectStats[a]);
+  
+  if (sortedSubjects.length === 0) {
+    statsHtml += '<div style="text-align:center; padding:15px; color:var(--text-muted); font-size:13px;">No study data logged yet.</div>';
+  } else {
+    sortedSubjects.forEach(subj => {
+      const mins = subjectStats[subj];
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      statsHtml += `
+        <div class="glass-card" style="padding:10px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-weight:600; font-size:13px; color:var(--text-primary);">${subj}</div>
+          <div style="font-weight:bold; font-size:13px; color:var(--primary-color);">${h}h ${m}m</div>
+        </div>
+      `;
+    });
+  }
+  
+  const gh = Math.floor(totalMinutes / 60);
+  const gm = totalMinutes % 60;
+  
+  statsHtml += `
+    <div style="margin-top: 15px; padding: 12px; background: rgba(52,199,89,0.1); border: 1px solid var(--success-color); border-radius: 10px; text-align: center;">
+      <div style="font-size:12px; color:var(--success-color); text-transform:uppercase; font-weight:bold; letter-spacing:1px;">All-Time Total Study</div>
+      <div style="font-size:24px; font-weight:bold; color:var(--text-primary); margin-top:5px;">${gh}h ${gm}m</div>
+    </div>
+  </div>`;
+  
+  // Build History HTML
+  const todayIso = new Date().toISOString().split('T')[0];
+  const historyHtml = `
+    <div style="margin-bottom: 12px;">
+      <input type="date" id="log-history-date" class="st-input" style="width:100%; margin-bottom:0;" value="${todayIso}" onchange="renderHistoryForDate(this.value)">
+    </div>
+    <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+      <span id="log-history-total" style="font-size: 13px; font-weight: 600; color: var(--primary);">Total: 0h 0m</span>
+    </div>
+    <div id="log-history-list" style="display:flex; flex-direction:column; gap:8px;">
+    </div>
+  `;
+  
+  const html = `
+    <div style="display:flex; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+      <button id="log-tab-stats" class="st-tab-btn active" style="flex:1; padding:8px; border:none; background:transparent; color:var(--text-primary); font-weight:600; cursor:pointer;" onclick="switchLogModalTab('stats')">All-Time Stats</button>
+      <button id="log-tab-history" class="st-tab-btn" style="flex:1; padding:8px; border:none; background:transparent; color:var(--text-secondary); font-weight:600; cursor:pointer;" onclick="switchLogModalTab('history')">Daily History</button>
+    </div>
+    
+    <div id="log-modal-stats" style="max-height: 55vh; overflow-y: auto;">
+      ${statsHtml}
+    </div>
+    
+    <div id="log-modal-history" style="display:none; max-height: 55vh; overflow-y: auto;">
+      ${historyHtml}
+    </div>
+  `;
+  
+  openModal('Log History & Stats', html);
+  
+  // Add some styles dynamically for tabs
+  const styleId = 'log-tabs-style';
+  if (!document.getElementById(styleId)) {
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.innerHTML = `
+      .st-tab-btn.active { border-bottom: 2px solid var(--primary-color) !important; color: var(--primary-color) !important; }
+    `;
+    document.head.appendChild(style);
+  }
+  
+  // Initial render for history tab (it will run behind the scenes)
+  setTimeout(() => renderHistoryForDate(document.getElementById('log-history-date').value), 50);
+};

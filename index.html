@@ -193,7 +193,12 @@
           <h3 style="margin: 0; font-size: 15px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
             <span class="material-symbols-rounded icon-sm">list_alt</span> Today's Log
           </h3>
-          <span id="tl-total-time" style="font-size: 13px; font-weight: 600; color: var(--primary);">Total: 0h 0m</span>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <button class="icon-btn" style="background: rgba(52,199,89,0.1); color: var(--success-color); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;" title="History & Stats" onclick="openLogHistoryModal()">
+              <span class="material-symbols-rounded" style="font-size:16px;">history</span>
+            </button>
+            <span id="tl-total-time" style="font-size: 13px; font-weight: 600; color: var(--primary);">Total: 0h 0m</span>
+          </div>
         </div>
         <div id="tl-list" style="display: flex; flex-direction: column; gap: 8px;">
           <!-- Logs will be rendered here -->
