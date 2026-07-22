@@ -2778,7 +2778,7 @@ function smartRepairSyllabusData() {
 
 window.openMockPickerModal = function(target) {
   let html = '<div style="max-height: 60vh; overflow-y: auto;">';
-  const mocks = DYNAMIC_DATA.mockSeries || [];
+  const mocks = DYNAMIC_DATA.mocks || [];
   if (mocks.length === 0) {
     html += '<div style="text-align:center; color:var(--text-secondary); padding:20px;">No Mock Series found in Exams tab.</div>';
   } else {
@@ -2786,7 +2786,7 @@ window.openMockPickerModal = function(target) {
       html += '<div style="margin-bottom: 15px;">' +
         '<h4 style="margin-top:0; margin-bottom: 8px; color:var(--primary-color);">' + series.name + '</h4>' +
         '<div style="display:flex; flex-direction:column; gap:8px;">';
-      (series.exams || []).forEach(ex => {
+      (series.tests || []).forEach(ex => {
         html += '<div class="glass-card" style="display:flex; justify-content:space-between; align-items:center; padding: 10px;">' +
           '<div>' +
             '<div style="font-weight:600; font-size:14px;">' + ex.subject + '</div>' +
