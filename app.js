@@ -2758,7 +2758,16 @@ window.reloadAppFromCloud = function(cloudData) {
     loadDynamicData();
     loadState();
     restoreTrackerState();
-    switchTab(state.activeTab);
+    if (state.activeTab === 'dashboard') {
+      updateDashboardPlanner();
+      updateDashboardStats();
+    } else if (state.activeTab === 'planner') {
+      renderPlanner();
+    } else if (state.activeTab === 'ibs') {
+      renderIBS();
+    } else if (state.activeTab === 'journal') {
+      renderJournal();
+    }
     
     if (typeof showToast === 'function') {
       showToast("Data synced from cloud! <span class='material-symbols-rounded icon-sm' style='vertical-align:middle'>cloud_done</span>");
