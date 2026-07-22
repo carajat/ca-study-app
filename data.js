@@ -18,19 +18,19 @@ const APP_DATA_GROUP2 = {
       totalBreaks: "4.5 hrs",
       sleep: "6 hrs",
       slots: [
-        { id: "em1", label: "Wake Up & Get Ready", startRange: "03:00-04:00", duration: 60, type: "routine", icon: "☀️" },
+        { id: "em1", label: "Wake Up & Get Ready", startRange: "03:00-04:00", duration: 60, type: "routine", icon: "<span class='material-symbols-rounded icon-sm'>wb_sunny</span>" },
         { id: "em2", label: "Study Session 1", startRange: "04:00-05:00", duration: 180, type: "study", icon: "book" },
-        { id: "em3", label: "Tea Break", startRange: "07:00-08:00", duration: 30, type: "break", icon: "☕" },
+        { id: "em3", label: "Tea Break", startRange: "07:00-08:00", duration: 30, type: "break", icon: "<span class='material-symbols-rounded icon-sm'>local_cafe</span>" },
         { id: "em4", label: "Study Session 2", startRange: "07:30-08:30", duration: 120, type: "study", icon: "book" },
-        { id: "em5", label: "Tea Break", startRange: "09:30-10:30", duration: 30, type: "break", icon: "☕" },
+        { id: "em5", label: "Tea Break", startRange: "09:30-10:30", duration: 30, type: "break", icon: "<span class='material-symbols-rounded icon-sm'>local_cafe</span>" },
         { id: "em6", label: "Study Session 3", startRange: "10:00-11:00", duration: 120, type: "study", icon: "book" },
-        { id: "em7", label: "Lunch Break", startRange: "12:00-13:00", duration: 60, type: "break", icon: "🍽️" },
+        { id: "em7", label: "Lunch Break", startRange: "12:00-13:00", duration: 60, type: "break", icon: "<span class='material-symbols-rounded icon-sm'>restaurant</span>" },
         { id: "em8", label: "Study Session 4", startRange: "13:00-14:00", duration: 120, type: "study", icon: "book" },
-        { id: "em9", label: "Tea Break", startRange: "15:00-16:00", duration: 30, type: "break", icon: "☕" },
+        { id: "em9", label: "Tea Break", startRange: "15:00-16:00", duration: 30, type: "break", icon: "<span class='material-symbols-rounded icon-sm'>local_cafe</span>" },
         { id: "em10", label: "Study Session 5", startRange: "15:30-16:30", duration: 120, type: "study", icon: "book" },
         { id: "em11", label: "Tea Break / Shop", startRange: "17:30-18:30", duration: 120, type: "break", icon: "local_cafe" },
         { id: "em12", label: "Dinner / Phone / TV", startRange: "19:30-20:30", duration: 90, type: "break", icon: "restaurant" },
-        { id: "em13", label: "Sleep", startRange: "21:00-22:00", duration: 360, type: "sleep", icon: "😴" }
+        { id: "em13", label: "Sleep", startRange: "21:00-22:00", duration: 360, type: "sleep", icon: "<span class='material-symbols-rounded icon-sm'>bedtime</span>" }
       ]
     },
     lateNight: {
@@ -39,27 +39,27 @@ const APP_DATA_GROUP2 = {
       totalBreaks: "5 hrs",
       sleep: "6 hrs",
       slots: [
-        { id: "ln1", label: "Wake Up & Get Ready", startRange: "08:00-09:00", duration: 60, type: "routine", icon: "☀️" },
+        { id: "ln1", label: "Wake Up & Get Ready", startRange: "08:00-09:00", duration: 60, type: "routine", icon: "<span class='material-symbols-rounded icon-sm'>wb_sunny</span>" },
         { id: "ln2", label: "Study Session 1", startRange: "09:00-10:00", duration: 180, type: "study", icon: "book" },
-        { id: "ln3", label: "Lunch Break", startRange: "12:00-13:00", duration: 60, type: "break", icon: "🍽️" },
+        { id: "ln3", label: "Lunch Break", startRange: "12:00-13:00", duration: 60, type: "break", icon: "<span class='material-symbols-rounded icon-sm'>restaurant</span>" },
         { id: "ln4", label: "Study Session 2", startRange: "13:00-14:00", duration: 120, type: "study", icon: "book" },
-        { id: "ln5", label: "Tea Break", startRange: "15:00-16:00", duration: 30, type: "break", icon: "☕" },
+        { id: "ln5", label: "Tea Break", startRange: "15:00-16:00", duration: 30, type: "break", icon: "<span class='material-symbols-rounded icon-sm'>local_cafe</span>" },
         { id: "ln6", label: "Study Session 3", startRange: "15:30-16:30", duration: 120, type: "study", icon: "book" },
         { id: "ln7", label: "Tea Break / Shop", startRange: "17:30-18:30", duration: 120, type: "break", icon: "local_cafe" },
         { id: "ln8", label: "Dinner / Phone / TV", startRange: "19:30-20:30", duration: 60, type: "break", icon: "restaurant" },
         { id: "ln9", label: "Study Session 4", startRange: "20:30-21:30", duration: 120, type: "study", icon: "book" },
         { id: "ln10", label: "Power Nap Break", startRange: "22:30-23:30", duration: 30, type: "break", icon: "bedtime" },
         { id: "ln11", label: "Study Session 5", startRange: "23:00-00:00", duration: 180, type: "study", icon: "book" },
-        { id: "ln12", label: "Sleep", startRange: "02:00-03:00", duration: 360, type: "sleep", icon: "😴" }
+        { id: "ln12", label: "Sleep", startRange: "02:00-03:00", duration: 360, type: "sleep", icon: "<span class='material-symbols-rounded icon-sm'>bedtime</span>" }
       ]
     },
     rules: [
       "Daily Practice MCQs for at least 15 Minutes",
-      "📖 Give Primary Subject at least 8 hours",
+      "<span class='material-symbols-rounded icon-sm' style='vertical-align:middle;'>menu_book</span> Give Primary Subject at least 8 hours",
       "Give Secondary Subject Max. 4 hours",
-      "✍️ Solve/Write at least 1 Question by hand",
+      "<span class='material-symbols-rounded icon-sm' style='vertical-align:middle;'>edit_document</span> Solve/Write at least 1 Question by hand",
       "Read Questions and Answers daily",
-      "💾 Keep Study Content downloaded, if any",
+      "<span class='material-symbols-rounded icon-sm' style='vertical-align:middle;'>save</span> Keep Study Content downloaded, if any",
       "Prepare 'What to Study tomorrow' in advance"
     ]
   },

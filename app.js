@@ -26,6 +26,35 @@ function switchGroup(groupId) {
   state.activeGroup = groupId;
   localStorage.setItem('ca_app_prefs_group', groupId);
   loadDynamicData();
+
+  // Migrate Emojis for existing users
+  let emojisModified = false;
+  if (DYNAMIC_DATA.schedules) {
+    Object.keys(DYNAMIC_DATA.schedules).forEach(key => {
+      const slots = DYNAMIC_DATA.schedules[key].slots || [];
+      slots.forEach(slot => {
+        if (slot.icon === '☀️') { slot.icon = '<span class="material-symbols-rounded icon-sm">wb_sunny</span>'; emojisModified = true; }
+        if (slot.icon === '☕') { slot.icon = '<span class="material-symbols-rounded icon-sm">local_cafe</span>'; emojisModified = true; }
+        if (slot.icon === '🍽️') { slot.icon = '<span class="material-symbols-rounded icon-sm">restaurant</span>'; emojisModified = true; }
+        if (slot.icon === '😴') { slot.icon = '<span class="material-symbols-rounded icon-sm">bedtime</span>'; emojisModified = true; }
+      });
+    });
+  }
+  if (DYNAMIC_DATA.goals) {
+    const newGoals = [];
+    DYNAMIC_DATA.goals.forEach(goal => {
+      let g = goal;
+      if (typeof g === 'string') {
+        if (g.startsWith('📖 ')) { g = '<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">menu_book</span> ' + g.substring(3); emojisModified = true; }
+        if (g.startsWith('✍️ ')) { g = '<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">edit_document</span> ' + g.substring(3); emojisModified = true; }
+        if (g.startsWith('💾 ')) { g = '<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">save</span> ' + g.substring(3); emojisModified = true; }
+      }
+      newGoals.push(g);
+    });
+    DYNAMIC_DATA.goals = newGoals;
+  }
+  if (emojisModified) saveDynamicData();
+
   smartRepairSyllabusData();
   const groupSel = document.getElementById('group-selector');
   if (groupSel) groupSel.value = state.activeGroup;
@@ -1497,7 +1526,7 @@ if ('serviceWorker' in navigator) {
 //  MENU, THEMES & DATA SHARING
 // ═══════════════════════════════════════════
 function openMenuModal() {
-  openModal('☰ Settings & Tools', `
+  openModal('<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">settings</span> Settings & Tools', `
     
     
     <button id="editModeBtn" class="menu-btn" onclick="toggleEditMode(); closeModal()">
@@ -2140,7 +2169,7 @@ function updateTrackerUI(mode) {
     btnStart.style.display = 'none'; btnPause.style.display = 'flex';
     btnResume.style.display = 'none'; btnStop.style.display = 'flex';
     subSel.disabled = true; topSel.disabled = true; taskInp.disabled = false;
-    statusEl.textContent = '🟢 Studying...';
+    statusEl.textContent = '<span class="material-symbols-rounded icon-sm" style="color:var(--success-color); vertical-align:middle; font-size:16px;">radio_button_checked</span> Studying...';
   } else if (mode === 'paused') {
     timerDisp.classList.add('paused');
     btnStart.style.display = 'none'; btnPause.style.display = 'none';
@@ -2153,7 +2182,7 @@ function updateTrackerUI(mode) {
 function trackerStart() {
   var subj = document.getElementById('st-subject').value;
   if (!subj) {
-    document.getElementById('st-status').textContent = '⚠️ Please select a subject first';
+    document.getElementById('st-status').textContent = '<span class="material-symbols-rounded icon-sm" style="color:var(--accent); vertical-align:middle; font-size:16px;">warning</span> Please select a subject first';
     return;
   }
   trackerState.isRunning = true; trackerState.isPaused = false;
@@ -2208,7 +2237,7 @@ function trackerStop() {
     });
     saveDynamicData();
     renderTodaysLog();
-    document.getElementById('st-status').textContent = '✅ Saved ' + hh + 'h ' + mm + 'm to journal';
+    document.getElementById('st-status').textContent = '<span class="material-symbols-rounded icon-sm" style="color:var(--success-color); vertical-align:middle; font-size:16px;">check_circle</span> Saved ' + hh + 'h ' + mm + 'm to journal';
   } else {
     document.getElementById('st-status').textContent = 'Session too short (< 1 min), not saved';
   }
