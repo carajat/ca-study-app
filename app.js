@@ -2228,6 +2228,14 @@ function trackerStop() {
   var subject = trackerState.subject || document.getElementById('st-subject').value;
   var topic = trackerState.topic || document.getElementById('st-topic').value;
   var task = document.getElementById('st-task-desc').value;
+  
+  // Reset tracker state BEFORE saving to prevent Firebase triggering an active tracker
+  trackerState.isRunning = false; trackerState.isPaused = false;
+  trackerState.startTime = null; trackerState.pausedTime = 0; trackerState.pauseStart = null;
+  updateTrackerUI('idle');
+  document.getElementById('st-timer-value').textContent = '00:00:00';
+  saveTrackerState();
+
   if (totalMinutes >= 1) {
     var today = new Date();
     var todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
@@ -2235,7 +2243,7 @@ function trackerStop() {
     if (!DYNAMIC_DATA.journalEntries[todayStr]) {
       DYNAMIC_DATA.journalEntries[todayStr] = { sleep: '', breaks: '', wasted: '', feeling: '', rows: [] };
     }
-        if (!DYNAMIC_DATA.journalEntries[todayStr].rows) { DYNAMIC_DATA.journalEntries[todayStr].rows = []; }
+    if (!DYNAMIC_DATA.journalEntries[todayStr].rows) { DYNAMIC_DATA.journalEntries[todayStr].rows = []; }
     DYNAMIC_DATA.journalEntries[todayStr].rows.push({
       subject: subject, topic: topic, tasks: task,
       durHH: String(hh), durMM: String(mm), status: 'Done'
@@ -2246,11 +2254,7 @@ function trackerStop() {
   } else {
     document.getElementById('st-status').textContent = 'Session too short (< 1 min), not saved';
   }
-  trackerState.isRunning = false; trackerState.isPaused = false;
-  trackerState.startTime = null; trackerState.pausedTime = 0; trackerState.pauseStart = null;
-  updateTrackerUI('idle');
-  document.getElementById('st-timer-value').textContent = '00:00:00';
-  saveTrackerState();
+  
   setTimeout(function() {
     var st = document.getElementById('st-status');
     if (st) st.textContent = '';
