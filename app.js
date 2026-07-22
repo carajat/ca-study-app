@@ -2844,36 +2844,40 @@ window.pickMockTask = function(seriesName, mockSubject, target) {
     saveTrackerState();
     
   } else if (target === 'manual') {
-    const subSel = document.getElementById('ml-subj');
-    const topSel = document.getElementById('ml-topic');
-    const taskInput = document.getElementById('ml-task');
+    openManualLogModal();
     
-    let actualSubjName = mockSubject;
-    let flat = [];
-    (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
-       if (s.type === 'folder' && s.children) flat = flat.concat(s.children);
-       else flat.push(s);
-    });
-    let matchedSubj = flat.find(s => s.name.toLowerCase().includes(mockSubject.toLowerCase()));
-    if (matchedSubj) actualSubjName = matchedSubj.name;
-    
-    if (!Array.from(subSel.options).some(o => o.value === actualSubjName)) {
-      const opt = document.createElement('option');
-      opt.value = actualSubjName;
-      opt.textContent = actualSubjName;
-      subSel.insertBefore(opt, subSel.querySelector('option[value="__custom__"]'));
-    }
-    subSel.value = actualSubjName;
-    onManualLogSubjChange();
-    
-    if (!Array.from(topSel.options).some(o => o.value === mockTopic)) {
-      const tOpt = document.createElement('option');
-      tOpt.value = mockTopic;
-      tOpt.textContent = mockTopic;
-      topSel.appendChild(tOpt);
-    }
-    topSel.value = mockTopic;
-    taskInput.value = mockTaskName;
+    setTimeout(() => {
+      const subSel = document.getElementById('ml-subj');
+      const topSel = document.getElementById('ml-topic');
+      const taskInput = document.getElementById('ml-task');
+      
+      let actualSubjName = mockSubject;
+      let flat = [];
+      (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
+         if (s.type === 'folder' && s.children) flat = flat.concat(s.children);
+         else flat.push(s);
+      });
+      let matchedSubj = flat.find(s => s.name.toLowerCase().includes(mockSubject.toLowerCase()));
+      if (matchedSubj) actualSubjName = matchedSubj.name;
+      
+      if (!Array.from(subSel.options).some(o => o.value === actualSubjName)) {
+        const opt = document.createElement('option');
+        opt.value = actualSubjName;
+        opt.textContent = actualSubjName;
+        subSel.insertBefore(opt, subSel.querySelector('option[value="__custom__"]'));
+      }
+      subSel.value = actualSubjName;
+      onManualLogSubjChange();
+      
+      if (!Array.from(topSel.options).some(o => o.value === mockTopic)) {
+        const tOpt = document.createElement('option');
+        tOpt.value = mockTopic;
+        tOpt.textContent = mockTopic;
+        topSel.appendChild(tOpt);
+      }
+      topSel.value = mockTopic;
+      taskInput.value = mockTaskName;
+    }, 50);
   }
 };
 
