@@ -2741,14 +2741,28 @@ function smartRepairSyllabusData() {
     return true;
   });
 
-  const ibsItems = DYNAMIC_DATA.syllabusSubjects.filter(s => (s.type === 'ibs' || (s.id && s.id.startsWith('ibs-') && !s.children)));
-  if (ibsItems.length > 0) {
-     const ibsOrder = ['ibs-fr', 'ibs-afm', 'ibs-audit', 'ibs-law', 'ibs-scpm'];
-     ibsItems.sort((a, b) => ibsOrder.indexOf(a.id) - ibsOrder.indexOf(b.id));
-     const folder = { id: 'ibs-folder', name: 'Paper 6: IBS (MCS)', source: 'Multidisciplinary Case Study', type: 'folder', children: ibsItems };
-     DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => !(s.type === 'ibs' || (s.id && s.id.startsWith('ibs-') && !s.children)));
-     DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => s.id !== 'ibs-folder');
-     DYNAMIC_DATA.syllabusSubjects.push(folder);
+  const ibsOrder = ['ibs-fr', 'ibs-afm', 'ibs-audit', 'ibs-law', 'ibs-scpm'];
+  
+  // Find top-level ibs items if any (migration)
+  const topLevelIbs = DYNAMIC_DATA.syllabusSubjects.filter(s => (s.type === 'ibs' || (s.id && s.id.startsWith('ibs-') && !s.children)));
+  
+  let folder = DYNAMIC_DATA.syllabusSubjects.find(s => s.id === 'ibs-folder');
+  if (!folder) {
+    folder = { id: 'ibs-folder', name: 'Paper 6: IBS (MCS)', source: 'Multidisciplinary Case Study', type: 'folder', children: [] };
+    DYNAMIC_DATA.syllabusSubjects.push(folder);
+  }
+  
+  // Move any top level ibs into folder
+  if (topLevelIbs.length > 0) {
+    topLevelIbs.forEach(item => {
+      if (!folder.children.find(c => c.id === item.id)) folder.children.push(item);
+    });
+    DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => !(s.type === 'ibs' || (s.id && s.id.startsWith('ibs-') && !s.children)));
+  }
+  
+  // Sort the folder children
+  if (folder.children && folder.children.length > 0) {
+    folder.children.sort((a, b) => ibsOrder.indexOf(a.id) - ibsOrder.indexOf(b.id));
   }
 
   saveDynamicData();
