@@ -159,7 +159,7 @@ export function loadDynamicData() {
     }
   }
 
-  if (!DYNAMIC_DATA.syllabusSubjects) {
+  if (!DYNAMIC_DATA.syllabusSubjects || DYNAMIC_DATA.syllabusSubjects.length === 0) {
     DYNAMIC_DATA.syllabusSubjects = [
       { id: 'dt', name: 'Paper 4: DT & International Tax', source: 'CA Aarish Khan', type: 'main', chapters: DYNAMIC_DATA.dtChapters || window.APP_DATA.group2.dtChapters },
       { id: 'idt', name: 'Paper 5: IDT (GST + Customs)', source: 'VB Sir', type: 'main', chapters: DYNAMIC_DATA.idtChapters || window.APP_DATA.group2.idtChapters },

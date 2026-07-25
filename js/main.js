@@ -161,6 +161,9 @@ window.reloadAppFromCloud = function(cloudData) {
       localStorage.setItem(getDynamicDataKey(), JSON.stringify(DYNAMIC_DATA));
     }
     
+    // Repair syllabus data if cloud brought in empty/corrupted data
+    smartRepairSyllabusData();
+    
     restoreTrackerState();
     switchTab(state.activeTab);
     
