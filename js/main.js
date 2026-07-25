@@ -155,6 +155,8 @@ window.reloadAppFromCloud = function(cloudData) {
       } else if (firstExamDate) {
         DYNAMIC_DATA.exam.date = firstExamDate;
       }
+      // Save corrected exam.date back so it overwrites the stale cloud value
+      localStorage.setItem(getDynamicDataKey(), JSON.stringify(DYNAMIC_DATA));
     }
     
     restoreTrackerState();
