@@ -1,25 +1,13 @@
-const CACHE_NAME = 'ca-final-companion-v194';
+const CACHE_NAME = 'ca-final-companion-v191';
 const ASSETS = [
   '/',
-  '/index.html?v=194',
-  '/style.css?v=194',
-  '/data.js?v=194',
-  '/sync.js?v=194',
+  '/index.html?v=191',
+  '/style.css?v=191',
+  '/app.js?v=191',
+  '/data.js?v=191',
+  '/sync.js?v=191',
   '/Sortable.min.js',
-  '/manifest.json',
-  '/js/main.js?v=194',
-  '/js/utils.js?v=194',
-  '/js/state.js?v=194',
-  '/js/modals.js?v=194',
-  '/js/edit-mode.js?v=194',
-  '/js/dashboard.js?v=194',
-  '/js/exams.js?v=194',
-  '/js/schedule.js?v=194',
-  '/js/planner.js?v=194',
-  '/js/syllabus.js?v=194',
-  '/js/tracker.js?v=194',
-  '/js/journal.js?v=194',
-  '/js/theme.js?v=194'
+  '/manifest.json'
 ];
 
 self.addEventListener('install', event => {

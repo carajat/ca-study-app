@@ -417,9 +417,7 @@ const APP_DATA_GROUP1 = {
   quotes: APP_DATA_GROUP2.quotes
 };
 
-window.APP_DATA_GROUP1 = APP_DATA_GROUP1;
-window.APP_DATA_GROUP2 = APP_DATA_GROUP2;
-window.APP_DATA = {
+const APP_DATA = {
   group1: APP_DATA_GROUP1,
   group2: APP_DATA_GROUP2
 };
