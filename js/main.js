@@ -60,6 +60,7 @@ function init() {
   
   // Sync countdown date from the first finalExam entry
   if (DYNAMIC_DATA.finalExams && DYNAMIC_DATA.finalExams.length > 0) {
+    if (!DYNAMIC_DATA.exam) DYNAMIC_DATA.exam = {};
     const firstExamDate = DYNAMIC_DATA.finalExams[0].date;
     if (firstExamDate && !firstExamDate.includes('T')) {
       DYNAMIC_DATA.exam.date = firstExamDate + 'T14:00:00+05:30';
@@ -149,6 +150,7 @@ window.reloadAppFromCloud = function(cloudData) {
     
     // Sync countdown date from the first finalExam entry
     if (DYNAMIC_DATA.finalExams && DYNAMIC_DATA.finalExams.length > 0) {
+      if (!DYNAMIC_DATA.exam) DYNAMIC_DATA.exam = {};
       const firstExamDate = DYNAMIC_DATA.finalExams[0].date;
       if (firstExamDate && !firstExamDate.includes('T')) {
         DYNAMIC_DATA.exam.date = firstExamDate + 'T14:00:00+05:30';
