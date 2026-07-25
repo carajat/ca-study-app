@@ -146,6 +146,17 @@ window.reloadAppFromCloud = function(cloudData) {
     // Soft reload to apply changes without refreshing the browser
     loadDynamicData();
     loadState();
+    
+    // Sync countdown date from the first finalExam entry
+    if (DYNAMIC_DATA.finalExams && DYNAMIC_DATA.finalExams.length > 0) {
+      const firstExamDate = DYNAMIC_DATA.finalExams[0].date;
+      if (firstExamDate && !firstExamDate.includes('T')) {
+        DYNAMIC_DATA.exam.date = firstExamDate + 'T14:00:00+05:30';
+      } else if (firstExamDate) {
+        DYNAMIC_DATA.exam.date = firstExamDate;
+      }
+    }
+    
     restoreTrackerState();
     switchTab(state.activeTab);
     
