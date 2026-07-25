@@ -83,18 +83,18 @@ export function loadDynamicData() {
     console.warn("Corrupted or outdated dynamic data found. Resetting to APP_DATA.");
     
     try {
-      if (!APP_DATA[state.activeGroup]) throw new Error("APP_DATA missing group");
-      DYNAMIC_DATA = JSON.parse(JSON.stringify(APP_DATA[state.activeGroup]));
+      if (!window.APP_DATA[state.activeGroup]) throw new Error("APP_DATA missing group");
+      DYNAMIC_DATA = JSON.parse(JSON.stringify(window.APP_DATA[state.activeGroup]));
     } catch(e) {
       console.error(e);
-      DYNAMIC_DATA = JSON.parse(JSON.stringify(APP_DATA.group2 || APP_DATA));
+      DYNAMIC_DATA = JSON.parse(JSON.stringify(window.APP_DATA.group2 || window.APP_DATA));
     }
   
   } else {
     DYNAMIC_DATA = parsedData;
-    for (let key in APP_DATA[state.activeGroup]) {
+    for (let key in window.APP_DATA[state.activeGroup]) {
       if (!(key in DYNAMIC_DATA)) {
-        DYNAMIC_DATA[key] = JSON.parse(JSON.stringify(APP_DATA[state.activeGroup][key]));
+        DYNAMIC_DATA[key] = JSON.parse(JSON.stringify(window.APP_DATA[state.activeGroup][key]));
       }
     }
   }
@@ -114,22 +114,22 @@ export function loadDynamicData() {
     const isEmpty = DYNAMIC_DATA.finalExams && DYNAMIC_DATA.finalExams.length === 0;
     if (hasLegacyDT || isEmpty) {
       // Re-initialize with proper APP_DATA.group1 defaults
-      if (APP_DATA.group1.mocks && Array.isArray(APP_DATA.group1.mocks)) {
+      if (window.APP_DATA.group1.mocks && Array.isArray(window.APP_DATA.group1.mocks)) {
          // Need to run the new structure
       }
       
       const newMocks = [];
-      if (!Array.isArray(APP_DATA.group1.mocks)) {
-         Object.keys(APP_DATA.group1.mocks).forEach((key, idx) => {
-            newMocks.push({ id: key, name: 'Series ' + (idx + 1), tests: APP_DATA.group1.mocks[key] });
+      if (!Array.isArray(window.APP_DATA.group1.mocks)) {
+         Object.keys(window.APP_DATA.group1.mocks).forEach((key, idx) => {
+            newMocks.push({ id: key, name: 'Series ' + (idx + 1), tests: window.APP_DATA.group1.mocks[key] });
          });
       } else {
-         newMocks.push(...APP_DATA.group1.mocks);
+         newMocks.push(...window.APP_DATA.group1.mocks);
       }
       
       DYNAMIC_DATA.mocks = newMocks.length > 0 ? newMocks : DYNAMIC_DATA.mocks;
-      if (APP_DATA.group1.finalExams.length > 0) DYNAMIC_DATA.finalExams = JSON.parse(JSON.stringify(APP_DATA.group1.finalExams));
-      if (APP_DATA.group1.syllabusSubjects.length > 0) DYNAMIC_DATA.syllabusSubjects = JSON.parse(JSON.stringify(APP_DATA.group1.syllabusSubjects));
+      if (window.APP_DATA.group1.finalExams.length > 0) DYNAMIC_DATA.finalExams = JSON.parse(JSON.stringify(window.APP_DATA.group1.finalExams));
+      if (window.APP_DATA.group1.syllabusSubjects.length > 0) DYNAMIC_DATA.syllabusSubjects = JSON.parse(JSON.stringify(window.APP_DATA.group1.syllabusSubjects));
       saveDynamicData();
     }
   }
@@ -161,13 +161,13 @@ export function loadDynamicData() {
 
   if (!DYNAMIC_DATA.syllabusSubjects) {
     DYNAMIC_DATA.syllabusSubjects = [
-      { id: 'dt', name: 'Paper 4: DT & International Tax', source: 'CA Aarish Khan', type: 'main', chapters: DYNAMIC_DATA.dtChapters || APP_DATA.group2.dtChapters },
-      { id: 'idt', name: 'Paper 5: IDT (GST + Customs)', source: 'VB Sir', type: 'main', chapters: DYNAMIC_DATA.idtChapters || APP_DATA.group2.idtChapters },
-      { id: 'ibs-fr', name: 'IBS — FR', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.fr) ? DYNAMIC_DATA.ibsSubjects.fr.chapters : APP_DATA.group2.ibsSubjects.fr.chapters },
-      { id: 'ibs-afm', name: 'IBS — AFM', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.afm) ? DYNAMIC_DATA.ibsSubjects.afm.chapters : APP_DATA.group2.ibsSubjects.afm.chapters },
-      { id: 'ibs-audit', name: 'IBS — Audit', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.audit) ? DYNAMIC_DATA.ibsSubjects.audit.chapters : APP_DATA.group2.ibsSubjects.audit.chapters },
-      { id: 'ibs-law', name: 'IBS — Law (SPOM A)', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.law) ? DYNAMIC_DATA.ibsSubjects.law.chapters : APP_DATA.group2.ibsSubjects.law.chapters },
-      { id: 'ibs-scpm', name: 'IBS — SC&PM (SPOM B)', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.scpm) ? DYNAMIC_DATA.ibsSubjects.scpm.chapters : APP_DATA.group2.ibsSubjects.scpm.chapters }
+      { id: 'dt', name: 'Paper 4: DT & International Tax', source: 'CA Aarish Khan', type: 'main', chapters: DYNAMIC_DATA.dtChapters || window.APP_DATA.group2.dtChapters },
+      { id: 'idt', name: 'Paper 5: IDT (GST + Customs)', source: 'VB Sir', type: 'main', chapters: DYNAMIC_DATA.idtChapters || window.APP_DATA.group2.idtChapters },
+      { id: 'ibs-fr', name: 'IBS — FR', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.fr) ? DYNAMIC_DATA.ibsSubjects.fr.chapters : window.APP_DATA.group2.ibsSubjects.fr.chapters },
+      { id: 'ibs-afm', name: 'IBS — AFM', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.afm) ? DYNAMIC_DATA.ibsSubjects.afm.chapters : window.APP_DATA.group2.ibsSubjects.afm.chapters },
+      { id: 'ibs-audit', name: 'IBS — Audit', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.audit) ? DYNAMIC_DATA.ibsSubjects.audit.chapters : window.APP_DATA.group2.ibsSubjects.audit.chapters },
+      { id: 'ibs-law', name: 'IBS — Law (SPOM A)', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.law) ? DYNAMIC_DATA.ibsSubjects.law.chapters : window.APP_DATA.group2.ibsSubjects.law.chapters },
+      { id: 'ibs-scpm', name: 'IBS — SC&PM (SPOM B)', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.scpm) ? DYNAMIC_DATA.ibsSubjects.scpm.chapters : window.APP_DATA.group2.ibsSubjects.scpm.chapters }
     ];
     saveDynamicData();
   }

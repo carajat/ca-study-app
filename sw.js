@@ -1,25 +1,25 @@
-const CACHE_NAME = 'ca-final-companion-v192';
+const CACHE_NAME = 'ca-final-companion-v193';
 const ASSETS = [
   '/',
-  '/index.html?v=192',
-  '/style.css?v=192',
-  '/data.js?v=192',
-  '/sync.js?v=192',
+  '/index.html?v=193',
+  '/style.css?v=193',
+  '/data.js?v=193',
+  '/sync.js?v=193',
   '/Sortable.min.js',
   '/manifest.json',
-  '/js/main.js?v=192',
-  '/js/utils.js?v=192',
-  '/js/state.js?v=192',
-  '/js/modals.js?v=192',
-  '/js/edit-mode.js?v=192',
-  '/js/dashboard.js?v=192',
-  '/js/exams.js?v=192',
-  '/js/schedule.js?v=192',
-  '/js/planner.js?v=192',
-  '/js/syllabus.js?v=192',
-  '/js/tracker.js?v=192',
-  '/js/journal.js?v=192',
-  '/js/theme.js?v=192'
+  '/js/main.js?v=193',
+  '/js/utils.js?v=193',
+  '/js/state.js?v=193',
+  '/js/modals.js?v=193',
+  '/js/edit-mode.js?v=193',
+  '/js/dashboard.js?v=193',
+  '/js/exams.js?v=193',
+  '/js/schedule.js?v=193',
+  '/js/planner.js?v=193',
+  '/js/syllabus.js?v=193',
+  '/js/tracker.js?v=193',
+  '/js/journal.js?v=193',
+  '/js/theme.js?v=193'
 ];
 
 self.addEventListener('install', event => {

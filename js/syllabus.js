@@ -501,7 +501,7 @@ export function smartRepairSyllabusData() {
   
   // If syllabus got accidentally wiped, restore it from default data
   if (DYNAMIC_DATA.syllabusSubjects.length === 0) {
-    const defaultData = state.activeGroup === 'group2' ? APP_DATA_GROUP2 : APP_DATA_GROUP1;
+    const defaultData = state.activeGroup === 'group2' ? window.APP_DATA_GROUP2 : window.APP_DATA_GROUP1;
     if (defaultData && defaultData.syllabusSubjects) {
       DYNAMIC_DATA.syllabusSubjects = JSON.parse(JSON.stringify(defaultData.syllabusSubjects));
     }
