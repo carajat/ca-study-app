@@ -496,11 +496,19 @@ export function smartRepairSyllabusData() {
     }
   });
   
-  // Remove undefined or null entries
-  DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => s && s.name);
+  // Remove undefined or null entries (relax name check to avoid wiping older cache structures)
+  DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => s && (s.name || s.title || s.type === 'folder'));
+  
+  // If syllabus got accidentally wiped, restore it from default data
+  if (DYNAMIC_DATA.syllabusSubjects.length === 0) {
+    const defaultData = state.activeGroup === 'group2' ? APP_DATA_GROUP2 : APP_DATA_GROUP1;
+    if (defaultData && defaultData.syllabusSubjects) {
+      DYNAMIC_DATA.syllabusSubjects = JSON.parse(JSON.stringify(defaultData.syllabusSubjects));
+    }
+  }
   DYNAMIC_DATA.syllabusSubjects.forEach(s => {
     if (s.type === 'folder' && s.children) {
-      s.children = s.children.filter(c => c && c.name);
+      s.children = s.children.filter(c => c && (c.name || c.title));
     }
   });
   
