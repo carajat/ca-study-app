@@ -15,6 +15,13 @@ export function renderDashboard() {
 }
 
 export function updateCountdown() {
+  if (!DYNAMIC_DATA.exam || !DYNAMIC_DATA.exam.date) {
+    document.getElementById('cd-days').textContent = '-';
+    document.getElementById('cd-hours').textContent = '-';
+    document.getElementById('cd-mins').textContent = '-';
+    document.getElementById('cd-secs').textContent = '-';
+    return;
+  }
   const examDate = new Date(DYNAMIC_DATA.exam.date);
   const now = new Date();
   const diff = examDate - now;
