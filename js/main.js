@@ -58,6 +58,16 @@ function init() {
   loadDynamicData();
   smartRepairSyllabusData();
   
+  // Sync countdown date from the first finalExam entry
+  if (DYNAMIC_DATA.finalExams && DYNAMIC_DATA.finalExams.length > 0) {
+    const firstExamDate = DYNAMIC_DATA.finalExams[0].date;
+    if (firstExamDate && !firstExamDate.includes('T')) {
+      DYNAMIC_DATA.exam.date = firstExamDate + 'T14:00:00+05:30';
+    } else if (firstExamDate) {
+      DYNAMIC_DATA.exam.date = firstExamDate;
+    }
+  }
+  
   // Load saved schedule preference
   const saved = loadState();
   if (saved.activeSchedule) state.activeSchedule = saved.activeSchedule;
