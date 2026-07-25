@@ -3,7 +3,7 @@
 // ========================================
 
 // ─── Import All Modules ─────────────────
-import { state, loadDynamicData, loadState } from './state.js';
+import { state, loadDynamicData, loadState, getDynamicDataKey } from './state.js';
 import { initTheme } from './theme.js';
 import { renderDashboard, updateCountdown, updateCurrentActivity } from './dashboard.js';
 import { renderExams } from './exams.js';
