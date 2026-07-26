@@ -1233,11 +1233,11 @@ input[type="checkbox"]:checked::before {
   font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
 }
 .st-timer-display.running {
-  border-color: rgba(48, 209, 88, 0.4);
-  box-shadow: 0 0 20px rgba(48, 209, 88, 0.1);
+  border-color: rgba(10, 132, 255, 0.4);
+  box-shadow: 0 0 20px rgba(10, 132, 255, 0.15);
 }
 .st-timer-display.running span {
-  color: #30d158;
+  color: var(--primary, #0a84ff);
 }
 .st-timer-display.paused {
   border-color: rgba(255, 159, 10, 0.4);
@@ -1323,11 +1323,11 @@ input[type="checkbox"]:checked::before {
   transform: scale(0.96);
 }
 .st-btn-start {
-  background: linear-gradient(135deg, #30d158, #28b14c);
+  background: linear-gradient(135deg, #0a84ff, #0066cc);
   color: #fff;
 }
 .st-btn-start:hover {
-  box-shadow: 0 4px 16px rgba(48, 209, 88, 0.3);
+  box-shadow: 0 4px 16px rgba(10, 132, 255, 0.4);
 }
 .st-btn-pause {
   background: linear-gradient(135deg, #ff9f0a, #e68a00);
@@ -1353,7 +1353,7 @@ input[type="checkbox"]:checked::before {
     border-color: rgba(0,0,0,0.1);
   }
   .st-timer-display span { color: var(--text-primary); }
-  .st-timer-display.running span { color: #28a745; }
+  .st-timer-display.running span { color: #007aff; }
   .st-timer-display.paused span { color: #e68a00; }
 }
 
