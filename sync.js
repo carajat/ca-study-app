@@ -38,7 +38,9 @@ let currentUser = null;
 
 window.getDisplayUsername = function(email) {
   if (!email) return "USER";
-  if (window.DYNAMIC_DATA && DYNAMIC_DATA.customUsernames && DYNAMIC_DATA.customUsernames[email]) {
+  const localCust = localStorage.getItem('ca_custom_name_' + email);
+  if (localCust && localCust.trim() !== "") return localCust.trim();
+  if (typeof DYNAMIC_DATA !== 'undefined' && DYNAMIC_DATA && DYNAMIC_DATA.customUsernames && DYNAMIC_DATA.customUsernames[email]) {
     return DYNAMIC_DATA.customUsernames[email];
   }
   let name = email.split('@')[0];

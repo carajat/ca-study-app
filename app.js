@@ -183,7 +183,10 @@ function loadDynamicData() {
        DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => !(s.type === 'ibs' || (s.id.startsWith('ibs-') && !s.children)));
        DYNAMIC_DATA.syllabusSubjects.push(folder);
        saveDynamicData();
-    }
+     }
+  }
+  if (DYNAMIC_DATA && DYNAMIC_DATA.customUsernames && window.loggedUserEmail && DYNAMIC_DATA.customUsernames[window.loggedUserEmail]) {
+    localStorage.setItem('ca_custom_name_' + window.loggedUserEmail, DYNAMIC_DATA.customUsernames[window.loggedUserEmail]);
   }
   if (typeof window.updateUserBadge === 'function') window.updateUserBadge();
 }
@@ -1532,15 +1535,22 @@ if ('serviceWorker' in navigator) {
 // ═══════════════════════════════════════════
 window.editCustomUsername = function() {
   const email = window.loggedUserEmail;
-  if (!email) return alert("Please login first to edit your account name!");
+  if (!email) {
+    if (typeof showToast === 'function') showToast("Please login first to edit your account name!");
+    return;
+  }
   const curr = typeof window.getDisplayUsername === 'function' ? window.getDisplayUsername(email) : email.split('@')[0];
-  const newName = prompt("Enter custom display name for account (" + email + "):", curr);
+  const newName = prompt("Enter custom display name:", curr);
   if (newName !== null && newName.trim() !== "") {
-    if (!DYNAMIC_DATA.customUsernames) DYNAMIC_DATA.customUsernames = {};
-    DYNAMIC_DATA.customUsernames[email] = newName.trim();
-    saveDynamicData();
+    localStorage.setItem('ca_custom_name_' + email, newName.trim());
+    if (typeof DYNAMIC_DATA !== 'undefined' && DYNAMIC_DATA) {
+      if (!DYNAMIC_DATA.customUsernames) DYNAMIC_DATA.customUsernames = {};
+      DYNAMIC_DATA.customUsernames[email] = newName.trim();
+      saveDynamicData();
+    }
     if (typeof window.updateUserBadge === 'function') window.updateUserBadge();
     openMenuModal();
+    if (typeof showToast === 'function') showToast("Account name updated!");
   }
 };
 
