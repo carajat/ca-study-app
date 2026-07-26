@@ -3045,6 +3045,31 @@ window.renderHistoryForDate = function(dateStr) {
   document.getElementById('log-history-total').textContent = `Total: ${th}h ${tm}m`;
 };
 
+window.updateDailyAverage = function(newDateStr, totalMins, fromUser = false) {
+  if (fromUser && newDateStr) {
+    DYNAMIC_DATA.studyStartDate = newDateStr;
+    saveDynamicData();
+  }
+  if (!newDateStr) return;
+  
+  const startDt = new Date(newDateStr);
+  startDt.setHours(0,0,0,0);
+  const nowDt = new Date();
+  nowDt.setHours(0,0,0,0);
+  
+  const diffTime = nowDt.getTime() - startDt.getTime();
+  const totalDays = Math.max(1, Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1);
+  
+  const avgMins = Math.round(totalMins / totalDays);
+  const ah = Math.floor(avgMins / 60);
+  const am = avgMins % 60;
+  
+  const valEl = document.getElementById('stats-daily-avg-val');
+  const daysEl = document.getElementById('stats-daily-avg-days');
+  if (valEl) valEl.textContent = `${ah}h ${am}m / day`;
+  if (daysEl) daysEl.textContent = `over ${totalDays} day${totalDays > 1 ? 's' : ''}`;
+};
+
 window.openLogHistoryModal = function() {
   const subjectStats = {};
   let totalMinutes = 0;
@@ -3110,10 +3135,44 @@ window.openLogHistoryModal = function() {
   const gh = Math.floor(totalMinutes / 60);
   const gm = totalMinutes % 60;
   
+  let startDateIso = DYNAMIC_DATA.studyStartDate;
+  if (!startDateIso) {
+    let earliestTs = Infinity;
+    if (DYNAMIC_DATA.journalEntries) {
+      Object.keys(DYNAMIC_DATA.journalEntries).forEach(dateKey => {
+        const dData = DYNAMIC_DATA.journalEntries[dateKey];
+        if (dData && dData.rows && dData.rows.length > 0) {
+          const dt = new Date(dateKey);
+          if (!isNaN(dt.getTime()) && dt.getTime() < earliestTs) {
+            earliestTs = dt.getTime();
+          }
+        }
+      });
+    }
+    if (earliestTs !== Infinity) {
+      startDateIso = new Date(earliestTs).toISOString().split('T')[0];
+    } else {
+      startDateIso = new Date().toISOString().split('T')[0];
+    }
+  }
+  
   statsHtml += `
-    <div style="margin-top: 15px; padding: 12px; background: rgba(52,199,89,0.1); border: 1px solid var(--success-color); border-radius: 10px; text-align: center;">
-      <div style="font-size:12px; color:var(--success-color); text-transform:uppercase; font-weight:bold; letter-spacing:1px;">All-Time Total Study</div>
-      <div style="font-size:24px; font-weight:bold; color:var(--text-primary); margin-top:5px;">${gh}h ${gm}m</div>
+    <div class="glass-card" style="margin-top:15px; padding:12px; border: 1px solid var(--border-color); border-radius:10px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; color:var(--text-secondary); margin-bottom:12px;">
+        <span style="font-weight:600;">Study Start Date:</span>
+        <input type="date" id="stats-start-date" class="st-input" style="width:140px; padding:4px 8px; font-size:12px; margin-bottom:0; border-radius:6px;" value="${startDateIso}" onchange="updateDailyAverage(this.value, ${totalMinutes}, true)">
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <div style="padding:10px; background: rgba(52,199,89,0.1); border: 1px solid var(--success-color); border-radius: 8px; text-align:center;">
+          <div style="font-size:11px; color:var(--success-color); text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;">All-Time Total</div>
+          <div style="font-size:18px; font-weight:bold; color:var(--text-primary); margin-top:5px;">${gh}h ${gm}m</div>
+        </div>
+        <div style="padding:10px; background: rgba(10,132,255,0.1); border: 1px solid var(--primary-color); border-radius: 8px; text-align:center;">
+          <div style="font-size:11px; color:var(--primary-color); text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;">Daily Average</div>
+          <div id="stats-daily-avg-val" style="font-size:18px; font-weight:bold; color:var(--text-primary); margin-top:5px;">0h 0m / day</div>
+          <div id="stats-daily-avg-days" style="font-size:10px; color:var(--text-muted); margin-top:2px;">over 0 days</div>
+        </div>
+      </div>
     </div>
   </div>`;
   
@@ -3158,6 +3217,11 @@ window.openLogHistoryModal = function() {
     document.head.appendChild(style);
   }
   
-  // Initial render for history tab (it will run behind the scenes)
-  setTimeout(() => renderHistoryForDate(document.getElementById('log-history-date').value), 50);
+  // Initial render for history tab & stats calculation (runs behind the scenes)
+  setTimeout(() => {
+    const dateEl = document.getElementById('log-history-date');
+    if (dateEl) renderHistoryForDate(dateEl.value);
+    const startEl = document.getElementById('stats-start-date');
+    if (startEl) updateDailyAverage(startEl.value, totalMinutes, false);
+  }, 50);
 };
