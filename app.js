@@ -1530,15 +1530,20 @@ if ('serviceWorker' in navigator) {
 //  MENU, THEMES & DATA SHARING
 // ═══════════════════════════════════════════
 function openMenuModal() {
+  const uName = window.loggedUserEmail ? window.loggedUserEmail.split('@')[0].toUpperCase() : 'USER';
   openModal('<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">settings</span> Settings & Tools' + (window.isReadOnlyMode ? ' <span style="color:var(--error-color); font-size:12px; margin-left:10px;">(Read-Only)</span>' : ''), `
     
     
     ${(window.isCloudLoggedIn) 
-      ? `<button class="menu-btn" onclick="closeModal(); if(typeof logoutFromCloud === 'function') logoutFromCloud();">
-          <span class="material-symbols-rounded menu-btn-icon">logout</span> Logout
-         </button>` 
-      : `<button class="menu-btn" onclick="closeModal(); document.getElementById('welcome-overlay').style.display='flex';">
-          <span class="material-symbols-rounded menu-btn-icon">login</span> Login
+      ? `<div style="padding: 12px; margin-bottom: 12px; background: rgba(10,132,255,0.1); border: 1px solid rgba(10,132,255,0.3); border-radius: 12px; display:flex; align-items:center; justify-content:space-between;">
+           <div>
+             <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:700;">Active Cloud Account</div>
+             <div style="font-size:14px; color:var(--primary, #0a84ff); font-weight:700; margin-top:2px;">👤 ${uName} <span style="font-size:11px; color:var(--text-secondary); font-weight:400;">(${window.isReadOnlyMode ? 'View Mode' : 'Admin Mode'})</span></div>
+           </div>
+           <button style="background:linear-gradient(135deg, #ff453a, #d63630); color:#fff; border:none; padding:7px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;" onclick="closeModal(); if(typeof logoutFromCloud === 'function') logoutFromCloud();">Logout</button>
+         </div>` 
+      : `<button class="menu-btn" style="background: rgba(10,132,255,0.15); border-color: var(--primary); color: var(--primary);" onclick="closeModal(); document.getElementById('welcome-overlay').style.display='flex';">
+          <span class="material-symbols-rounded menu-btn-icon">login</span> Login to Cloud Sync
          </button>`
     }
     
