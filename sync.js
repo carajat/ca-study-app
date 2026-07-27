@@ -14,7 +14,6 @@ const firebaseConfig = {
   storageBucket: "castudyapp8.firebasestorage.app",
   messagingSenderId: "940782971883",
   appId: "1:940782971883:web:a7f8d55c6807de66ee87ae",
-  // Fallback DB URL
   databaseURL: "https://castudyapp8-default-rtdb.firebaseio.com" 
 };
 
@@ -31,13 +30,50 @@ try {
 window.GF_EMAIL = 'shrutiagrrawal@gmail.com';
 window.isReadOnlyMode = false;
 
-const SHARED_PATH = '/sharedData/coupleRoom/';
-let isSyncing = false; // flag to prevent infinite loops when receiving data
-let currentUser = null;
+// Group-specific cloud paths to prevent data mingling
+function getCloudPath() {
+  const group = (window.state && window.state.activeGroup) || localStorage.getItem('ca_app_prefs_group') || 'group1';
+  return '/sharedData/coupleRoom/' + group + '/';
+}
 
+let isSyncing = false;
+let currentUser = null;
+let currentListenerPath = null;
+
+// Attach cloud listener for current group
+function attachCloudListener() {
+  if (!currentUser || !db) return;
+  
+  const newPath = getCloudPath();
+  
+  // If already listening to this exact path, skip
+  if (currentListenerPath === newPath) return;
+  
+  // Detach old listener if exists
+  if (currentListenerPath) {
+    db.ref(currentListenerPath).off('value');
+    console.log("Detached cloud listener from:", currentListenerPath);
+  }
+  
+  currentListenerPath = newPath;
+  console.log("Attaching cloud listener to:", newPath);
+  
+  db.ref(newPath).on('value', (snapshot) => {
+    const cloudData = snapshot.val();
+    if (cloudData && !isSyncing) {
+      isSyncing = true;
+      if (typeof window.reloadAppFromCloud === 'function') {
+        window.reloadAppFromCloud(cloudData);
+      }
+      setTimeout(() => { isSyncing = false; }, 500);
+    }
+  });
+}
+
+// Expose so app.js can call it on group switch
+window.attachCloudListener = attachCloudListener;
 
 if (auth && db) {
-  // Listen to auth state
   auth.onAuthStateChanged((user) => {
     currentUser = user;
     window.isCloudLoggedIn = !!user;
@@ -47,20 +83,13 @@ if (auth && db) {
       console.log("Logged in as:", user.email);
       const overlay = document.getElementById('welcome-overlay');
       if (overlay) overlay.style.display = 'none';
-      
-      // Start listening to the shared database path
-      db.ref(SHARED_PATH).on('value', (snapshot) => {
-        const cloudData = snapshot.val();
-        if (cloudData && !isSyncing) {
-          isSyncing = true;
-          if (typeof window.reloadAppFromCloud === 'function') {
-            window.reloadAppFromCloud(cloudData);
-          }
-          setTimeout(() => { isSyncing = false; }, 500);
-        }
-      });
+      attachCloudListener();
     } else {
       console.log("User is signed out (Offline Mode)");
+      if (currentListenerPath) {
+        db.ref(currentListenerPath).off('value');
+        currentListenerPath = null;
+      }
       if (localStorage.getItem('ca-skip-login') !== 'true') {
         const overlay = document.getElementById('welcome-overlay');
         if (overlay) overlay.style.display = 'flex';
@@ -113,11 +142,12 @@ window.syncToCloud = function(data) {
   if (!currentUser || !db) return; 
   if (window.isReadOnlyMode) { console.log("Read-only mode: Sync prevented"); return; } 
   
+  const path = getCloudPath();
   const cleanData = JSON.parse(JSON.stringify(data));
   if (syncTimeout) clearTimeout(syncTimeout);
   
   syncTimeout = setTimeout(() => {
-    db.ref(SHARED_PATH).set(cleanData).catch(err => {
+    db.ref(path).set(cleanData).catch(err => {
       console.error("Firebase sync error.", err.message); 
       if(typeof showToast === "function") showToast("Sync Error: " + err.message);
     });
@@ -134,4 +164,3 @@ if (db) {
 window.getGlobalTime = function() {
   return Date.now() + window.serverTimeOffset;
 };
-

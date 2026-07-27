@@ -13,6 +13,7 @@ let state = {
   syllabusView: 'list', // 'list' or 'detail'
   activeSubject: null
 };
+window.state = state;
 
 // ─── Dynamic Data State ─────────────────
 let DYNAMIC_DATA = null;
@@ -59,6 +60,8 @@ function switchGroup(groupId) {
 
 
   smartRepairSyllabusData();
+  // Re-attach cloud listener to the new group's path
+  if (typeof window.attachCloudListener === 'function') window.attachCloudListener();
   const groupSel = document.getElementById('group-selector');
   if (groupSel) groupSel.value = state.activeGroup;
   switchTab('dashboard'); // This will also re-render everything
