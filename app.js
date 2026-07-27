@@ -183,12 +183,8 @@ function loadDynamicData() {
        DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => !(s.type === 'ibs' || (s.id.startsWith('ibs-') && !s.children)));
        DYNAMIC_DATA.syllabusSubjects.push(folder);
        saveDynamicData();
-     }
+    }
   }
-  if (DYNAMIC_DATA && DYNAMIC_DATA.customUsernames && window.loggedUserEmail && DYNAMIC_DATA.customUsernames[window.loggedUserEmail]) {
-    localStorage.setItem('ca_custom_name_' + window.loggedUserEmail, DYNAMIC_DATA.customUsernames[window.loggedUserEmail]);
-  }
-  if (typeof window.updateUserBadge === 'function') window.updateUserBadge();
 }
 
 function saveDynamicData() {
@@ -1238,7 +1234,8 @@ function showSubjectsList() {
           '' +
           '<div class="subj-info" style="flex: 1">' +
             (!isEditMode ? 
-              '<div class="subj-name" style="font-weight:700; color:var(--primary-color)"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle; margin-right:4px;">folder</span> ' + subj.name + '</div>'
+              '<div class="subj-name" style="font-weight:700; color:var(--primary-color)"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle; margin-right:4px;">folder</span> ' + subj.name + '</div>' +
+              '<div class="subj-source">' + (subj.source || '') + '</div>'
             : 
               '<div class="subj-name"><input type="text" class="inline-input" value="' + subj.name.replace(/"/g, '&quot;') + '" onclick="event.stopPropagation()" onchange="updateSyllabusSubject(' + idx + ', this.value, null)"></div>'
             ) +
@@ -1264,7 +1261,8 @@ function showSubjectsList() {
       (!isNested ? '' : '') +
       '<div class="subj-info" onclick="openSubjectDetail(\'' + subj.id + '\', \'' + subj.type + '\')" style="cursor:pointer; flex: 1">' +
         (!isEditMode ? 
-          '<div class="subj-name"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle; margin-right:4px;">menu_book</span> ' + subj.name + '</div>'
+          '<div class="subj-name"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle; margin-right:4px;">menu_book</span> ' + subj.name + '</div>' +
+          '<div class="subj-source">' + (subj.source || '') + '</div>'
         : 
           '<div class="subj-name"><input type="text" class="inline-input" value="' + subj.name.replace(/"/g, '&quot;') + '" onclick="event.stopPropagation()" onchange="updateSyllabusSubject(' + (isNested ? parentIdx : idx) + ', this.value, ' + (isNested ? idx : 'null') + ')"></div>'
         ) +
@@ -1531,46 +1529,16 @@ if ('serviceWorker' in navigator) {
 // ═══════════════════════════════════════════
 //  MENU, THEMES & DATA SHARING
 // ═══════════════════════════════════════════
-window.editCustomUsername = function() {
-  const email = window.loggedUserEmail;
-  if (!email) {
-    if (typeof showToast === 'function') showToast("Please login first to edit your account name!");
-    return;
-  }
-  const curr = typeof window.getDisplayUsername === 'function' ? window.getDisplayUsername(email) : email.split('@')[0];
-  const newName = prompt("Enter custom display name:", curr);
-  if (newName !== null && newName.trim() !== "") {
-    localStorage.setItem('ca_custom_name_' + email, newName.trim());
-    if (typeof DYNAMIC_DATA !== 'undefined' && DYNAMIC_DATA) {
-      if (!DYNAMIC_DATA.customUsernames) DYNAMIC_DATA.customUsernames = {};
-      DYNAMIC_DATA.customUsernames[email] = newName.trim();
-      saveDynamicData();
-    }
-    if (typeof window.updateUserBadge === 'function') window.updateUserBadge();
-    openMenuModal();
-    if (typeof showToast === 'function') showToast("Account name updated!");
-  }
-};
-
 function openMenuModal() {
-  const uName = typeof window.getDisplayUsername === 'function' ? window.getDisplayUsername(window.loggedUserEmail) : (window.loggedUserEmail ? window.loggedUserEmail.split('@')[0].toUpperCase() : 'USER');
   openModal('<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">settings</span> Settings & Tools' + (window.isReadOnlyMode ? ' <span style="color:var(--error-color); font-size:12px; margin-left:10px;">(Read-Only)</span>' : ''), `
     
     
     ${(window.isCloudLoggedIn) 
-      ? `<div style="padding: 12px; margin-bottom: 12px; background: rgba(10,132,255,0.1); border: 1px solid rgba(10,132,255,0.3); border-radius: 12px; display:flex; align-items:center; justify-content:space-between;">
-           <div>
-             <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:700;">Active Cloud Account</div>
-             <div style="font-size:14px; color:var(--primary, #0a84ff); font-weight:700; margin-top:2px; display:flex; align-items:center; gap:6px;">
-               <span>👤 ${uName}</span>
-               <span style="font-size:11px; color:var(--text-secondary); font-weight:400;">(${window.isReadOnlyMode ? 'View Mode' : 'Admin Mode'})</span>
-               ${!window.isReadOnlyMode ? `<button style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; padding:0; display:flex;" onclick="editCustomUsername()" title="Edit Display Name"><span class="material-symbols-rounded" style="font-size:15px; color:var(--primary);">edit</span></button>` : ''}
-             </div>
-           </div>
-           <button style="background:linear-gradient(135deg, #ff453a, #d63630); color:#fff; border:none; padding:7px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;" onclick="closeModal(); if(typeof logoutFromCloud === 'function') logoutFromCloud();">Logout</button>
-         </div>` 
-      : `<button class="menu-btn" style="background: rgba(10,132,255,0.15); border-color: var(--primary); color: var(--primary);" onclick="closeModal(); document.getElementById('welcome-overlay').style.display='flex';">
-          <span class="material-symbols-rounded menu-btn-icon">login</span> Login to Cloud Sync
+      ? `<button class="menu-btn" onclick="closeModal(); if(typeof logoutFromCloud === 'function') logoutFromCloud();">
+          <span class="material-symbols-rounded menu-btn-icon">logout</span> Logout
+         </button>` 
+      : `<button class="menu-btn" onclick="closeModal(); document.getElementById('welcome-overlay').style.display='flex';">
+          <span class="material-symbols-rounded menu-btn-icon">login</span> Login
          </button>`
     }
     
@@ -2746,22 +2714,9 @@ function normalizeForHash(data) {
 window.reloadAppFromCloud = function(cloudData) {
   if (!cloudData) return;
   
-  const activeGrp = (typeof state !== 'undefined' && state.activeGroup) ? state.activeGroup : 'group1';
-  let grpCloud = (cloudData.groups && cloudData.groups[activeGrp]) ? cloudData.groups[activeGrp] : null;
-  
-  if (!grpCloud && cloudData.dynamic && cloudData.dynamic.syllabusSubjects) {
-    const subs = cloudData.dynamic.syllabusSubjects;
-    const hasG1 = subs.some(s => s && ['fr', 'afm', 'audit'].includes(s.id));
-    const hasG2 = subs.some(s => s && ['dt', 'idt', 'ibs-folder'].includes(s.id));
-    if (activeGrp === 'group1' && hasG2 && !hasG1) { return; }
-    if (activeGrp === 'group2' && hasG1 && !hasG2) { return; }
-    grpCloud = cloudData;
-  }
-  if (!grpCloud) return;
-  
-  let newDynamic = grpCloud.dynamic || grpCloud;
-  let newState = grpCloud.state || {};
-  let newTracker = grpCloud.tracker || {};
+  let newDynamic = cloudData.dynamic || cloudData;
+  let newState = cloudData.state || {};
+  let newTracker = cloudData.tracker || {};
   
   const cleanTracker = {
     isRunning: !!newTracker.isRunning,
@@ -2842,13 +2797,6 @@ function smartRepairSyllabusData() {
 
     saveDynamicData();
     return;
-  }
-
-  if (state.activeGroup === 'group2') {
-    DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => {
-      if (!s || !s.id) return false;
-      return !['fr', 'afm', 'audit'].includes(s.id);
-    });
   }
 
   // Force reset DT and IDT chapters to match exactly with full APP_DATA lists
