@@ -479,30 +479,6 @@ function renderDashboard() {
   updateQuote();
 }
 
-window.editMainCountdownDate = function() {
-  const currentVal = DYNAMIC_DATA.exam && DYNAMIC_DATA.exam.date ? new Date(DYNAMIC_DATA.exam.date).toISOString().slice(0,16) : '';
-  openModal('<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">edit_calendar</span> Set Exam Target', \`
-    <div style="display:flex; flex-direction:column; gap:16px;">
-      <p style="color:var(--text-secondary); font-size:14px; margin:0;">Choose the date and time for your main exam countdown.</p>
-      <input type="datetime-local" id="new-exam-date" value="\${currentVal}" class="theme-input" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-family:inherit; font-size:16px;">
-      <button class="theme-btn" onclick="saveMainCountdownDate()" style="width:100%;">Save Countdown Date</button>
-    </div>
-  \`);
-};
-
-window.saveMainCountdownDate = function() {
-  const val = document.getElementById('new-exam-date').value;
-  if(val) {
-    if (!DYNAMIC_DATA.exam) DYNAMIC_DATA.exam = {};
-    DYNAMIC_DATA.exam.date = new Date(val).toISOString();
-    saveDynamicData();
-    updateCountdown();
-    renderExams();
-    closeModal();
-    if(typeof showToast === 'function') showToast("Countdown updated successfully! ⏳");
-  }
-};
-
 function updateCountdown() {
   const examDate = new Date(DYNAMIC_DATA.exam.date);
   const now = new Date();
