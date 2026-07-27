@@ -1540,7 +1540,8 @@ window.editCustomUsername = function() {
   const newName = prompt("Enter custom display name for account (" + email + "):", curr);
   if (newName !== null && newName.trim() !== "") {
     if (!DYNAMIC_DATA.customUsernames) DYNAMIC_DATA.customUsernames = {};
-    DYNAMIC_DATA.customUsernames[email] = newName.trim();
+    const safeEmail = email.replace(/\./g, ','); // Firebase doesn't allow '.' in keys
+    DYNAMIC_DATA.customUsernames[safeEmail] = newName.trim();
     saveDynamicData();
     if (typeof window.updateUserBadge === 'function') window.updateUserBadge();
     openMenuModal();
