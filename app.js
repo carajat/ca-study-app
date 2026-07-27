@@ -16,7 +16,7 @@ let state = {
 window.state = state;
 
 // ─── Dynamic Data State ─────────────────
-let DYNAMIC_DATA = null;
+var DYNAMIC_DATA = null;
 let isEditMode = false;
 
 
