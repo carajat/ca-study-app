@@ -1548,39 +1548,6 @@ window.editCustomUsername = function() {
   }
 };
 
-window.editMainCountdownDate = function() {
-  closeModal();
-  let currentVal = '';
-  try {
-    if (DYNAMIC_DATA.exam && DYNAMIC_DATA.exam.date) {
-      currentVal = new Date(DYNAMIC_DATA.exam.date).toISOString().slice(0, 16);
-    }
-  } catch (e) {
-    console.error("Invalid exam date string", e);
-  }
-  
-  openModal('<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">edit_calendar</span> Set Exam Target', \`
-    <div style="display:flex; flex-direction:column; gap:16px;">
-      <p style="color:var(--text-secondary); font-size:14px; margin:0;">Choose the date and time for your main exam countdown.</p>
-      <input type="datetime-local" id="new-exam-date" value="\${currentVal}" class="theme-input" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-primary); font-family:inherit; font-size:16px;">
-      <button class="theme-btn" onclick="saveMainCountdownDate()" style="width:100%;">Save Countdown Date</button>
-    </div>
-  \`);
-};
-
-window.saveMainCountdownDate = function() {
-  const val = document.getElementById('new-exam-date').value;
-  if (val) {
-    if (!DYNAMIC_DATA.exam) DYNAMIC_DATA.exam = {};
-    DYNAMIC_DATA.exam.date = new Date(val).toISOString();
-    saveDynamicData();
-    updateCountdown();
-    renderExams();
-    closeModal();
-    if (typeof showToast === 'function') showToast("Countdown updated successfully! ⏳");
-  }
-};
-
 function openMenuModal() {
   const uName = typeof window.getDisplayUsername === 'function' ? window.getDisplayUsername(window.loggedUserEmail) : (window.loggedUserEmail ? window.loggedUserEmail.split('@')[0].toUpperCase() : 'USER');
   openModal('<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">settings</span> Settings & Tools' + (window.isReadOnlyMode ? ' <span style="color:var(--error-color); font-size:12px; margin-left:10px;">(Read-Only)</span>' : ''), `
@@ -1605,9 +1572,6 @@ function openMenuModal() {
     
     <button id="editModeBtn" class="menu-btn" onclick="toggleEditMode(); closeModal()">
       <span class="menu-btn-icon">${isEditMode ? '<span class="material-symbols-rounded icon-sm">check_circle</span>' : '<span class="material-symbols-rounded icon-sm">edit</span>'}</span> Edit Mode: <strong style="color: ${isEditMode ? 'var(--color-primary)' : 'inherit'}">${isEditMode ? 'ON' : 'OFF'}</strong>
-    </button>
-    <button class="menu-btn" onclick="editMainCountdownDate();">
-      <span class="material-symbols-rounded menu-btn-icon">edit_calendar</span> Set Exam Target Date
     </button>
     <button class="menu-btn" onclick="openThemeModal()">
       <span class="material-symbols-rounded menu-btn-icon">palette</span> Customize Theme
