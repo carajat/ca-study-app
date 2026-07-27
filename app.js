@@ -186,8 +186,9 @@ function loadDynamicData() {
        DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => !(s.type === 'ibs' || (s.id.startsWith('ibs-') && !s.children)));
        DYNAMIC_DATA.syllabusSubjects.push(folder);
        saveDynamicData();
-    }
+     }
   }
+  if (typeof window.updateUserBadge === 'function') window.updateUserBadge();
 }
 
 function saveDynamicData() {
@@ -1532,16 +1533,39 @@ if ('serviceWorker' in navigator) {
 // ═══════════════════════════════════════════
 //  MENU, THEMES & DATA SHARING
 // ═══════════════════════════════════════════
+window.editCustomUsername = function() {
+  const email = window.loggedUserEmail;
+  if (!email) return alert("Please login first to edit your account name!");
+  const curr = typeof window.getDisplayUsername === 'function' ? window.getDisplayUsername(email) : email.split('@')[0];
+  const newName = prompt("Enter custom display name for account (" + email + "):", curr);
+  if (newName !== null && newName.trim() !== "") {
+    if (!DYNAMIC_DATA.customUsernames) DYNAMIC_DATA.customUsernames = {};
+    DYNAMIC_DATA.customUsernames[email] = newName.trim();
+    saveDynamicData();
+    if (typeof window.updateUserBadge === 'function') window.updateUserBadge();
+    openMenuModal();
+  }
+};
+
 function openMenuModal() {
+  const uName = typeof window.getDisplayUsername === 'function' ? window.getDisplayUsername(window.loggedUserEmail) : (window.loggedUserEmail ? window.loggedUserEmail.split('@')[0].toUpperCase() : 'USER');
   openModal('<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">settings</span> Settings & Tools' + (window.isReadOnlyMode ? ' <span style="color:var(--error-color); font-size:12px; margin-left:10px;">(Read-Only)</span>' : ''), `
     
     
     ${(window.isCloudLoggedIn) 
-      ? `<button class="menu-btn" onclick="closeModal(); if(typeof logoutFromCloud === 'function') logoutFromCloud();">
-          <span class="material-symbols-rounded menu-btn-icon">logout</span> Logout
-         </button>` 
-      : `<button class="menu-btn" onclick="closeModal(); document.getElementById('welcome-overlay').style.display='flex';">
-          <span class="material-symbols-rounded menu-btn-icon">login</span> Login
+      ? `<div style="padding: 12px; margin-bottom: 12px; background: rgba(10,132,255,0.1); border: 1px solid rgba(10,132,255,0.3); border-radius: 12px; display:flex; align-items:center; justify-content:space-between;">
+           <div>
+             <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:700;">Active Cloud Account</div>
+             <div style="font-size:14px; color:var(--primary, #0a84ff); font-weight:700; margin-top:2px; display:flex; align-items:center; gap:6px;">
+               <span>👤 ${uName}</span>
+               <span style="font-size:11px; color:var(--text-secondary); font-weight:400;">(${window.isReadOnlyMode ? 'View Mode' : 'Admin Mode'})</span>
+               ${!window.isReadOnlyMode ? `<button style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; padding:0; display:flex;" onclick="editCustomUsername()" title="Edit Display Name"><span class="material-symbols-rounded" style="font-size:15px; color:var(--primary);">edit</span></button>` : ''}
+             </div>
+           </div>
+           <button style="background:linear-gradient(135deg, #ff453a, #d63630); color:#fff; border:none; padding:7px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;" onclick="closeModal(); if(typeof logoutFromCloud === 'function') logoutFromCloud();">Logout</button>
+         </div>` 
+      : `<button class="menu-btn" style="background: rgba(10,132,255,0.15); border-color: var(--primary); color: var(--primary);" onclick="closeModal(); document.getElementById('welcome-overlay').style.display='flex';">
+          <span class="material-symbols-rounded menu-btn-icon">login</span> Login to Cloud Sync
          </button>`
     }
     
