@@ -457,14 +457,14 @@ function dateKey(date) {
 function daysUntil(dateStr) {
   const target = new Date(dateStr);
   target.setHours(0,0,0,0);
-  const now = new Date();
+  const now = new Date(typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now());
   now.setHours(0,0,0,0);
   return Math.ceil((target - now) / (1000 * 60 * 60 * 24));
 }
 
 function isToday(date) {
   const d = new Date(date);
-  const today = new Date();
+  const today = new Date(typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now());
   return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
 }
 
@@ -481,7 +481,7 @@ function renderDashboard() {
 
 function updateCountdown() {
   const examDate = new Date(DYNAMIC_DATA.exam.date);
-  const now = new Date();
+  const now = new Date(typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now());
   const diff = examDate - now;
   if (diff <= 0) {
     document.getElementById('cd-days').textContent = '0';
