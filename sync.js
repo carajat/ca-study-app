@@ -140,11 +140,12 @@ window.syncToCloud = function(data) {
   if (!currentUser || !db) return; 
   if (window.isReadOnlyMode) { console.log("Read-only mode: Sync prevented"); return; } 
   
+  const activeGrp = (window.state && window.state.activeGroup) ? window.state.activeGroup : 'group1';
   const cleanData = JSON.parse(JSON.stringify(data));
   if (syncTimeout) clearTimeout(syncTimeout);
   
   syncTimeout = setTimeout(() => {
-    db.ref(SHARED_PATH).set(cleanData).catch(err => {
+    db.ref(SHARED_PATH + 'groups/' + activeGrp).set(cleanData).catch(err => {
       console.error("Firebase sync error.", err.message); 
       if(typeof showToast === "function") showToast("Sync Error: " + err.message);
     });

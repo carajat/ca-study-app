@@ -1238,8 +1238,7 @@ function showSubjectsList() {
           '' +
           '<div class="subj-info" style="flex: 1">' +
             (!isEditMode ? 
-              '<div class="subj-name" style="font-weight:700; color:var(--primary-color)"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle; margin-right:4px;">folder</span> ' + subj.name + '</div>' +
-              '<div class="subj-source">' + (subj.source || '') + '</div>'
+              '<div class="subj-name" style="font-weight:700; color:var(--primary-color)"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle; margin-right:4px;">folder</span> ' + subj.name + '</div>'
             : 
               '<div class="subj-name"><input type="text" class="inline-input" value="' + subj.name.replace(/"/g, '&quot;') + '" onclick="event.stopPropagation()" onchange="updateSyllabusSubject(' + idx + ', this.value, null)"></div>'
             ) +
@@ -1265,8 +1264,7 @@ function showSubjectsList() {
       (!isNested ? '' : '') +
       '<div class="subj-info" onclick="openSubjectDetail(\'' + subj.id + '\', \'' + subj.type + '\')" style="cursor:pointer; flex: 1">' +
         (!isEditMode ? 
-          '<div class="subj-name"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle; margin-right:4px;">menu_book</span> ' + subj.name + '</div>' +
-          '<div class="subj-source">' + (subj.source || '') + '</div>'
+          '<div class="subj-name"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle; margin-right:4px;">menu_book</span> ' + subj.name + '</div>'
         : 
           '<div class="subj-name"><input type="text" class="inline-input" value="' + subj.name.replace(/"/g, '&quot;') + '" onclick="event.stopPropagation()" onchange="updateSyllabusSubject(' + (isNested ? parentIdx : idx) + ', this.value, ' + (isNested ? idx : 'null') + ')"></div>'
         ) +
@@ -2748,9 +2746,22 @@ function normalizeForHash(data) {
 window.reloadAppFromCloud = function(cloudData) {
   if (!cloudData) return;
   
-  let newDynamic = cloudData.dynamic || cloudData;
-  let newState = cloudData.state || {};
-  let newTracker = cloudData.tracker || {};
+  const activeGrp = (typeof state !== 'undefined' && state.activeGroup) ? state.activeGroup : 'group1';
+  let grpCloud = (cloudData.groups && cloudData.groups[activeGrp]) ? cloudData.groups[activeGrp] : null;
+  
+  if (!grpCloud && cloudData.dynamic && cloudData.dynamic.syllabusSubjects) {
+    const subs = cloudData.dynamic.syllabusSubjects;
+    const hasG1 = subs.some(s => s && ['fr', 'afm', 'audit'].includes(s.id));
+    const hasG2 = subs.some(s => s && ['dt', 'idt', 'ibs-folder'].includes(s.id));
+    if (activeGrp === 'group1' && hasG2 && !hasG1) { return; }
+    if (activeGrp === 'group2' && hasG1 && !hasG2) { return; }
+    grpCloud = cloudData;
+  }
+  if (!grpCloud) return;
+  
+  let newDynamic = grpCloud.dynamic || grpCloud;
+  let newState = grpCloud.state || {};
+  let newTracker = grpCloud.tracker || {};
   
   const cleanTracker = {
     isRunning: !!newTracker.isRunning,
@@ -2831,6 +2842,13 @@ function smartRepairSyllabusData() {
 
     saveDynamicData();
     return;
+  }
+
+  if (state.activeGroup === 'group2') {
+    DYNAMIC_DATA.syllabusSubjects = DYNAMIC_DATA.syllabusSubjects.filter(s => {
+      if (!s || !s.id) return false;
+      return !['fr', 'afm', 'audit'].includes(s.id);
+    });
   }
 
   // Force reset DT and IDT chapters to match exactly with full APP_DATA lists
