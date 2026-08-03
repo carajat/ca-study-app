@@ -1573,16 +1573,16 @@ window.openBackupModal = function() {
     <div style="display:flex; flex-direction:column; gap:12px;">
       <p style="font-size:13px; color:var(--text-secondary); text-align:center; margin-bottom:8px;">Manage your local backups and export/import data.</p>
       
-      <button class="theme-btn" style="background: rgba(10,132,255,0.1); border-color: var(--primary); color: var(--primary); justify-content:flex-start;" onclick="restoreDailyBackup()">
-        <span class="material-symbols-rounded menu-btn-icon" style="margin-right:12px;">history</span> Restore Yesterday's Auto-Backup
+      <button class="menu-btn" style="background: rgba(10,132,255,0.15); border-color: var(--primary); color: var(--primary);" onclick="restoreDailyBackup()">
+        <span class="material-symbols-rounded menu-btn-icon" style="color: var(--primary);">history</span> Restore Yesterday's Auto-Backup
       </button>
       
-      <button class="theme-btn" style="background: rgba(48,209,88,0.1); border-color: var(--success-color); color: var(--success-color); justify-content:flex-start;" onclick="exportData()">
-        <span class="material-symbols-rounded menu-btn-icon" style="margin-right:12px;">upload</span> Export JSON (Save to Device)
+      <button class="menu-btn" style="background: rgba(48,209,88,0.15); border-color: var(--success-color); color: var(--success-color);" onclick="exportData()">
+        <span class="material-symbols-rounded menu-btn-icon" style="color: var(--success-color);">upload</span> Export JSON (Save to Device)
       </button>
       
-      <button class="theme-btn" style="background: rgba(255,159,10,0.1); border-color: #ff9f0a; color: #ff9f0a; justify-content:flex-start;" onclick="triggerImport()">
-        <span class="material-symbols-rounded menu-btn-icon" style="margin-right:12px;">download</span> Import JSON (Load from Device)
+      <button class="menu-btn" style="background: rgba(255,159,10,0.15); border-color: #ff9f0a; color: #ff9f0a;" onclick="triggerImport()">
+        <span class="material-symbols-rounded menu-btn-icon" style="color: #ff9f0a;">download</span> Import JSON (Load from Device)
       </button>
       
       <button class="btn-primary" style="margin-top:16px;" onclick="openMenuModal()">Back to Menu</button>
