@@ -2533,7 +2533,8 @@ function renderTodaysLog() {
       </div>
       <div style="text-align:right;">
         <div style="font-size:13px; font-weight:600; color:var(--primary); background:rgba(10,132,255,0.1); padding:2px 6px; border-radius:6px; display:inline-block;">${durText}</div>
-        <div style="margin-top:6px;">
+        <div style="margin-top:6px; display:flex; gap:4px; justify-content:flex-end;">
+          <button class="icon-btn" style="padding:4px;" onclick="openManualLogModal(${idx})" title="Edit Log"><span class="material-symbols-rounded" style="font-size:16px; color:var(--primary);">edit</span></button>
           <button class="icon-btn" style="padding:4px;" onclick="deleteTodaysLog(${idx})" title="Delete Log"><span class="material-symbols-rounded" style="font-size:16px; color:#ff453a;">delete</span></button>
         </div>
       </div>
@@ -2557,9 +2558,30 @@ window.deleteTodaysLog = function(idx) {
   }
 };
 
-window.openManualLogModal = function() {
+window.openManualLogModal = function(idx) {
   const body = document.getElementById('modal-body');
-  document.getElementById('modal-title').innerHTML = 'Add Manual Log ' +
+  const isEditing = typeof idx === 'number';
+  
+  let subjValue = '', topicValue = '', taskValue = '', hhValue = 0, mmValue = 0;
+  let dateValue = window.viewLogsDate || getTodayStr();
+  
+  window.editingLogIdx = undefined;
+  window.editingLogDate = undefined;
+  
+  if (isEditing) {
+    const row = DYNAMIC_DATA.journalEntries[dateValue].rows[idx];
+    if (row) {
+      subjValue = row.subject || '';
+      topicValue = row.topic || '';
+      taskValue = row.tasks || '';
+      hhValue = parseInt(row.durHH) || 0;
+      mmValue = parseInt(row.durMM) || 0;
+      window.editingLogIdx = idx;
+      window.editingLogDate = dateValue;
+    }
+  }
+
+  document.getElementById('modal-title').innerHTML = isEditing ? 'Edit Manual Log' : 'Add Manual Log ' +
     '<button class="icon-btn" style="background: rgba(255,149,0,0.1); color: var(--accent); width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 10px; vertical-align: middle;" title="Pick Mock" onclick="openMockPickerModal(\'manual\')"><span class="material-symbols-rounded" style="font-size:18px;">quiz</span></button>' +
     '<button class="icon-btn" style="background: rgba(10,132,255,0.1); color: var(--primary); width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; vertical-align: middle;" title="Pick from Planner" onclick="openPlannerPickerModal(\'manual\')"><span class="material-symbols-rounded" style="font-size:18px;">playlist_add</span></button>';
   
@@ -2570,26 +2592,30 @@ window.openManualLogModal = function() {
     if (s.type === 'folder' && s.children) subjectsArray = subjectsArray.concat(s.children);
   });
   subjectsArray.forEach(s => {
-    subjOptions += `<option value="${s.name}">${s.name}</option>`;
+    subjOptions += `<option value="${s.name}" ${s.name === subjValue ? 'selected' : ''}>${s.name}</option>`;
   });
   
   body.innerHTML = `
     <div style="display:flex; flex-direction:column; gap:10px;">
       <select id="ml-subj" class="st-select" onchange="onManualLogSubjChange()">${subjOptions}<option value="__custom__">Other...</option></select>
-      <select id="ml-topic" class="st-select"><option value="">Select Topic</option></select>
-      <input type="text" id="ml-task" class="st-input" placeholder="Task Description">
-      <input type="date" id="ml-date" class="st-input" value="${getTodayStr()}" style="font-family:inherit;">
+      <select id="ml-topic" class="st-select"><option value="${topicValue}">${topicValue || 'Select Topic'}</option></select>
+      <input type="text" id="ml-task" class="st-input" placeholder="Task Description" value="${taskValue}">
+      <input type="date" id="ml-date" class="st-input" value="${dateValue}" style="font-family:inherit;">
       <div style="display:flex; gap:10px;">
-        <div style="flex:1"><label style="font-size:12px; color:var(--text-secondary);">Hours</label><input type="number" id="ml-hh" class="st-input" min="0" value="0" style="margin-bottom:0;"></div>
-        <div style="flex:1"><label style="font-size:12px; color:var(--text-secondary);">Minutes</label><input type="number" id="ml-mm" class="st-input" min="0" max="59" value="0" style="margin-bottom:0;"></div>
+        <div style="flex:1"><label style="font-size:12px; color:var(--text-secondary);">Hours</label><input type="number" id="ml-hh" class="st-input" min="0" value="${hhValue}" style="margin-bottom:0;"></div>
+        <div style="flex:1"><label style="font-size:12px; color:var(--text-secondary);">Minutes</label><input type="number" id="ml-mm" class="st-input" min="0" max="59" value="${mmValue}" style="margin-bottom:0;"></div>
       </div>
-      <button class="btn-primary" style="margin-top:10px; border-radius:10px;" onclick="saveManualLog()">Save Log</button>
+      <button class="btn-primary" style="margin-top:10px; border-radius:10px;" onclick="saveManualLog()">${isEditing ? 'Update Log' : 'Save Log'}</button>
     </div>
   `;
   document.getElementById('modal-overlay').classList.add('show');
+  
+  if (isEditing && subjValue) {
+    onManualLogSubjChange(topicValue);
+  }
 };
 
-window.onManualLogSubjChange = function() {
+window.onManualLogSubjChange = function(prefillTopic) {
   const subSel = document.getElementById('ml-subj');
   const topSel = document.getElementById('ml-topic');
   if (!subSel || !topSel) return;
@@ -2617,6 +2643,7 @@ window.onManualLogSubjChange = function() {
       sData.chapters.forEach(ch => {
         const opt = document.createElement('option');
         opt.value = ch.name; opt.textContent = ch.name;
+        if (typeof prefillTopic === 'string' && prefillTopic === ch.name) opt.selected = true;
         topSel.appendChild(opt);
       });
     }
@@ -2635,12 +2662,20 @@ window.saveManualLog = function() {
   if (hh === 0 && mm === 0) { alert('Please enter duration'); return; }
   
   const targetDateStr = dateVal || getTodayStr();
+  
+  if (window.editingLogIdx !== undefined && window.editingLogDate) {
+    if (DYNAMIC_DATA.journalEntries[window.editingLogDate] && DYNAMIC_DATA.journalEntries[window.editingLogDate].rows) {
+      DYNAMIC_DATA.journalEntries[window.editingLogDate].rows.splice(window.editingLogIdx, 1);
+    }
+  }
+  
   if (!DYNAMIC_DATA.journalEntries) DYNAMIC_DATA.journalEntries = {};
   if (!DYNAMIC_DATA.journalEntries[targetDateStr]) {
     DYNAMIC_DATA.journalEntries[targetDateStr] = { sleep: '', breaks: '', wasted: '', feeling: '', rows: [] };
   }
   
   if (!DYNAMIC_DATA.journalEntries[targetDateStr].rows) { DYNAMIC_DATA.journalEntries[targetDateStr].rows = []; }
+  
   DYNAMIC_DATA.journalEntries[targetDateStr].rows.push({
     subject: subj,
     topic: topic,
@@ -2653,6 +2688,9 @@ window.saveManualLog = function() {
   saveDynamicData();
   closeModal();
   renderTodaysLog();
+  
+  window.editingLogIdx = undefined;
+  window.editingLogDate = undefined;
 };
 
 
