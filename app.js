@@ -8,6 +8,7 @@ let state = {
   activeGroup: localStorage.getItem('ca_app_prefs_group') || 'group1',
   activeTab: 'dashboard',
   activeSchedule: 'earlyMorning',
+  notificationsEnabled: false,
   plannerDate: new Date(),
   calendarMonth: new Date(),
   syllabusView: 'list', // 'list' or 'detail'
@@ -893,11 +894,61 @@ function switchSchedule(type) {
   document.getElementById('btn-late').classList.toggle('active', type === 'lateNight');
   saveState({ activeSchedule: type });
   renderSchedule();
-  requestNotificationPermission();
-  checkScheduleNotifications();
+  updateNotifToggleUI();
 }
 
 let lastNotifiedTime = '';
+
+window.toggleNotifications = function() {
+  if (state.notificationsEnabled) {
+    state.notificationsEnabled = false;
+    saveState({ notificationsEnabled: false });
+    updateNotifToggleUI();
+  } else {
+    if ("Notification" in window) {
+      if (Notification.permission === "granted") {
+        state.notificationsEnabled = true;
+        saveState({ notificationsEnabled: true });
+        updateNotifToggleUI();
+        fireNotification("Notifications Enabled! 🚀", "Alerts are ON for " + (state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night') + ".");
+      } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(permission => {
+          if (permission === "granted") {
+            state.notificationsEnabled = true;
+            saveState({ notificationsEnabled: true });
+            updateNotifToggleUI();
+            fireNotification("Notifications Enabled! 🚀", "Alerts are ON for " + (state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night') + ".");
+          }
+        });
+      } else {
+        alert("Notifications are blocked in your browser! Please allow notifications in site settings to use this feature.");
+      }
+    } else {
+      alert("Your browser does not support notifications.");
+    }
+  }
+};
+
+window.updateNotifToggleUI = function() {
+  const btn = document.getElementById('notif-toggle-btn');
+  const icon = document.getElementById('notif-icon');
+  const txt = document.getElementById('notif-text');
+  if(!btn) return;
+  const schedName = state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night';
+  if (state.notificationsEnabled) {
+    btn.style.background = 'rgba(52,199,89,0.1)';
+    btn.style.color = 'var(--success-color)';
+    btn.style.border = '1px solid rgba(52,199,89,0.3)';
+    icon.textContent = 'notifications_active';
+    txt.textContent = 'Alerts are ON for ' + schedName;
+  } else {
+    btn.style.background = 'rgba(255,255,255,0.05)';
+    btn.style.color = 'var(--text-secondary)';
+    btn.style.border = '1px solid var(--border-color)';
+    icon.textContent = 'notifications_off';
+    txt.textContent = 'Turn ON Alerts for ' + schedName;
+  }
+};
 
 function fireNotification(title, body) {
   if ("Notification" in window && Notification.permission === "granted") {
@@ -911,24 +962,8 @@ function fireNotification(title, body) {
   }
 }
 
-function requestNotificationPermission() {
-  if ("Notification" in window) {
-    if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-      Notification.requestPermission().then(permission => {
-        if (permission === "granted") {
-          fireNotification("Notifications Enabled! 🚀", "You will now receive alerts for your timetable.");
-        }
-      });
-    } else if (Notification.permission === "denied") {
-      alert("Bhai, notifications blocked hain tere browser me! Settings me jaake is app ke liye 'Allow Notifications' kar.");
-    }
-  } else {
-    alert("Tere browser me notifications ka support hi nahi hai.");
-  }
-}
-
 function checkScheduleNotifications() {
-  if (!state.activeSchedule) return;
+  if (!state.activeSchedule || !state.notificationsEnabled) return;
   const now = new Date();
   const hh = String(now.getHours()).padStart(2, '0');
   const mm = String(now.getMinutes()).padStart(2, '0');
@@ -1558,9 +1593,11 @@ function init() {
   // Load saved schedule preference
   const saved = loadState();
   if (saved.activeSchedule) state.activeSchedule = saved.activeSchedule;
+  if (saved.notificationsEnabled !== undefined) state.notificationsEnabled = saved.notificationsEnabled;
   
   // Render initial tab (updates UI state properly)
   switchTab(state.activeTab);
+  updateNotifToggleUI();
   
   // Start countdown timer
   setInterval(updateCountdown, 1000);

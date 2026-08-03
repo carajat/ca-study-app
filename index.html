@@ -11,7 +11,7 @@
   <title>CA Final Tracker</title>
   <link rel="manifest" href="manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300,0,0" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=220">
+  <link rel="stylesheet" href="style.css?v=221">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
   <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
   <!-- Mobile Drag and Drop Polyfill -->
@@ -274,10 +274,15 @@
       </header>
 
       <!-- Schedule Toggle -->
-      <div class="schedule-toggle glass-card">
+      <div class="schedule-toggle glass-card" style="margin-bottom: 12px;">
         <button id="btn-early" class="toggle-btn active" onclick="switchSchedule('earlyMorning')"><span class="material-symbols-rounded" style="vertical-align:middle; margin-right:4px; font-size: 18px;">wb_twilight</span> Early Morning</button>
         <button id="btn-late" class="toggle-btn" onclick="switchSchedule('lateNight')"><span class="material-symbols-rounded" style="vertical-align:middle; margin-right:4px; font-size: 18px;">dark_mode</span> Late Night</button>
       </div>
+      
+      <button id="notif-toggle-btn" style="width:100%; margin-bottom:20px; display:flex; justify-content:center; align-items:center; gap:8px; padding:12px; border-radius:10px; background:rgba(255,255,255,0.05); color:var(--text-secondary); border:1px solid var(--border-color); font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s;" onclick="toggleNotifications()">
+        <span class="material-symbols-rounded" id="notif-icon" style="font-size:20px;">notifications_off</span>
+        <span id="notif-text">Turn ON Alerts for this Schedule</span>
+      </button>
 
       <!-- Schedule Slots -->
       <div id="schedule-slots-container"></div>
@@ -404,8 +409,8 @@
 
   <script src="Sortable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="data.js?v=220"></script>
-  <script src="sync.js?v=220"></script>
-  <script src="app.js?v=220"></script>
+  <script src="data.js?v=221"></script>
+  <script src="sync.js?v=221"></script>
+  <script src="app.js?v=221"></script>
 </body>
 </html>
