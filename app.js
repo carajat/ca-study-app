@@ -893,6 +893,44 @@ function switchSchedule(type) {
   document.getElementById('btn-late').classList.toggle('active', type === 'lateNight');
   saveState({ activeSchedule: type });
   renderSchedule();
+  requestNotificationPermission();
+  checkScheduleNotifications();
+}
+
+let lastNotifiedTime = '';
+
+function fireNotification(title, body) {
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification(title, { body: body, icon: 'icon-192.png' });
+  }
+}
+
+function requestNotificationPermission() {
+  if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+    Notification.requestPermission();
+  }
+}
+
+function checkScheduleNotifications() {
+  if (!state.activeSchedule) return;
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const currentTime = `${hh}:${mm}`;
+  
+  if (lastNotifiedTime === currentTime) return;
+  
+  const scheduleData = DYNAMIC_DATA.schedules && DYNAMIC_DATA.schedules[state.activeSchedule];
+  if (!scheduleData || !scheduleData.slots) return;
+  
+  scheduleData.slots.forEach(slot => {
+    if (!slot.startRange) return;
+    const startStr = slot.startRange.split('-')[0].trim();
+    if (currentTime === startStr) {
+      fireNotification("CA Study Tracker", `Time for: ${slot.label}`);
+      lastNotifiedTime = currentTime;
+    }
+  });
 }
 
 // ═══════════════════════════════════════════
@@ -1512,7 +1550,10 @@ function init() {
   setInterval(updateCountdown, 1000);
   
   // Update current activity every minute
-  setInterval(updateCurrentActivity, 60000);
+  setInterval(() => {
+    updateCurrentActivity();
+    checkScheduleNotifications();
+  }, 60000);
 }
 
 function performDailyBackup() {
