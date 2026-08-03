@@ -1,11 +1,11 @@
-const CACHE_NAME = 'ca-final-companion-v222';
+const CACHE_NAME = 'ca-final-companion-v223';
 const ASSETS = [
   '/',
-  '/index.html?v=222',
-  '/style.css?v=222',
-  '/app.js?v=222',
-  '/data.js?v=222',
-  '/sync.js?v=222',
+  '/index.html?v=223',
+  '/style.css?v=223',
+  '/app.js?v=223',
+  '/data.js?v=223',
+  '/sync.js?v=223',
   '/Sortable.min.js',
   '/manifest.json'
 ];
@@ -44,6 +44,25 @@ self.addEventListener('fetch', event => {
       return response || fetch(request).catch(() => {
         // Fallback for offline if needed
       });
+    })
+  );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window' }).then(windowClients => {
+      // Focus existing window if available
+      for (let i = 0; i < windowClients.length; i++) {
+        let client = windowClients[i];
+        if (client.url.indexOf('/') !== -1 && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Open new window if not available
+      if (clients.openWindow) {
+        return clients.openWindow('/');
+      }
     })
   );
 });

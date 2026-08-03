@@ -953,13 +953,30 @@ window.updateNotifToggleUI = function() {
 };
 
 function fireNotification(title, body) {
-  if ("Notification" in window && Notification.permission === "granted") {
+  if (!("Notification" in window)) return;
+  const options = {
+    body: body,
+    icon: 'icon-192.png',
+    badge: 'icon-192.png',
+    vibrate: [200, 100, 200]
+  };
+
+  if (Notification.permission === "granted") {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready.then(function(registration) {
-        registration.showNotification(title, { body: body, icon: 'icon-192.png' });
+        try {
+          registration.showNotification(title, options).catch(e => {
+            console.error("SW Notification failed, fallback to default", e);
+            new Notification(title, options);
+          });
+        } catch(e) {
+          new Notification(title, options);
+        }
+      }).catch(e => {
+        new Notification(title, options);
       });
     } else {
-      new Notification(title, { body: body, icon: 'icon-192.png' });
+      new Notification(title, options);
     }
   }
 }
