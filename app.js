@@ -930,23 +930,25 @@ window.toggleNotifications = function() {
 };
 
 window.updateNotifToggleUI = function() {
-  const btn = document.getElementById('notif-toggle-btn');
+  const toggle = document.getElementById('notif-toggle-switch');
+  const iconBg = document.getElementById('notif-icon-bg');
   const icon = document.getElementById('notif-icon');
   const txt = document.getElementById('notif-text');
-  if(!btn) return;
+  if(!toggle) return;
+  
+  toggle.checked = state.notificationsEnabled;
+  
   const schedName = state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night';
   if (state.notificationsEnabled) {
-    btn.style.background = 'rgba(52,199,89,0.1)';
-    btn.style.color = 'var(--success-color)';
-    btn.style.border = '1px solid rgba(52,199,89,0.3)';
+    iconBg.style.background = 'rgba(52,199,89,0.1)';
+    iconBg.style.color = 'var(--success-color)';
     icon.textContent = 'notifications_active';
-    txt.textContent = 'Alerts are ON for ' + schedName;
+    txt.textContent = 'Active for ' + schedName;
   } else {
-    btn.style.background = 'rgba(255,255,255,0.05)';
-    btn.style.color = 'var(--text-secondary)';
-    btn.style.border = '1px solid var(--border-color)';
+    iconBg.style.background = 'rgba(255,255,255,0.05)';
+    iconBg.style.color = 'var(--text-secondary)';
     icon.textContent = 'notifications_off';
-    txt.textContent = 'Turn ON Alerts for ' + schedName;
+    txt.textContent = 'Turn ON for ' + schedName;
   }
 };
 
