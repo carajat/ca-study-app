@@ -39,6 +39,7 @@ function getCloudPath() {
 let isSyncing = false;
 let currentUser = null;
 let currentListenerPath = null;
+window.hasLoadedCloudData = false;
 
 // Attach cloud listener for current group
 function attachCloudListener() {
@@ -58,14 +59,23 @@ function attachCloudListener() {
   currentListenerPath = newPath;
   console.log("Attaching cloud listener to:", newPath);
   
+  window.hasLoadedCloudData = false; // Reset on group switch
+  
   db.ref(newPath).on('value', (snapshot) => {
     const cloudData = snapshot.val();
+    window.hasLoadedCloudData = true; // Cloud data fetched (even if null)
+    
     if (cloudData && !isSyncing) {
       isSyncing = true;
       if (typeof window.reloadAppFromCloud === 'function') {
         window.reloadAppFromCloud(cloudData);
       }
       setTimeout(() => { isSyncing = false; }, 500);
+    } else if (!cloudData) {
+      // Cloud is empty for this path. Seed it with local data safely.
+      if (window.DYNAMIC_DATA && typeof window.syncToCloud === 'function') {
+        window.syncToCloud(window.DYNAMIC_DATA);
+      }
     }
   });
 }
@@ -167,6 +177,10 @@ let syncTimeout = null;
 window.syncToCloud = function(data) {
   if (!currentUser || !db) return; 
   if (window.isReadOnlyMode) { console.log("Read-only mode: Sync prevented"); return; } 
+  if (!window.hasLoadedCloudData) {
+    console.log("Race condition prevented: Cannot push to cloud before initial fetch.");
+    return;
+  }
   
   const path = getCloudPath();
   const cleanData = JSON.parse(JSON.stringify(data));

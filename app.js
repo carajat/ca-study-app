@@ -1499,6 +1499,7 @@ function init() {
   // Load dynamic data
   loadDynamicData();
   smartRepairSyllabusData();
+  performDailyBackup(); // Auto-save daily backup
   
   // Load saved schedule preference
   const saved = loadState();
@@ -1512,6 +1513,24 @@ function init() {
   
   // Update current activity every minute
   setInterval(updateCurrentActivity, 60000);
+}
+
+function performDailyBackup() {
+  const today = new Date().toISOString().split('T')[0];
+  const lastBackup = localStorage.getItem('ca_last_backup_date');
+  if (lastBackup !== today) {
+    try {
+      const dataToBackup = {
+        trackerData: JSON.parse(localStorage.getItem(getStorageKey()) || '{}'),
+        dynamicData: DYNAMIC_DATA
+      };
+      localStorage.setItem('ca_app_daily_backup', JSON.stringify(dataToBackup));
+      localStorage.setItem('ca_last_backup_date', today);
+      console.log("Daily local backup created successfully for " + today);
+    } catch (e) {
+      console.error("Failed to create daily backup:", e);
+    }
+  }
 }
 
 // Start when DOM ready
@@ -1548,6 +1567,48 @@ window.editCustomUsername = function() {
   }
 };
 
+window.openBackupModal = function() {
+  closeModal(); // Close the main menu first
+  openModal('<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">folder_managed</span> Data & Backups', `
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <p style="font-size:13px; color:var(--text-secondary); text-align:center; margin-bottom:8px;">Manage your local backups and export/import data.</p>
+      
+      <button class="theme-btn" style="background: rgba(10,132,255,0.1); border-color: var(--primary); color: var(--primary); justify-content:flex-start;" onclick="restoreDailyBackup()">
+        <span class="material-symbols-rounded menu-btn-icon" style="margin-right:12px;">history</span> Restore Yesterday's Auto-Backup
+      </button>
+      
+      <button class="theme-btn" style="background: rgba(48,209,88,0.1); border-color: var(--success-color); color: var(--success-color); justify-content:flex-start;" onclick="exportData()">
+        <span class="material-symbols-rounded menu-btn-icon" style="margin-right:12px;">upload</span> Export JSON (Save to Device)
+      </button>
+      
+      <button class="theme-btn" style="background: rgba(255,159,10,0.1); border-color: #ff9f0a; color: #ff9f0a; justify-content:flex-start;" onclick="triggerImport()">
+        <span class="material-symbols-rounded menu-btn-icon" style="margin-right:12px;">download</span> Import JSON (Load from Device)
+      </button>
+      
+      <button class="btn-primary" style="margin-top:16px;" onclick="openMenuModal()">Back to Menu</button>
+    </div>
+  `);
+};
+
+window.restoreDailyBackup = function() {
+  const backupStr = localStorage.getItem('ca_app_daily_backup');
+  if (!backupStr) return alert("No auto-backup found for yesterday!");
+  if (confirm("Are you sure you want to overwrite current data with yesterday's auto-backup? This will replace both cloud and local data.")) {
+    try {
+      const data = JSON.parse(backupStr);
+      if (data.trackerData) localStorage.setItem(getStorageKey(), JSON.stringify(data.trackerData));
+      if (data.dynamicData) {
+        DYNAMIC_DATA = data.dynamicData;
+        saveDynamicData();
+      }
+      alert("Backup restored successfully! Reloading app...");
+      window.location.reload();
+    } catch (e) {
+      alert("Failed to restore backup.");
+    }
+  }
+};
+
 function openMenuModal() {
   const uName = typeof window.getDisplayUsername === 'function' ? window.getDisplayUsername(window.loggedUserEmail) : (window.loggedUserEmail ? window.loggedUserEmail.split('@')[0].toUpperCase() : 'USER');
   openModal('<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">settings</span> Settings & Tools' + (window.isReadOnlyMode ? ' <span style="color:var(--error-color); font-size:12px; margin-left:10px;">(Read-Only)</span>' : ''), `
@@ -1579,11 +1640,8 @@ function openMenuModal() {
     <button class="menu-btn" onclick="shareProgressPDF()">
       <span class="material-symbols-rounded menu-btn-icon">picture_as_pdf</span> Share Progress (PDF)
     </button>
-    <button class="menu-btn" onclick="exportData()">
-      <span class="menu-btn-icon"><span class="material-symbols-rounded icon-sm">upload</span></span> Share Backup (Export)
-    </button>
-    <button class="menu-btn" onclick="triggerImport()">
-      <span class="menu-btn-icon"><span class="material-symbols-rounded icon-sm">download</span></span> Load Backup (Import)
+    <button class="menu-btn" onclick="openBackupModal()">
+      <span class="material-symbols-rounded menu-btn-icon">folder_managed</span> Manage Data & Backups
     </button>
   `);
 }
@@ -1839,11 +1897,20 @@ function handleImportFile(event) {
     try {
       const data = JSON.parse(e.target.result);
       if (data && typeof data === 'object') {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        showToast('Data restored successfully! Refreshing...');
+        if (data.trackerData) {
+          localStorage.setItem(getStorageKey(), JSON.stringify(data.trackerData));
+        } else {
+          localStorage.setItem(getStorageKey(), JSON.stringify(data));
+        }
+        if (data.dynamicData) {
+          DYNAMIC_DATA = data.dynamicData;
+          saveDynamicData(); // This pushes to cloud and saves locally
+        }
+        if (typeof showToast === 'function') showToast('Data restored successfully! Refreshing...');
         setTimeout(() => window.location.reload(), 1500);
       }
     } catch (err) {
+      console.error(err);
       alert('Invalid backup file! Make sure you selected the correct .json file.');
     }
   };
@@ -2474,7 +2541,6 @@ window.deleteTodaysLog = function(idx) {
 
 window.openManualLogModal = function() {
   const body = document.getElementById('modal-body');
-  document.getElementById('modal-title').innerHTML = 'Add Manual Log';
   document.getElementById('modal-title').innerHTML = 'Add Manual Log ' +
     '<button class="icon-btn" style="background: rgba(255,149,0,0.1); color: var(--accent); width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 10px; vertical-align: middle;" title="Pick Mock" onclick="openMockPickerModal(\'manual\')"><span class="material-symbols-rounded" style="font-size:18px;">quiz</span></button>' +
     '<button class="icon-btn" style="background: rgba(10,132,255,0.1); color: var(--primary); width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; vertical-align: middle;" title="Pick from Planner" onclick="openPlannerPickerModal(\'manual\')"><span class="material-symbols-rounded" style="font-size:18px;">playlist_add</span></button>';
@@ -2494,6 +2560,7 @@ window.openManualLogModal = function() {
       <select id="ml-subj" class="st-select" onchange="onManualLogSubjChange()">${subjOptions}<option value="__custom__">Other...</option></select>
       <select id="ml-topic" class="st-select"><option value="">Select Topic</option></select>
       <input type="text" id="ml-task" class="st-input" placeholder="Task Description">
+      <input type="date" id="ml-date" class="st-input" value="${getTodayStr()}" style="font-family:inherit;">
       <div style="display:flex; gap:10px;">
         <div style="flex:1"><label style="font-size:12px; color:var(--text-secondary);">Hours</label><input type="number" id="ml-hh" class="st-input" min="0" value="0" style="margin-bottom:0;"></div>
         <div style="flex:1"><label style="font-size:12px; color:var(--text-secondary);">Minutes</label><input type="number" id="ml-mm" class="st-input" min="0" max="59" value="0" style="margin-bottom:0;"></div>
@@ -2501,7 +2568,7 @@ window.openManualLogModal = function() {
       <button class="btn-primary" style="margin-top:10px; border-radius:10px;" onclick="saveManualLog()">Save Log</button>
     </div>
   `;
-  document.getElementById('modal-overlay').classList.add('show'); // Make sure it animates correctly if using .show
+  document.getElementById('modal-overlay').classList.add('show');
 };
 
 window.onManualLogSubjChange = function() {
@@ -2542,20 +2609,21 @@ window.saveManualLog = function() {
   const subj = document.getElementById('ml-subj').value;
   const topic = document.getElementById('ml-topic').value;
   const task = document.getElementById('ml-task').value;
+  const dateVal = document.getElementById('ml-date').value;
   const hh = parseInt(document.getElementById('ml-hh').value) || 0;
   const mm = parseInt(document.getElementById('ml-mm').value) || 0;
   
   if (!subj) { alert('Please select a subject'); return; }
   if (hh === 0 && mm === 0) { alert('Please enter duration'); return; }
   
-  const todayStr = getTodayStr();
+  const targetDateStr = dateVal || getTodayStr();
   if (!DYNAMIC_DATA.journalEntries) DYNAMIC_DATA.journalEntries = {};
-  if (!DYNAMIC_DATA.journalEntries[todayStr]) {
-    DYNAMIC_DATA.journalEntries[todayStr] = { sleep: '', breaks: '', wasted: '', feeling: '', rows: [] };
+  if (!DYNAMIC_DATA.journalEntries[targetDateStr]) {
+    DYNAMIC_DATA.journalEntries[targetDateStr] = { sleep: '', breaks: '', wasted: '', feeling: '', rows: [] };
   }
   
-      if (!DYNAMIC_DATA.journalEntries[todayStr].rows) { DYNAMIC_DATA.journalEntries[todayStr].rows = []; }
-    DYNAMIC_DATA.journalEntries[todayStr].rows.push({
+  if (!DYNAMIC_DATA.journalEntries[targetDateStr].rows) { DYNAMIC_DATA.journalEntries[targetDateStr].rows = []; }
+  DYNAMIC_DATA.journalEntries[targetDateStr].rows.push({
     subject: subj,
     topic: topic,
     tasks: task,
