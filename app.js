@@ -901,13 +901,29 @@ let lastNotifiedTime = '';
 
 function fireNotification(title, body) {
   if ("Notification" in window && Notification.permission === "granted") {
-    new Notification(title, { body: body, icon: 'icon-192.png' });
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(function(registration) {
+        registration.showNotification(title, { body: body, icon: 'icon-192.png' });
+      });
+    } else {
+      new Notification(title, { body: body, icon: 'icon-192.png' });
+    }
   }
 }
 
 function requestNotificationPermission() {
-  if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
-    Notification.requestPermission();
+  if ("Notification" in window) {
+    if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          fireNotification("Notifications Enabled! 🚀", "You will now receive alerts for your timetable.");
+        }
+      });
+    } else if (Notification.permission === "denied") {
+      alert("Bhai, notifications blocked hain tere browser me! Settings me jaake is app ke liye 'Allow Notifications' kar.");
+    }
+  } else {
+    alert("Tere browser me notifications ka support hi nahi hai.");
   }
 }
 
