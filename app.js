@@ -2466,6 +2466,16 @@ window.pickPlannerTask = function(subj, topic, taskName, target) {
 // TODAY'S LOG FEATURE (Simplified Journal)
 // ==========================================
 
+window.viewLogsDate = null;
+
+function changeLogsDate() {
+  const dp = document.getElementById('tl-date-picker');
+  if (dp && dp.value) {
+    window.viewLogsDate = dp.value;
+    renderTodaysLog();
+  }
+}
+
 function getTodayStr() {
   const dateObj = new Date();
   const y = dateObj.getFullYear();
@@ -2479,14 +2489,20 @@ function renderTodaysLog() {
   const totalEl = document.getElementById('tl-total-time');
   if (!container) return;
   
-  const todayStr = getTodayStr();
-  let entries = (DYNAMIC_DATA.journalEntries && DYNAMIC_DATA.journalEntries[todayStr] && DYNAMIC_DATA.journalEntries[todayStr].rows) || [];
+  if (!window.viewLogsDate) window.viewLogsDate = getTodayStr();
+  
+  const dp = document.getElementById('tl-date-picker');
+  if (dp && !dp.value) dp.value = window.viewLogsDate;
+  
+  const targetDate = window.viewLogsDate;
+  let entries = (DYNAMIC_DATA.journalEntries && DYNAMIC_DATA.journalEntries[targetDate] && DYNAMIC_DATA.journalEntries[targetDate].rows) || [];
   
   container.innerHTML = '';
   let totalMinutes = 0;
   
   if (entries.length === 0) {
-    container.innerHTML = '<div style="text-align:center; padding:15px; color:var(--text-muted); font-size:13px;">No logs today yet. Start studying!</div>';
+    let emptyMsg = targetDate === getTodayStr() ? 'No logs today yet. Start studying!' : `No logs found for ${targetDate}.`;
+    container.innerHTML = `<div style="text-align:center; padding:15px; color:var(--text-muted); font-size:13px;">${emptyMsg}</div>`;
     totalEl.textContent = 'Total: 0h 0m';
     return;
   }
@@ -2532,10 +2548,12 @@ function renderTodaysLog() {
 
 window.deleteTodaysLog = function(idx) {
   if(confirm('Are you sure you want to delete this log?')) {
-    const todayStr = getTodayStr();
-    DYNAMIC_DATA.journalEntries[todayStr].rows.splice(idx, 1);
-    saveDynamicData();
-    renderTodaysLog();
+    const targetDate = window.viewLogsDate || getTodayStr();
+    if (DYNAMIC_DATA.journalEntries[targetDate] && DYNAMIC_DATA.journalEntries[targetDate].rows) {
+      DYNAMIC_DATA.journalEntries[targetDate].rows.splice(idx, 1);
+      saveDynamicData();
+      renderTodaysLog();
+    }
   }
 };
 
