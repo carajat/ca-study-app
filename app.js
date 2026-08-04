@@ -904,6 +904,7 @@ window.toggleNotifications = function() {
     state.activeNotificationSchedule = null;
     saveState({ activeNotificationSchedule: null });
     updateNotifToggleUI();
+    if (window.Capacitor) scheduleNativeAlarms(null);
   } else {
     if ("Notification" in window) {
       if (Notification.permission === "granted") {
@@ -911,6 +912,7 @@ window.toggleNotifications = function() {
         saveState({ activeNotificationSchedule: state.activeSchedule });
         updateNotifToggleUI();
         fireNotification("Notifications Enabled! 🚀", "Alerts are ON for " + (state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night') + ".");
+        if (window.Capacitor) scheduleNativeAlarms(state.activeSchedule);
       } else if (Notification.permission !== "denied") {
         Notification.requestPermission().then(permission => {
           if (permission === "granted") {
@@ -918,6 +920,7 @@ window.toggleNotifications = function() {
             saveState({ activeNotificationSchedule: state.activeSchedule });
             updateNotifToggleUI();
             fireNotification("Notifications Enabled! 🚀", "Alerts are ON for " + (state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night') + ".");
+            if (window.Capacitor) scheduleNativeAlarms(state.activeSchedule);
           }
         });
       } else {
@@ -952,6 +955,55 @@ window.updateNotifToggleUI = function() {
     txt.textContent = 'Turn ON for ' + schedName;
   }
 };
+
+async function scheduleNativeAlarms(scheduleId) {
+  if (!window.Capacitor || !window.Capacitor.Plugins.LocalNotifications) return;
+  const LocalNotifications = window.Capacitor.Plugins.LocalNotifications;
+  
+  try {
+    const perm = await LocalNotifications.requestPermissions();
+    if (perm.display !== 'granted') return;
+
+    const pending = await LocalNotifications.getPending();
+    if (pending.notifications.length > 0) {
+      await LocalNotifications.cancel(pending);
+    }
+
+    if (!scheduleId) return;
+
+    const scheduleData = DYNAMIC_DATA.schedules && DYNAMIC_DATA.schedules[scheduleId];
+    if (!scheduleData || !scheduleData.slots) return;
+
+    const notificationsToSchedule = [];
+    let idCounter = 1;
+
+    scheduleData.slots.forEach(slot => {
+      if (!slot.startRange) return;
+      const startStr = slot.startRange.split('-')[0].trim();
+      const [hhStr, mmStr] = startStr.split(':');
+      const hh = parseInt(hhStr, 10);
+      const mm = parseInt(mmStr, 10);
+      
+      if (!isNaN(hh) && !isNaN(mm)) {
+        notificationsToSchedule.push({
+          id: idCounter++,
+          title: "CA Study Tracker",
+          body: `Time for: ${slot.label}`,
+          schedule: {
+            on: { hour: hh, minute: mm },
+            allowWhileIdle: true
+          }
+        });
+      }
+    });
+
+    if (notificationsToSchedule.length > 0) {
+      await LocalNotifications.schedule({ notifications: notificationsToSchedule });
+    }
+  } catch (e) {
+    console.error("Native scheduling failed", e);
+  }
+}
 
 function fireNotification(title, body) {
   if (!("Notification" in window)) return;
