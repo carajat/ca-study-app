@@ -1674,7 +1674,6 @@ function init() {
   // Load dynamic data
   loadDynamicData();
   smartRepairSyllabusData();
-  performDailyBackup(); // Auto-save daily backup
   
   // Load saved schedule preference
   const saved = loadState();
@@ -1693,6 +1692,8 @@ function init() {
     updateCurrentActivity();
     checkScheduleNotifications();
   }, 60000);
+  
+  performDailyBackup(); // Auto-save daily backup
 }
 
 function performDailyBackup() {
@@ -1700,8 +1701,16 @@ function performDailyBackup() {
   const lastBackup = localStorage.getItem('ca_last_backup_date');
   if (lastBackup !== today) {
     try {
+      const rawData = localStorage.getItem(getStorageKey());
+      const parsedTracker = JSON.parse(rawData || '{}');
+      
+      // Prevent overwriting a good backup with empty data (e.g. before cloud sync completes)
+      if (Object.keys(parsedTracker).length === 0) {
+        return; // Try again later when data is populated
+      }
+      
       const dataToBackup = {
-        trackerData: JSON.parse(localStorage.getItem(getStorageKey()) || '{}'),
+        trackerData: parsedTracker,
         dynamicData: DYNAMIC_DATA
       };
       localStorage.setItem('ca_app_daily_backup', JSON.stringify(dataToBackup));
