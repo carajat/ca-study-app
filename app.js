@@ -906,21 +906,35 @@ window.toggleNotifications = function() {
     updateNotifToggleUI();
     if (window.Capacitor) scheduleNativeAlarms(null);
   } else {
-    if ("Notification" in window) {
+    const schedName = state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night';
+    
+    if (window.Capacitor && window.Capacitor.Plugins.LocalNotifications) {
+      window.Capacitor.Plugins.LocalNotifications.requestPermissions().then(perm => {
+        if (perm.display === 'granted') {
+          state.activeNotificationSchedule = state.activeSchedule;
+          saveState({ activeNotificationSchedule: state.activeSchedule });
+          updateNotifToggleUI();
+          scheduleNativeAlarms(state.activeSchedule);
+          alert("Alerts are ON for " + schedName + ".");
+        } else {
+          alert("Notifications are blocked in your phone settings! Please allow notifications to use this feature.");
+        }
+      }).catch(err => {
+        alert("Error requesting permissions: " + err);
+      });
+    } else if ("Notification" in window) {
       if (Notification.permission === "granted") {
         state.activeNotificationSchedule = state.activeSchedule;
         saveState({ activeNotificationSchedule: state.activeSchedule });
         updateNotifToggleUI();
-        fireNotification("Notifications Enabled! 🚀", "Alerts are ON for " + (state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night') + ".");
-        if (window.Capacitor) scheduleNativeAlarms(state.activeSchedule);
+        fireNotification("Notifications Enabled! 🚀", "Alerts are ON for " + schedName + ".");
       } else if (Notification.permission !== "denied") {
         Notification.requestPermission().then(permission => {
           if (permission === "granted") {
             state.activeNotificationSchedule = state.activeSchedule;
             saveState({ activeNotificationSchedule: state.activeSchedule });
             updateNotifToggleUI();
-            fireNotification("Notifications Enabled! 🚀", "Alerts are ON for " + (state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night') + ".");
-            if (window.Capacitor) scheduleNativeAlarms(state.activeSchedule);
+            fireNotification("Notifications Enabled! 🚀", "Alerts are ON for " + schedName + ".");
           }
         });
       } else {
