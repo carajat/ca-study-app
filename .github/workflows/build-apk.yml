@@ -1,8 +1,4 @@
 name: Build Android APK
-run: |
-cd android
-chmod +x gradlew
-./gradlew assembleDebug
 
 on:
   push:
@@ -43,6 +39,7 @@ jobs:
       - name: Build Android Release APK
         run: |
           cd android
+          chmod +x gradlew
           ./gradlew assembleDebug
 
       - name: Upload APK
