@@ -8,7 +8,7 @@ let state = {
   activeGroup: localStorage.getItem('ca_app_prefs_group') || 'group1',
   activeTab: 'dashboard',
   activeSchedule: 'earlyMorning',
-  notificationsEnabled: false,
+  activeNotificationSchedule: null,
   plannerDate: new Date(),
   calendarMonth: new Date(),
   syllabusView: 'list', // 'list' or 'detail'
@@ -900,22 +900,22 @@ function switchSchedule(type) {
 let lastNotifiedTime = '';
 
 window.toggleNotifications = function() {
-  if (state.notificationsEnabled) {
-    state.notificationsEnabled = false;
-    saveState({ notificationsEnabled: false });
+  if (state.activeNotificationSchedule === state.activeSchedule) {
+    state.activeNotificationSchedule = null;
+    saveState({ activeNotificationSchedule: null });
     updateNotifToggleUI();
   } else {
     if ("Notification" in window) {
       if (Notification.permission === "granted") {
-        state.notificationsEnabled = true;
-        saveState({ notificationsEnabled: true });
+        state.activeNotificationSchedule = state.activeSchedule;
+        saveState({ activeNotificationSchedule: state.activeSchedule });
         updateNotifToggleUI();
         fireNotification("Notifications Enabled! 🚀", "Alerts are ON for " + (state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night') + ".");
       } else if (Notification.permission !== "denied") {
         Notification.requestPermission().then(permission => {
           if (permission === "granted") {
-            state.notificationsEnabled = true;
-            saveState({ notificationsEnabled: true });
+            state.activeNotificationSchedule = state.activeSchedule;
+            saveState({ activeNotificationSchedule: state.activeSchedule });
             updateNotifToggleUI();
             fireNotification("Notifications Enabled! 🚀", "Alerts are ON for " + (state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night') + ".");
           }
@@ -936,10 +936,11 @@ window.updateNotifToggleUI = function() {
   const txt = document.getElementById('notif-text');
   if(!toggle) return;
   
-  toggle.checked = state.notificationsEnabled;
+  const isEnabled = state.activeNotificationSchedule === state.activeSchedule;
+  toggle.checked = isEnabled;
   
   const schedName = state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night';
-  if (state.notificationsEnabled) {
+  if (isEnabled) {
     iconBg.style.background = 'rgba(52,199,89,0.1)';
     iconBg.style.color = 'var(--success-color)';
     icon.textContent = 'notifications_active';
@@ -982,7 +983,7 @@ function fireNotification(title, body) {
 }
 
 function checkScheduleNotifications() {
-  if (!state.activeSchedule || !state.notificationsEnabled) return;
+  if (!state.activeNotificationSchedule) return;
   const now = new Date();
   const hh = String(now.getHours()).padStart(2, '0');
   const mm = String(now.getMinutes()).padStart(2, '0');
@@ -990,7 +991,7 @@ function checkScheduleNotifications() {
   
   if (lastNotifiedTime === currentTime) return;
   
-  const scheduleData = DYNAMIC_DATA.schedules && DYNAMIC_DATA.schedules[state.activeSchedule];
+  const scheduleData = DYNAMIC_DATA.schedules && DYNAMIC_DATA.schedules[state.activeNotificationSchedule];
   if (!scheduleData || !scheduleData.slots) return;
   
   scheduleData.slots.forEach(slot => {
@@ -1612,7 +1613,7 @@ function init() {
   // Load saved schedule preference
   const saved = loadState();
   if (saved.activeSchedule) state.activeSchedule = saved.activeSchedule;
-  if (saved.notificationsEnabled !== undefined) state.notificationsEnabled = saved.notificationsEnabled;
+  if (saved.activeNotificationSchedule !== undefined) state.activeNotificationSchedule = saved.activeNotificationSchedule;
   
   // Render initial tab (updates UI state properly)
   switchTab(state.activeTab);
