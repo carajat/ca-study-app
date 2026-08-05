@@ -486,6 +486,8 @@ function updateCountdown() {
     const dates = DYNAMIC_DATA.finalExams.map(x => new Date(x.date)).filter(d => !isNaN(d.valueOf()));
     if (dates.length > 0) examDate = new Date(Math.min(...dates));
   }
+  // Set to exactly 2:00 PM local time
+  examDate.setHours(14, 0, 0, 0);
   const now = new Date(typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now());
   const diff = examDate - now;
   if (diff <= 0) {
@@ -673,23 +675,23 @@ function renderExams() {
       <div class="mock-list">
         ${DYNAMIC_DATA.finalExams.map((exam, examIdx) => {
           const days = daysUntil(exam.date);
+          const dateObj = new Date(exam.date);
+          const dayName = !isNaN(dateObj.valueOf()) ? dateObj.toLocaleDateString('en-US', { weekday: 'long' }) : 'Unknown Day';
+          const timeStr = exam.subject.toLowerCase().includes('ibs') ? '2:00 PM - 6:00 PM' : '2:00 PM - 5:00 PM';
           return `
             <div class="mock-item final-exam-item">
-              ${isEditMode ? `
-  
-` : ''}
               ${!isEditMode ? `
               <div class="mock-subject" style="flex:1">${exam.subject}</div>
-              <div class="mock-date">${formatDate(exam.date)} (${exam.day})<br><small>${exam.time}</small></div>
+              <div class="mock-date">${formatDate(exam.date)} (${dayName})<br><small>${timeStr}</small></div>
               <div class="mock-score final-days">${days} days</div>
               ` : `
               <div class="mock-subject" style="flex:1; display:flex; flex-direction:column; gap:4px; margin-right:10px;">
                 <input type="text" class="inline-input" value="${exam.subject}" onchange="updateExam(${examIdx}, 'subject', this.value)">
-                <input type="text" class="inline-input time-input" value="${exam.time}" onchange="updateExam(${examIdx}, 'time', this.value)" placeholder="Time">
+                <small style="color:var(--text-grey); font-size:12px;">${timeStr}</small>
               </div>
               <div class="mock-date" style="display:flex; flex-direction:column; gap:4px; margin-right:10px;">
                 <input type="date" class="inline-input date-input" value="${exam.date}" onchange="updateExam(${examIdx}, 'date', this.value)">
-                <input type="text" class="inline-input time-input" value="${exam.day}" onchange="updateExam(${examIdx}, 'day', this.value)" placeholder="Day">
+                <small style="color:var(--text-grey); font-size:12px;">${dayName}</small>
               </div>
               <div class="edit-mode-controls">
                 <button class="delete-btn" onclick="deleteExam(${examIdx})"><span class="material-symbols-rounded icon-sm">delete</span></button>
@@ -2014,12 +2016,10 @@ function deleteExam(idx) {
 function addExam() {
   openFormModal('Add Final Exam', [
     { label: 'Subject', type: 'text', placeholder: 'e.g., Paper 6: IBS' },
-    { label: 'Date', type: 'date', value: '2026-11-01' },
-    { label: 'Day', type: 'text', placeholder: 'e.g., Monday' },
-    { label: 'Time', type: 'text', placeholder: 'e.g., 2:00 PM - 6:00 PM' }
-  ], (subj, date, day, time) => {
+    { label: 'Date', type: 'date', value: '2026-11-01' }
+  ], (subj, date) => {
     if (!subj || !date) return;
-    DYNAMIC_DATA.finalExams.push({ id: 'final-new-' + Date.now(), subject: subj, date, day, time });
+    DYNAMIC_DATA.finalExams.push({ id: 'final-new-' + Date.now(), subject: subj, date: date });
     saveDynamicData();
     renderExams();
   });
