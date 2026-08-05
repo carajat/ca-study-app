@@ -481,7 +481,11 @@ function renderDashboard() {
 }
 
 function updateCountdown() {
-  const examDate = new Date(DYNAMIC_DATA.exam.date);
+  let examDate = new Date(DYNAMIC_DATA.exam.date);
+  if (DYNAMIC_DATA.finalExams && DYNAMIC_DATA.finalExams.length > 0) {
+    const dates = DYNAMIC_DATA.finalExams.map(x => new Date(x.date)).filter(d => !isNaN(d.valueOf()));
+    if (dates.length > 0) examDate = new Date(Math.min(...dates));
+  }
   const now = new Date(typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now());
   const diff = examDate - now;
   if (diff <= 0) {
@@ -593,7 +597,12 @@ function updateQuote() {
 //  EXAM SCHEDULE
 // ═══════════════════════════════════════════
 function renderExams() {
-  const days = daysUntil(DYNAMIC_DATA.exam.date);
+  let examDateStr = DYNAMIC_DATA.exam.date;
+  if (DYNAMIC_DATA.finalExams && DYNAMIC_DATA.finalExams.length > 0) {
+    const dates = DYNAMIC_DATA.finalExams.map(x => new Date(x.date)).filter(d => !isNaN(d.valueOf()));
+    if (dates.length > 0) examDateStr = new Date(Math.min(...dates)).toISOString();
+  }
+  const days = daysUntil(examDateStr);
   document.getElementById('exam-days-left').textContent = days + ' days left';
   
   // Next mock
