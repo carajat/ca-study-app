@@ -53,6 +53,7 @@ jobs:
           KEY_ALIAS: castudyapp
         run: |
           cd android
+          chmod +x gradlew
           ./gradlew assembleRelease -Pandroid.injected.signing.store.file=castudyapp.jks -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD -Pandroid.injected.signing.key.alias=$KEY_ALIAS -Pandroid.injected.signing.key.password=$KEY_PASSWORD
 
       - name: Upload APK
