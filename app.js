@@ -422,6 +422,8 @@ function switchTab(tabName) {
     if(gs) gs.value = state.activeGroup;
     const gt = document.getElementById('group-title');
     if(gt) gt.textContent = state.activeGroup === 'group1' ? 'CA Final Group 1' : 'CA Final Group 2';
+    const hs = document.getElementById('header-subtitle');
+    if(hs) hs.textContent = `${state.targetAttempt || 'Nov 2026'} · New Scheme`;
     renderDashboard();
     if(window.updateOngoingJournalTask) window.updateOngoingJournalTask();
   populateTrackerSubjects();
@@ -2034,6 +2036,9 @@ function addExam() {
 function updateTargetAttempt(attempt) {
   state.targetAttempt = attempt;
   saveState({ targetAttempt: attempt });
+  
+  const hs = document.getElementById('header-subtitle');
+  if(hs) hs.textContent = `${attempt} · New Scheme`;
   
   // Generate tentative schedule for the selected attempt
   const isMay = attempt.startsWith('May');
