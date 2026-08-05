@@ -22,6 +22,11 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      - name: Prepare Web Assets for Capacitor
+        run: |
+          mkdir -p www
+          rsync -av --exclude='www' --exclude='node_modules' --exclude='android' --exclude='.git' --exclude='.github' . www/
+
       - name: Sync Capacitor
         run: npx cap sync android
 
