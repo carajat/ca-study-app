@@ -1,4 +1,4 @@
-name: Android Release Build
+name: Build Android APK
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Build Signed APK & AAB
+    name: Build Signed APK
     runs-on: ubuntu-latest
 
     steps:
@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22'
 
       - name: Install Dependencies
         run: npm ci
@@ -44,7 +44,8 @@ jobs:
             echo "Error: KEYSTORE_BASE64 secret is missing."
             exit 1
           fi
-          echo $ENCODED_KEYSTORE | base64 --decode > android/app/castudyapp.jks
+          # Keystore ko absolute path par save kar rahe hain
+          echo "$ENCODED_KEYSTORE" | base64 --decode > "$GITHUB_WORKSPACE/castudyapp.jks"
 
       - name: Build Release APK
         env:
@@ -54,7 +55,7 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleRelease -Pandroid.injected.signing.store.file=castudyapp.jks -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD -Pandroid.injected.signing.key.alias=$KEY_ALIAS -Pandroid.injected.signing.key.password=$KEY_PASSWORD
+          ./gradlew assembleRelease -x lint -Pandroid.injected.signing.store.file="$GITHUB_WORKSPACE/castudyapp.jks" -Pandroid.injected.signing.store.password="${KEYSTORE_PASSWORD}" -Pandroid.injected.signing.key.alias="${KEY_ALIAS}" -Pandroid.injected.signing.key.password="${KEY_PASSWORD}"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
