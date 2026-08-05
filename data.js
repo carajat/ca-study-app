@@ -65,23 +65,7 @@ const APP_DATA_GROUP2 = {
   },
 
   // ─── Mock Test Schedule (Group 2 only: DT, IDT, IBS) ───────────────
-  mocks: {
-    series1: [
-      { id: "m1-1", subject: "DT", date: "2026-08-08", series: 1 },
-      { id: "m1-2", subject: "IDT", date: "2026-08-18", series: 1 },
-      { id: "m1-3", subject: "IBS", date: "2026-08-22", series: 1 }
-    ],
-    series2: [
-      { id: "m2-1", subject: "DT", date: "2026-09-18", series: 2 },
-      { id: "m2-2", subject: "IDT", date: "2026-09-24", series: 2 },
-      { id: "m2-3", subject: "IBS", date: "2026-09-27", series: 2 }
-    ],
-    series3: [
-      { id: "m3-1", subject: "DT", date: "2026-10-10", series: 3 },
-      { id: "m3-2", subject: "IDT", date: "2026-10-13", series: 3 },
-      { id: "m3-3", subject: "IBS", date: "2026-10-15", series: 3 }
-    ]
-  },
+  mocks: [],
 
   // ─── CA Final Group 2 — November 2026 Datesheet (ICAI Official) ───────────────
   finalExams: [
@@ -387,23 +371,7 @@ const APP_DATA_GROUP1 = {
     scheme: "New Scheme"
   },
   schedules: APP_DATA_GROUP2.schedules,
-    mocks: {
-    series1: [
-      { id: "m1-1-g1", subject: "FR", date: "2026-02-15", series: 1 },
-      { id: "m1-2-g1", subject: "AFM", date: "2026-02-18", series: 1 },
-      { id: "m1-3-g1", subject: "Audit", date: "2026-02-21", series: 1 }
-    ],
-    series2: [
-      { id: "m2-1-g1", subject: "FR", date: "2026-03-15", series: 2 },
-      { id: "m2-2-g1", subject: "AFM", date: "2026-03-18", series: 2 },
-      { id: "m2-3-g1", subject: "Audit", date: "2026-03-21", series: 2 }
-    ],
-    series3: [
-      { id: "m3-1-g1", subject: "FR", date: "2026-04-10", series: 3 },
-      { id: "m3-2-g1", subject: "AFM", date: "2026-04-13", series: 3 },
-      { id: "m3-3-g1", subject: "Audit", date: "2026-04-16", series: 3 }
-    ]
-  },
+  mocks: [],
   finalExams: [
     { subject: "FR", date: "2026-05-02T14:00:00+05:30" },
     { subject: "AFM", date: "2026-05-04T14:00:00+05:30" },
