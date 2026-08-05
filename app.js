@@ -1837,12 +1837,19 @@ function openMenuModal() {
 
 function openThemeModal() {
   const currentTheme = localStorage.getItem('ca-theme') || 'default';
-  const mode = document.body.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-  const modeIcon = mode === 'light' ? 'dark_mode' : 'light_mode';
-  const modeText = mode === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode';
+  const savedMode = localStorage.getItem('theme');
+  
+  let modeIcon, modeText, nextMode;
+  if (savedMode === 'light') {
+      modeIcon = 'dark_mode'; modeText = 'Switch to Dark Mode'; nextMode = 'dark';
+  } else if (savedMode === 'dark') {
+      modeIcon = 'brightness_auto'; modeText = 'Switch to System Auto'; nextMode = 'auto';
+  } else {
+      modeIcon = 'light_mode'; modeText = 'Switch to Light Mode'; nextMode = 'light';
+  }
   
   openModal('Select Theme', `
-    <button class="menu-btn" style="margin-bottom: 20px; text-align: center; justify-content: center; background: rgba(10,132,255,0.1); color: var(--primary);" onclick="toggleTheme(); openThemeModal();">
+    <button class="menu-btn" style="margin-bottom: 20px; text-align: center; justify-content: center; background: rgba(10,132,255,0.1); color: var(--primary);" onclick="setMode('${nextMode}'); openThemeModal();">
       <span class="material-symbols-rounded menu-btn-icon" style="margin-right: 8px;">${modeIcon}</span> ${modeText}
     </button>
     <p style="text-align:center; color:var(--text-secondary); margin-bottom: 20px;">Personalize your app colors</p>
@@ -2179,25 +2186,34 @@ function deleteMockSeries(idx) {
 }
 
 
-function toggleTheme() {
-    const currentTheme = document.body.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    document.body.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    updateThemeIcon(newTheme);
+window.setMode = function(mode) {
+    if (mode === 'auto') {
+        localStorage.removeItem('theme');
+        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    } else {
+        document.body.setAttribute('data-theme', mode);
+        localStorage.setItem('theme', mode);
+    }
 }
-function updateThemeIcon(theme) {
-    const btn = document.getElementById('themeToggleBtn');
-    if(btn) btn.innerHTML = theme === 'light' ? '<span class="material-symbols-rounded">dark_mode</span>' : '<span class="material-symbols-rounded">light_mode</span>';
+function toggleTheme() {
+    const currentTheme = document.body.getAttribute('data-theme') || 'dark';
+    window.setMode(currentTheme === 'light' ? 'dark' : 'light');
+}
+function updateSystemTheme(e) {
+    if (!localStorage.getItem('theme')) {
+        document.body.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    }
 }
 document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
         document.body.setAttribute('data-theme', savedTheme);
-        updateThemeIcon(savedTheme);
     } else {
-        updateThemeIcon(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
     }
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateSystemTheme);
 });
 
 
