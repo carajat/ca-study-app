@@ -160,70 +160,70 @@ body.theme-rose {
 }
 
 body.theme-mocha {
-  --purple: #B45309;
-  --purple-glow: rgba(180, 83, 9, 0.4);
-  --border-glow: rgba(180, 83, 9, 0.3);
-  --checkbox-row-active: rgba(180, 83, 9, 0.08);
-  --toast-shadow: rgba(180, 83, 9, 0.4);
+  --purple: #8B4513; /* SaddleBrown */
+  --purple-glow: rgba(139, 69, 19, 0.4);
+  --border-glow: rgba(139, 69, 19, 0.3);
+  --checkbox-row-active: rgba(139, 69, 19, 0.08);
+  --toast-shadow: rgba(139, 69, 19, 0.4);
 }
 @media (prefers-color-scheme: light) {
   body.theme-mocha {
-    --purple: #92400E;
-    --purple-glow: rgba(146, 64, 14, 0.2);
-    --border-glow: rgba(146, 64, 14, 0.15);
-    --checkbox-row-active: rgba(146, 64, 14, 0.06);
-    --toast-shadow: rgba(146, 64, 14, 0.25);
+    --purple: #A0522D; /* Sienna */
+    --purple-glow: rgba(160, 82, 45, 0.2);
+    --border-glow: rgba(160, 82, 45, 0.15);
+    --checkbox-row-active: rgba(160, 82, 45, 0.06);
+    --toast-shadow: rgba(160, 82, 45, 0.25);
   }
 }
 
 body.theme-teal {
-  --purple: #14B8A6;
-  --purple-glow: rgba(20, 184, 166, 0.4);
-  --border-glow: rgba(20, 184, 166, 0.3);
-  --checkbox-row-active: rgba(20, 184, 166, 0.08);
-  --toast-shadow: rgba(20, 184, 166, 0.4);
+  --purple: #1E3A8A; /* Deep Navy */
+  --purple-glow: rgba(30, 58, 138, 0.4);
+  --border-glow: rgba(30, 58, 138, 0.3);
+  --checkbox-row-active: rgba(30, 58, 138, 0.08);
+  --toast-shadow: rgba(30, 58, 138, 0.4);
 }
 @media (prefers-color-scheme: light) {
   body.theme-teal {
-    --purple: #0F766E;
-    --purple-glow: rgba(15, 118, 110, 0.2);
-    --border-glow: rgba(15, 118, 110, 0.15);
-    --checkbox-row-active: rgba(15, 118, 110, 0.06);
-    --toast-shadow: rgba(15, 118, 110, 0.25);
+    --purple: #1D4ED8; /* Professional Blue */
+    --purple-glow: rgba(29, 78, 216, 0.2);
+    --border-glow: rgba(29, 78, 216, 0.15);
+    --checkbox-row-active: rgba(29, 78, 216, 0.06);
+    --toast-shadow: rgba(29, 78, 216, 0.25);
   }
 }
 
 body.theme-amethyst {
-  --purple: #8B5CF6;
-  --purple-glow: rgba(139, 92, 246, 0.4);
-  --border-glow: rgba(139, 92, 246, 0.3);
-  --checkbox-row-active: rgba(139, 92, 246, 0.08);
-  --toast-shadow: rgba(139, 92, 246, 0.4);
+  --purple: #374151; /* Graphite / Dark Gray */
+  --purple-glow: rgba(55, 65, 81, 0.4);
+  --border-glow: rgba(55, 65, 81, 0.3);
+  --checkbox-row-active: rgba(55, 65, 81, 0.08);
+  --toast-shadow: rgba(55, 65, 81, 0.4);
 }
 @media (prefers-color-scheme: light) {
   body.theme-amethyst {
-    --purple: #6D28D9;
-    --purple-glow: rgba(109, 40, 217, 0.2);
-    --border-glow: rgba(109, 40, 217, 0.15);
-    --checkbox-row-active: rgba(109, 40, 217, 0.06);
-    --toast-shadow: rgba(109, 40, 217, 0.25);
+    --purple: #4B5563; /* Medium Gray */
+    --purple-glow: rgba(75, 85, 99, 0.2);
+    --border-glow: rgba(75, 85, 99, 0.15);
+    --checkbox-row-active: rgba(75, 85, 99, 0.06);
+    --toast-shadow: rgba(75, 85, 99, 0.25);
   }
 }
 
 body.theme-cherry {
-  --purple: #D946EF;
-  --purple-glow: rgba(217, 70, 239, 0.4);
-  --border-glow: rgba(217, 70, 239, 0.3);
-  --checkbox-row-active: rgba(217, 70, 239, 0.08);
-  --toast-shadow: rgba(217, 70, 239, 0.4);
+  --purple: #991B1B; /* Dark Crimson/Ruby */
+  --purple-glow: rgba(153, 27, 27, 0.4);
+  --border-glow: rgba(153, 27, 27, 0.3);
+  --checkbox-row-active: rgba(153, 27, 27, 0.08);
+  --toast-shadow: rgba(153, 27, 27, 0.4);
 }
 @media (prefers-color-scheme: light) {
   body.theme-cherry {
-    --purple: #C026D3;
-    --purple-glow: rgba(192, 38, 211, 0.2);
-    --border-glow: rgba(192, 38, 211, 0.15);
-    --checkbox-row-active: rgba(192, 38, 211, 0.06);
-    --toast-shadow: rgba(192, 38, 211, 0.25);
+    --purple: #B91C1C; /* Professional Red */
+    --purple-glow: rgba(185, 28, 28, 0.2);
+    --border-glow: rgba(185, 28, 28, 0.15);
+    --checkbox-row-active: rgba(185, 28, 28, 0.06);
+    --toast-shadow: rgba(185, 28, 28, 0.25);
   }
 }
 
@@ -340,10 +340,10 @@ body.theme-cherry {
 .tc-forest { background: #10B981; }
 .tc-sunset { background: #F59E0B; }
 .tc-rose { background: #F43F5E; }
-.tc-mocha { background: #B45309; }
-.tc-teal { background: #14B8A6; }
-.tc-amethyst { background: #8B5CF6; }
-.tc-cherry { background: #D946EF; }
+.tc-mocha { background: #8B4513; }
+.tc-teal { background: #1E3A8A; }
+.tc-amethyst { background: #374151; }
+.tc-cherry { background: #991B1B; }
 
 .theme-btn {
   background: rgba(10, 132, 255, 0.1);
