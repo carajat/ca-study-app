@@ -1647,21 +1647,14 @@ function calculateSubjectProgress(key, type) {
 }
 
 function calculateOverallProgress() {
-  const subjects = [
-    { key: 'dt', type: 'main', weight: 3 },
-    { key: 'idt', type: 'main', weight: 3 },
-    { key: 'ibs-afm', type: 'ibs', weight: 1 },
-    { key: 'ibs-fr', type: 'ibs', weight: 1 },
-    { key: 'ibs-audit', type: 'ibs', weight: 1 },
-    { key: 'ibs-law', type: 'ibs', weight: 1 },
-    { key: 'ibs-scpm', type: 'ibs', weight: 1 }
-  ];
+  if (!DYNAMIC_DATA.syllabusSubjects || DYNAMIC_DATA.syllabusSubjects.length === 0) return 0;
   
   let totalWeight = 0, weightedSum = 0;
-  subjects.forEach(s => {
-    const pct = calculateSubjectProgress(s.key, s.type);
-    weightedSum += pct * s.weight;
-    totalWeight += s.weight;
+  DYNAMIC_DATA.syllabusSubjects.forEach(s => {
+    const pct = calculateSubjectProgress(s.id, s.type);
+    const weight = s.type === 'main' ? 3 : 1;
+    weightedSum += pct * weight;
+    totalWeight += weight;
   });
   
   return totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
