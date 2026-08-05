@@ -1853,12 +1853,16 @@ function openThemeModal() {
       <span class="material-symbols-rounded menu-btn-icon" style="margin-right: 8px;">${modeIcon}</span> ${modeText}
     </button>
     <p style="text-align:center; color:var(--text-secondary); margin-bottom: 20px;">Personalize your app colors</p>
-    <div class="theme-picker">
+    <div class="theme-picker" style="flex-wrap: wrap;">
       <div class="theme-circle tc-default ${currentTheme === 'default' ? 'active' : ''}" onclick="setTheme('default', this)"></div>
       <div class="theme-circle tc-ocean ${currentTheme === 'ocean' ? 'active' : ''}" onclick="setTheme('ocean', this)"></div>
       <div class="theme-circle tc-forest ${currentTheme === 'forest' ? 'active' : ''}" onclick="setTheme('forest', this)"></div>
       <div class="theme-circle tc-sunset ${currentTheme === 'sunset' ? 'active' : ''}" onclick="setTheme('sunset', this)"></div>
       <div class="theme-circle tc-rose ${currentTheme === 'rose' ? 'active' : ''}" onclick="setTheme('rose', this)"></div>
+      <div class="theme-circle tc-mocha ${currentTheme === 'mocha' ? 'active' : ''}" onclick="setTheme('mocha', this)"></div>
+      <div class="theme-circle tc-teal ${currentTheme === 'teal' ? 'active' : ''}" onclick="setTheme('teal', this)"></div>
+      <div class="theme-circle tc-amethyst ${currentTheme === 'amethyst' ? 'active' : ''}" onclick="setTheme('amethyst', this)"></div>
+      <div class="theme-circle tc-cherry ${currentTheme === 'cherry' ? 'active' : ''}" onclick="setTheme('cherry', this)"></div>
     </div>
     <button class="btn-primary" style="margin-top:20px" onclick="openMenuModal()">Back to Menu</button>
   `);
@@ -1866,7 +1870,7 @@ function openThemeModal() {
 
 function setTheme(themeName, element) {
   // Remove all theme classes
-  document.body.classList.remove('theme-ocean', 'theme-forest', 'theme-sunset', 'theme-rose');
+  document.body.classList.remove('theme-ocean', 'theme-forest', 'theme-sunset', 'theme-rose', 'theme-mocha', 'theme-teal', 'theme-amethyst', 'theme-cherry');
   
   if (themeName !== 'default') {
     document.body.classList.add('theme-' + themeName);

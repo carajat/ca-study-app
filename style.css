@@ -159,6 +159,74 @@ body.theme-rose {
   }
 }
 
+body.theme-mocha {
+  --purple: #B45309;
+  --purple-glow: rgba(180, 83, 9, 0.4);
+  --border-glow: rgba(180, 83, 9, 0.3);
+  --checkbox-row-active: rgba(180, 83, 9, 0.08);
+  --toast-shadow: rgba(180, 83, 9, 0.4);
+}
+@media (prefers-color-scheme: light) {
+  body.theme-mocha {
+    --purple: #92400E;
+    --purple-glow: rgba(146, 64, 14, 0.2);
+    --border-glow: rgba(146, 64, 14, 0.15);
+    --checkbox-row-active: rgba(146, 64, 14, 0.06);
+    --toast-shadow: rgba(146, 64, 14, 0.25);
+  }
+}
+
+body.theme-teal {
+  --purple: #14B8A6;
+  --purple-glow: rgba(20, 184, 166, 0.4);
+  --border-glow: rgba(20, 184, 166, 0.3);
+  --checkbox-row-active: rgba(20, 184, 166, 0.08);
+  --toast-shadow: rgba(20, 184, 166, 0.4);
+}
+@media (prefers-color-scheme: light) {
+  body.theme-teal {
+    --purple: #0F766E;
+    --purple-glow: rgba(15, 118, 110, 0.2);
+    --border-glow: rgba(15, 118, 110, 0.15);
+    --checkbox-row-active: rgba(15, 118, 110, 0.06);
+    --toast-shadow: rgba(15, 118, 110, 0.25);
+  }
+}
+
+body.theme-amethyst {
+  --purple: #8B5CF6;
+  --purple-glow: rgba(139, 92, 246, 0.4);
+  --border-glow: rgba(139, 92, 246, 0.3);
+  --checkbox-row-active: rgba(139, 92, 246, 0.08);
+  --toast-shadow: rgba(139, 92, 246, 0.4);
+}
+@media (prefers-color-scheme: light) {
+  body.theme-amethyst {
+    --purple: #6D28D9;
+    --purple-glow: rgba(109, 40, 217, 0.2);
+    --border-glow: rgba(109, 40, 217, 0.15);
+    --checkbox-row-active: rgba(109, 40, 217, 0.06);
+    --toast-shadow: rgba(109, 40, 217, 0.25);
+  }
+}
+
+body.theme-cherry {
+  --purple: #D946EF;
+  --purple-glow: rgba(217, 70, 239, 0.4);
+  --border-glow: rgba(217, 70, 239, 0.3);
+  --checkbox-row-active: rgba(217, 70, 239, 0.08);
+  --toast-shadow: rgba(217, 70, 239, 0.4);
+}
+@media (prefers-color-scheme: light) {
+  body.theme-cherry {
+    --purple: #C026D3;
+    --purple-glow: rgba(192, 38, 211, 0.2);
+    --border-glow: rgba(192, 38, 211, 0.15);
+    --checkbox-row-active: rgba(192, 38, 211, 0.06);
+    --toast-shadow: rgba(192, 38, 211, 0.25);
+  }
+}
+
 /* Theme Picker UI */
 .theme-picker {
   display: flex;
@@ -272,6 +340,10 @@ body.theme-rose {
 .tc-forest { background: #10B981; }
 .tc-sunset { background: #F59E0B; }
 .tc-rose { background: #F43F5E; }
+.tc-mocha { background: #B45309; }
+.tc-teal { background: #14B8A6; }
+.tc-amethyst { background: #8B5CF6; }
+.tc-cherry { background: #D946EF; }
 
 .theme-btn {
   background: rgba(10, 132, 255, 0.1);
