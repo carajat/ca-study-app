@@ -9,6 +9,7 @@ let state = {
   activeTab: 'dashboard',
   activeSchedule: 'earlyMorning',
   activeNotificationSchedule: null,
+  targetAttempt: 'Nov 2026',
   plannerDate: new Date(),
   calendarMonth: new Date(),
   syllabusView: 'list', // 'list' or 'detail'
@@ -671,7 +672,19 @@ function renderExams() {
   // ─── Final Exam Datesheet ─────────────
   container.innerHTML += `
     <div class="mock-series glass-card final-datesheet">
-      <h3 class="series-title"><span class="material-symbols-rounded icon-sm">school</span> CA Final — November 2026</h3>
+      <h3 class="series-title" style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+        <span><span class="material-symbols-rounded icon-sm">school</span> CA Final - ${state.targetAttempt}</span>
+        ${isEditMode ? `
+          <div style="display:flex; gap:10px; align-items:center;">
+            <select class="inline-input" onchange="updateTargetAttempt(this.value)" style="padding:4px; font-size:12px; border-radius:4px;">
+              <option value="Nov 2026" ${state.targetAttempt==='Nov 2026'?'selected':''}>Nov 2026</option>
+              <option value="May 2027" ${state.targetAttempt==='May 2027'?'selected':''}>May 2027</option>
+              <option value="Nov 2027" ${state.targetAttempt==='Nov 2027'?'selected':''}>Nov 2027</option>
+            </select>
+            <button class="add-item-btn" style="padding:4px 8px; font-size:12px;" onclick="syncOfficialDates()">🔄 Sync Dates</button>
+          </div>
+        ` : ''}
+      </h3>
       <div class="mock-list">
         ${DYNAMIC_DATA.finalExams.map((exam, examIdx) => {
           const days = daysUntil(exam.date);
@@ -2016,6 +2029,73 @@ function addExam() {
     saveDynamicData();
     renderExams();
   });
+}
+
+function updateTargetAttempt(attempt) {
+  state.targetAttempt = attempt;
+  saveState({ targetAttempt: attempt });
+  
+  // Generate tentative schedule for the selected attempt
+  const isMay = attempt.startsWith('May');
+  const year = parseInt(attempt.split(' ')[1]);
+  const monthStr = isMay ? '05' : '11';
+  
+  if (state.activeGroup === 'group1') {
+    DYNAMIC_DATA.finalExams = [
+      { subject: "Paper 1: FR", date: `${year}-${monthStr}-02T14:00:00+05:30` },
+      { subject: "Paper 2: AFM", date: `${year}-${monthStr}-04T14:00:00+05:30` },
+      { subject: "Paper 3: Audit", date: `${year}-${monthStr}-06T14:00:00+05:30` }
+    ];
+  } else {
+    DYNAMIC_DATA.finalExams = [
+      { subject: "Paper 4: DT & International Tax", date: `${year}-${monthStr}-08T14:00:00+05:30` },
+      { subject: "Paper 5: IDT (GST + Customs)", date: `${year}-${monthStr}-10T14:00:00+05:30` },
+      { subject: "Paper 6: IBS (Case Study)", date: `${year}-${monthStr}-12T14:00:00+05:30` }
+    ];
+  }
+  
+  DYNAMIC_DATA.exam.date = `${year}-${monthStr}-01`;
+  saveDynamicData();
+  renderExams();
+  alert(`Switched to ${attempt}. A tentative datesheet has been generated.`);
+}
+
+async function syncOfficialDates() {
+  const btn = document.querySelector('.final-datesheet .add-item-btn');
+  const oldText = btn.innerHTML;
+  btn.innerHTML = '⏳ Syncing...';
+  btn.disabled = true;
+  
+  try {
+    const res = await fetch('datesheets.json?t=' + Date.now());
+    if (!res.ok) throw new Error('Could not fetch datesheets');
+    const data = await res.json();
+    
+    if (data[state.targetAttempt]) {
+      const officialDates = data[state.targetAttempt][state.activeGroup];
+      if (officialDates && officialDates.length > 0) {
+        DYNAMIC_DATA.finalExams = officialDates;
+        // set exam date to the day before the first exam
+        const firstExam = new Date(officialDates[0].date);
+        firstExam.setDate(firstExam.getDate() - 1);
+        DYNAMIC_DATA.exam.date = firstExam.toISOString().split('T')[0];
+        
+        saveDynamicData();
+        renderExams();
+        alert(`Success! Official ICAI dates for ${state.targetAttempt} have been synced.`);
+      } else {
+        alert(`Official dates for your group in ${state.targetAttempt} are not available yet. Keep preparing!`);
+      }
+    } else {
+      alert(`Official ICAI dates for ${state.targetAttempt} are not announced yet. The current schedule is tentative.`);
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Failed to check for official dates. Please check your internet connection.');
+  } finally {
+    btn.innerHTML = oldText;
+    btn.disabled = false;
+  }
 }
 
 // ─── SCHEDULE EDIT HANDLERS ─────────────
