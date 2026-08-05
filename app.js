@@ -2042,15 +2042,15 @@ function updateTargetAttempt(attempt) {
   
   if (state.activeGroup === 'group1') {
     DYNAMIC_DATA.finalExams = [
-      { subject: "Paper 1: FR", date: `${year}-${monthStr}-02T14:00:00+05:30` },
-      { subject: "Paper 2: AFM", date: `${year}-${monthStr}-04T14:00:00+05:30` },
-      { subject: "Paper 3: Audit", date: `${year}-${monthStr}-06T14:00:00+05:30` }
+      { subject: "Paper 1: FR", date: `${year}-${monthStr}-03T14:00:00+05:30` },
+      { subject: "Paper 2: AFM", date: `${year}-${monthStr}-05T14:00:00+05:30` },
+      { subject: "Paper 3: Audit", date: `${year}-${monthStr}-07T14:00:00+05:30` }
     ];
   } else {
     DYNAMIC_DATA.finalExams = [
-      { subject: "Paper 4: DT & International Tax", date: `${year}-${monthStr}-08T14:00:00+05:30` },
-      { subject: "Paper 5: IDT (GST + Customs)", date: `${year}-${monthStr}-10T14:00:00+05:30` },
-      { subject: "Paper 6: IBS (Case Study)", date: `${year}-${monthStr}-12T14:00:00+05:30` }
+      { subject: "Paper 4: DT & International Tax", date: `${year}-${monthStr}-09T14:00:00+05:30` },
+      { subject: "Paper 5: IDT (GST + Customs)", date: `${year}-${monthStr}-11T14:00:00+05:30` },
+      { subject: "Paper 6: IBS (Case Study)", date: `${year}-${monthStr}-13T14:00:00+05:30` }
     ];
   }
   
