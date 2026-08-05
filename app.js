@@ -512,19 +512,11 @@ function updateDashboardStats() {
   document.getElementById('dash-syllabus-bar').style.width = pct + '%';
   
   // Next mock
-  const nextDT = getNextMockFor('DT');
-  const nextIDT = getNextMockFor('IDT');
-  
+  const nextMock = getNextMock();
   const elValue = document.getElementById('dash-next-mock');
   const elLabel = document.getElementById('dash-next-mock-label');
   
-  if (nextDT && nextIDT) {
-    elValue.style.fontSize = '15px';
-    elValue.style.lineHeight = '1.3';
-    elValue.innerHTML = `DT: ${daysUntil(nextDT.date)}d<br>IDT: ${daysUntil(nextIDT.date)}d`;
-    elLabel.textContent = 'Upcoming Mocks';
-  } else if (nextDT || nextIDT) {
-    const nextMock = nextDT || nextIDT;
+  if (nextMock) {
     elValue.style.fontSize = '';
     elValue.style.lineHeight = '';
     elValue.textContent = daysUntil(nextMock.date) + ' days';
