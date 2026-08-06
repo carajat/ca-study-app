@@ -25,8 +25,9 @@ jobs:
       - name: Prepare Web Assets for Capacitor
         run: |
           mkdir -p www
-          rsync -av --exclude='www' --exclude='node_modules' --exclude='android' --exclude='.git' --exclude='.github' . www/
-
+          cp index.html app.js data.js sync.js style.css sw.js Sortable.min.js datesheets.json manifest.json www/
+          cp icon-192.png icon-512.png www/
+          cp -r .well-known www/ 2>/dev/null || true
       - name: Sync Capacitor
         run: npx cap sync android
 
