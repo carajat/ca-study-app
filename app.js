@@ -2183,6 +2183,10 @@ function openMenuModal() {
     <button id="editModeBtn" class="menu-btn" onclick="toggleEditMode(); closeModal()">
       <span class="menu-btn-icon">${isEditMode ? '<span class="material-symbols-rounded icon-sm">check_circle</span>' : '<span class="material-symbols-rounded icon-sm">edit</span>'}</span> Edit Mode: <strong style="color: ${isEditMode ? 'var(--color-primary)' : 'inherit'}">${isEditMode ? 'ON' : 'OFF'}</strong>
     </button>
+    <button class="menu-btn" style="background: rgba(40,205,65,0.1); border-color: var(--success);" onclick="checkForUpdates()">
+      <span class="material-symbols-rounded menu-btn-icon" style="color: var(--success);">system_update</span> 
+      <span style="color: var(--success); font-weight: 600;">Check for Updates</span>
+    </button>
     <button class="menu-btn" onclick="openThemeModal()">
       <span class="material-symbols-rounded menu-btn-icon">palette</span> Customize Theme
     </button>
@@ -4144,3 +4148,76 @@ window.renderHistoryCalendar = function(yr, mo) {
   
   container.innerHTML = calHtml;
 };
+
+// --- OTA UPDATES VIA CAPGO ---
+async function checkForUpdates() {
+  try {
+    showToast('Checking for updates...', 'info');
+    
+    // Check if we are running in Capacitor Native Environment
+    if (!window.Capacitor || !window.Capacitor.Plugins || !window.Capacitor.Plugins.CapacitorUpdater) {
+      showToast('App is running in browser. Use browser refresh to update.', 'warning');
+      return;
+    }
+
+    const { CapacitorUpdater } = window.Capacitor.Plugins;
+
+    // 1. Fetch latest release from GitHub API
+    const response = await fetch('https://api.github.com/repos/carajat/ca-study-app/releases/latest');
+    if (!response.ok) throw new Error('Failed to fetch release info');
+    
+    const release = await response.json();
+    const latestVersion = release.tag_name; // e.g., 'v20230808123456'
+    
+    // Find update.zip asset
+    const zipAsset = release.assets.find(a => a.name === 'update.zip');
+    if (!zipAsset) {
+      showToast('No update package found in the latest release.', 'error');
+      return;
+    }
+
+    // Check current version (we can store it in localStorage after an update)
+    const currentVersion = localStorage.getItem('app_ota_version') || 'v0';
+    
+    if (latestVersion === currentVersion) {
+      showToast('App is already up to date!', 'success');
+      return;
+    }
+
+    // New version available! Prompt user.
+    const confirmUpdate = confirm(\Update available (\). Install now? This will restart the app.\);
+    if (!confirmUpdate) return;
+
+    showToast('Downloading update...', 'info');
+    
+    // 2. Download the bundle
+    const bundle = await CapacitorUpdater.download({
+      url: zipAsset.browser_download_url,
+      version: latestVersion
+    });
+
+    // 3. Set the bundle
+    await CapacitorUpdater.set({ id: bundle.id });
+    
+    // Update local version tracking
+    localStorage.setItem('app_ota_version', latestVersion);
+
+    // 4. Reload app to apply
+    showToast('Update installed. Restarting...', 'success');
+    setTimeout(async () => {
+      await CapacitorUpdater.reload();
+    }, 1000);
+
+  } catch (error) {
+    console.error('Update Error:', error);
+    showToast('Failed to update: ' + error.message, 'error');
+  }
+}
+
+// Notify Capgo that the app is ready (required on startup)
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorUpdater) {
+    window.Capacitor.Plugins.CapacitorUpdater.notifyAppReady();
+  }
+});
+

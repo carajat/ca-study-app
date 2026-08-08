@@ -1,11 +1,14 @@
 {
-  "appId": "com.carajat.castudyapp",
-  "appName": "CA Study App",
-  "webDir": "www",
-  "bundledWebRuntime": false,
-  "plugins": {
-    "SplashScreen": {
-      "launchShowDuration": 0
-    }
-  }
+    "appId":  "com.carajat.castudyapp",
+    "appName":  "CA Study App",
+    "webDir":  "www",
+    "bundledWebRuntime":  false,
+    "plugins":  {
+                    "SplashScreen":  {
+                                         "launchShowDuration":  0
+                                     },
+                    "CapacitorUpdater":  {
+                                             "autoUpdate":  false
+                                         }
+                }
 }
