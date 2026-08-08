@@ -1215,20 +1215,27 @@ function updateConsistencyWidget() {
   const adherePct = Math.min(todayResult.adherencePct, 100);
   const isGood = adherePct >= 80;
 
+  const logDatesCount = Object.keys(c.dailyLog || {}).length;
+  const currentPct = calculateOverallProgress();
+  const showPace = (logDatesCount >= 7 && currentPct >= 10 && proj);
+
   // Pace pill
-  const onTrack = proj ? proj.onTrack : (adherePct >= 80);
-  const pillClass = onTrack ? 'cons-pill-on' : 'cons-pill-warn';
-  const pillIcon = onTrack ? _svgStar : _svgWarnSm;
-  const pillLabel = onTrack ? 'Exam-Ready Pace' : 'Behind Pace';
+  let pillClass, pillIcon, pillLabel;
+  if (!showPace) {
+    pillClass = 'cons-pill-on';
+    pillIcon = '<span class="material-symbols-rounded" style="font-size:14px; margin-right:4px;">hourglass_empty</span>';
+    pillLabel = 'Building Profile';
+  } else {
+    pillClass = proj.onTrack ? 'cons-pill-on' : 'cons-pill-warn';
+    pillIcon = proj.onTrack ? _svgStar : _svgWarnSm;
+    pillLabel = proj.onTrack ? 'Exam-Ready Pace' : 'Behind Pace';
+  }
 
   // Insight card
   let insightHtml = '';
-  const logDatesCount = Object.keys(c.dailyLog || {}).length;
-  const currentPct = calculateOverallProgress();
-
-  if (logDatesCount < 7 || currentPct < 10) {
+  if (!showPace) {
     insightHtml = `<div class="cons-insight" style="background:transparent; border:1px dashed var(--glass-border); align-items:center;"><span class="material-symbols-rounded" style="color:var(--text-muted); font-size:18px;">hourglass_empty</span><p style="color:var(--text-muted); font-size:11.5px;">Building your pace profile &mdash; check back after a bit more progress.</p></div>`;
-  } else if (proj) {
+  } else {
     if (proj.onTrack) {
       insightHtml = `<div class="cons-insight cons-insight-good">${_svgTrendUp}<p>At this pace, your <b>syllabus</b> completes <b>${proj.daysVsExam} days before</b> your exam date.</p></div>`;
     } else {
@@ -1268,9 +1275,11 @@ function renderConsistencyDetail() {
   const c = DYNAMIC_DATA.consistency;
   const todayStr = getTodayStr();
   const adherePct = c.dailyLog[todayStr]?.adherencePct || 0;
-  
+  const logDatesCount = Object.keys(c.dailyLog || {}).length;
+  const currentPct = calculateOverallProgress();
   const proj = computeProjection();
-  const onTrack = proj ? proj.onTrack : (adherePct >= 80);
+  const showPace = (logDatesCount >= 7 && currentPct >= 10 && proj);
+  
   const schedule = DYNAMIC_DATA.schedules[state.activeSchedule];
 
   // This-week count: Mon to today
@@ -1288,9 +1297,14 @@ function renderConsistencyDetail() {
   const thisWeekTotal = 7;
 
   // Header card
-  const paceLabel = onTrack
-    ? `<div class="cons-tt-pace">${_svgStar.replace('13','15')} Exam-Ready Pace</div>`
-    : `<div class="cons-tt-pace cons-tt-pace-warn">${_svgWarnSm.replace('13','15')} Behind Pace</div>`;
+  let paceLabel = '';
+  if (!showPace) {
+    paceLabel = `<div class="cons-tt-pace" style="color:var(--text-muted);"><span class="material-symbols-rounded" style="font-size:15px; margin-right:4px;">hourglass_empty</span> Building Profile</div>`;
+  } else {
+    paceLabel = proj.onTrack
+      ? `<div class="cons-tt-pace">${_svgStar.replace('13','15')} Exam-Ready Pace</div>`
+      : `<div class="cons-tt-pace cons-tt-pace-warn">${_svgWarnSm.replace('13','15')} Behind Pace</div>`;
+  }
 
   let headerHtml = `
     <div class="glass-card cons-tt-header">
