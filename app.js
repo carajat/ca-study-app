@@ -920,7 +920,6 @@ function renderSchedule() {
   const rulesList = document.getElementById('study-rules-list');
   rulesList.innerHTML = DYNAMIC_DATA.schedules.rules.map(r => `<li>${r}</li>`).join('');
   refreshConsistencyData();
-  renderConsistencyDetail();
 }
 
 // ═══════════════════════════════════════════
@@ -1263,64 +1262,7 @@ function updateConsistencyWidget() {
   `;
 }
 
-/**
- * Render the full Consistency detail section in the Timetable tab.
- * Injects into #consistency-timetable-section.
- */
-function renderConsistencyDetail() {
-  const el = document.getElementById('consistency-timetable-section');
-  if (!el) return;
 
-  ensureConsistencyInit();
-  const c = DYNAMIC_DATA.consistency;
-  const todayStr = getTodayStr();
-  const adherePct = c.dailyLog[todayStr]?.adherencePct || 0;
-  const logDatesCount = Object.keys(c.dailyLog || {}).length;
-  const currentPct = calculateOverallProgress();
-  const proj = computeProjection();
-  const showPace = (logDatesCount >= 7 && currentPct >= 10 && proj);
-  
-  const schedule = DYNAMIC_DATA.schedules[state.activeSchedule];
-
-  // This-week count: Mon to today
-  const todayDate = new Date();
-  const dayOfWeek = todayDate.getDay(); // 0=Sun
-  const daysFromMon = (dayOfWeek + 6) % 7;
-  let thisWeekCount = 0;
-  for (let i = 0; i <= daysFromMon; i++) {
-    const d = new Date(todayDate);
-    d.setDate(d.getDate() - i);
-    const dStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-    const log = c.dailyLog[dStr];
-    if (log && log.adherencePct >= 80) thisWeekCount++;
-  }
-  const thisWeekTotal = 7;
-
-  // Header card
-  let paceLabel = '';
-  if (!showPace) {
-    paceLabel = `<div class="cons-tt-pace" style="color:var(--text-muted);"><span class="material-symbols-rounded" style="font-size:15px; margin-right:4px;">hourglass_empty</span> Building Profile</div>`;
-  } else {
-    paceLabel = proj.onTrack
-      ? `<div class="cons-tt-pace">${_svgStar.replace('13','15')} Exam-Ready Pace</div>`
-      : `<div class="cons-tt-pace cons-tt-pace-warn">${_svgWarnSm.replace('13','15')} Behind Pace</div>`;
-  }
-
-  let headerHtml = `
-    <div class="glass-card cons-tt-header">
-      <div class="cons-tt-hrow">
-        <div class="cons-tt-num">${c.currentStreak}<span>day streak</span></div>
-        ${paceLabel}
-      </div>
-      <div class="cons-tt-best-row">
-        <div>Longest streak<b>${c.longestStreak} days</b></div>
-        <div style="text-align:right">This week<b>${thisWeekCount} / ${thisWeekTotal} days</b></div>
-      </div>
-    </div>
-  `;
-
-  el.innerHTML = headerHtml;
-}
 
 let lastNotifiedTime = '';
 
