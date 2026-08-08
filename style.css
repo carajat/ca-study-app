@@ -91,219 +91,192 @@
 }
 
 /* ─── Themes ─── */
-body.theme-ocean {
-  --primary: #0a84ff;
-  --accent: #0a84ff;
-  --on-primary-container: #0a84ff;
-  --purple: #0a84ff;
-  --blue: #0a84ff;
-  --purple-glow: rgba(10, 132, 255, 0.4);
-  --border-glow: rgba(10, 132, 255, 0.3);
-  --checkbox-row-active: rgba(10, 132, 255, 0.08);
-  --toast-shadow: rgba(10, 132, 255, 0.4);
-  --bg-mesh: radial-gradient(at 0% 0%, rgba(10, 132, 255, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(10, 132, 255, 0.1) 0px, transparent 50%);
+body.theme-graphite {
+  --primary: #a1a1aa;
+  --accent: #a1a1aa;
+  --on-primary-container: #a1a1aa;
+  --purple: #a1a1aa;
+  --blue: #a1a1aa;
+  --purple-glow: rgba(161, 161, 170, 0.4);
+  --border-glow: rgba(161, 161, 170, 0.3);
+  --checkbox-row-active: rgba(161, 161, 170, 0.08);
+  --toast-shadow: rgba(161, 161, 170, 0.4);
+  --bg-mesh: radial-gradient(at 0% 0%, rgba(161, 161, 170, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(161, 161, 170, 0.1) 0px, transparent 50%);
 }
 @media (prefers-color-scheme: light) {
-  body.theme-ocean {
-    --primary: #007aff;
-    --accent: #007aff;
-    --on-primary-container: #007aff;
-    --purple: #007aff;
-    --blue: #007aff;
-    --purple-glow: rgba(0, 122, 255, 0.2);
-    --border-glow: rgba(0, 122, 255, 0.15);
-    --checkbox-row-active: rgba(0, 122, 255, 0.06);
-    --toast-shadow: rgba(0, 122, 255, 0.25);
-    --bg-mesh: radial-gradient(at 0% 0%, rgba(0, 122, 255, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(0, 122, 255, 0.05) 0px, transparent 50%);
+  body.theme-graphite {
+    --primary: #52525b;
+    --accent: #52525b;
+    --on-primary-container: #52525b;
+    --purple: #52525b;
+    --blue: #52525b;
+    --purple-glow: rgba(82, 82, 91, 0.2);
+    --border-glow: rgba(82, 82, 91, 0.15);
+    --checkbox-row-active: rgba(82, 82, 91, 0.06);
+    --toast-shadow: rgba(82, 82, 91, 0.25);
+    --bg-mesh: radial-gradient(at 0% 0%, rgba(82, 82, 91, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(82, 82, 91, 0.05) 0px, transparent 50%);
   }
 }
 
-body.theme-forest {
-  --primary: #32d74b;
-  --accent: #32d74b;
-  --on-primary-container: #32d74b;
-  --purple: #32d74b;
-  --blue: #32d74b;
-  --purple-glow: rgba(50, 215, 75, 0.4);
-  --border-glow: rgba(50, 215, 75, 0.3);
-  --checkbox-row-active: rgba(50, 215, 75, 0.08);
-  --toast-shadow: rgba(50, 215, 75, 0.4);
-  --bg-mesh: radial-gradient(at 0% 0%, rgba(50, 215, 75, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(50, 215, 75, 0.1) 0px, transparent 50%);
+body.theme-brown {
+  --primary: #d6a99a;
+  --accent: #d6a99a;
+  --on-primary-container: #d6a99a;
+  --purple: #d6a99a;
+  --blue: #d6a99a;
+  --purple-glow: rgba(214, 169, 154, 0.4);
+  --border-glow: rgba(214, 169, 154, 0.3);
+  --checkbox-row-active: rgba(214, 169, 154, 0.08);
+  --toast-shadow: rgba(214, 169, 154, 0.4);
+  --bg-mesh: radial-gradient(at 0% 0%, rgba(214, 169, 154, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(214, 169, 154, 0.1) 0px, transparent 50%);
 }
 @media (prefers-color-scheme: light) {
-  body.theme-forest {
-    --primary: #28cd41; 
-    --accent: #28cd41;
-    --on-primary-container: #28cd41;
-    --purple: #28cd41; 
-    --blue: #28cd41;
-    --purple-glow: rgba(40, 205, 65, 0.2);
-    --border-glow: rgba(40, 205, 65, 0.15);
-    --checkbox-row-active: rgba(40, 205, 65, 0.06);
-    --toast-shadow: rgba(40, 205, 65, 0.25);
-    --bg-mesh: radial-gradient(at 0% 0%, rgba(40, 205, 65, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(40, 205, 65, 0.05) 0px, transparent 50%);
+  body.theme-brown {
+    --primary: #795548;
+    --accent: #795548;
+    --on-primary-container: #795548;
+    --purple: #795548;
+    --blue: #795548;
+    --purple-glow: rgba(121, 85, 72, 0.2);
+    --border-glow: rgba(121, 85, 72, 0.15);
+    --checkbox-row-active: rgba(121, 85, 72, 0.06);
+    --toast-shadow: rgba(121, 85, 72, 0.25);
+    --bg-mesh: radial-gradient(at 0% 0%, rgba(121, 85, 72, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(121, 85, 72, 0.05) 0px, transparent 50%);
   }
 }
 
-body.theme-sunset {
-  --primary: #ff9f0a;
-  --accent: #ff9f0a;
-  --on-primary-container: #ff9f0a;
-  --purple: #ff9f0a;
-  --blue: #ff9f0a;
-  --purple-glow: rgba(255, 159, 10, 0.4);
-  --border-glow: rgba(255, 159, 10, 0.3);
-  --checkbox-row-active: rgba(255, 159, 10, 0.08);
-  --toast-shadow: rgba(255, 159, 10, 0.4);
-  --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 159, 10, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 159, 10, 0.1) 0px, transparent 50%);
+body.theme-navy {
+  --primary: #60a5fa;
+  --accent: #60a5fa;
+  --on-primary-container: #60a5fa;
+  --purple: #60a5fa;
+  --blue: #60a5fa;
+  --purple-glow: rgba(96, 165, 250, 0.4);
+  --border-glow: rgba(96, 165, 250, 0.3);
+  --checkbox-row-active: rgba(96, 165, 250, 0.08);
+  --toast-shadow: rgba(96, 165, 250, 0.4);
+  --bg-mesh: radial-gradient(at 0% 0%, rgba(96, 165, 250, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(96, 165, 250, 0.1) 0px, transparent 50%);
 }
 @media (prefers-color-scheme: light) {
-  body.theme-sunset {
-    --primary: #ff9500; 
-    --accent: #ff9500;
-    --on-primary-container: #ff9500;
-    --purple: #ff9500; 
-    --blue: #ff9500;
-    --purple-glow: rgba(255, 149, 0, 0.2);
-    --border-glow: rgba(255, 149, 0, 0.15);
-    --checkbox-row-active: rgba(255, 149, 0, 0.06);
-    --toast-shadow: rgba(255, 149, 0, 0.25);
-    --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 149, 0, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 149, 0, 0.05) 0px, transparent 50%);
+  body.theme-navy {
+    --primary: #1e3a8a;
+    --accent: #1e3a8a;
+    --on-primary-container: #1e3a8a;
+    --purple: #1e3a8a;
+    --blue: #1e3a8a;
+    --purple-glow: rgba(30, 58, 138, 0.2);
+    --border-glow: rgba(30, 58, 138, 0.15);
+    --checkbox-row-active: rgba(30, 58, 138, 0.06);
+    --toast-shadow: rgba(30, 58, 138, 0.25);
+    --bg-mesh: radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(30, 58, 138, 0.05) 0px, transparent 50%);
   }
 }
 
-body.theme-rose {
-  --primary: #ff375f;
-  --accent: #ff375f;
-  --on-primary-container: #ff375f;
-  --purple: #ff375f;
-  --blue: #ff375f;
-  --purple-glow: rgba(255, 55, 95, 0.4);
-  --border-glow: rgba(255, 55, 95, 0.3);
-  --checkbox-row-active: rgba(255, 55, 95, 0.08);
-  --toast-shadow: rgba(255, 55, 95, 0.4);
-  --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 55, 95, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 55, 95, 0.1) 0px, transparent 50%);
+body.theme-emerald {
+  --primary: #34d399;
+  --accent: #34d399;
+  --on-primary-container: #34d399;
+  --purple: #34d399;
+  --blue: #34d399;
+  --purple-glow: rgba(52, 211, 153, 0.4);
+  --border-glow: rgba(52, 211, 153, 0.3);
+  --checkbox-row-active: rgba(52, 211, 153, 0.08);
+  --toast-shadow: rgba(52, 211, 153, 0.4);
+  --bg-mesh: radial-gradient(at 0% 0%, rgba(52, 211, 153, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(52, 211, 153, 0.1) 0px, transparent 50%);
 }
 @media (prefers-color-scheme: light) {
-  body.theme-rose {
-    --primary: #ff2d55;
-    --accent: #ff2d55;
-    --on-primary-container: #ff2d55;
-    --purple: #ff2d55;
-    --blue: #ff2d55;
-    --purple-glow: rgba(255, 45, 85, 0.2);
-    --border-glow: rgba(255, 45, 85, 0.15);
-    --checkbox-row-active: rgba(255, 45, 85, 0.06);
-    --toast-shadow: rgba(255, 45, 85, 0.25);
-    --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 45, 85, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 45, 85, 0.05) 0px, transparent 50%);
+  body.theme-emerald {
+    --primary: #059669;
+    --accent: #059669;
+    --on-primary-container: #059669;
+    --purple: #059669;
+    --blue: #059669;
+    --purple-glow: rgba(5, 150, 105, 0.2);
+    --border-glow: rgba(5, 150, 105, 0.15);
+    --checkbox-row-active: rgba(5, 150, 105, 0.06);
+    --toast-shadow: rgba(5, 150, 105, 0.25);
+    --bg-mesh: radial-gradient(at 0% 0%, rgba(5, 150, 105, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(5, 150, 105, 0.05) 0px, transparent 50%);
   }
 }
 
-body.theme-mocha {
-  --primary: #ac8e68;
-  --accent: #ac8e68;
-  --on-primary-container: #ac8e68;
-  --purple: #ac8e68;
-  --blue: #ac8e68;
-  --purple-glow: rgba(172, 142, 104, 0.4);
-  --border-glow: rgba(172, 142, 104, 0.3);
-  --checkbox-row-active: rgba(172, 142, 104, 0.08);
-  --toast-shadow: rgba(172, 142, 104, 0.4);
-  --bg-mesh: radial-gradient(at 0% 0%, rgba(172, 142, 104, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(172, 142, 104, 0.1) 0px, transparent 50%);
+body.theme-slate {
+  --primary: #94a3b8;
+  --accent: #94a3b8;
+  --on-primary-container: #94a3b8;
+  --purple: #94a3b8;
+  --blue: #94a3b8;
+  --purple-glow: rgba(148, 163, 184, 0.4);
+  --border-glow: rgba(148, 163, 184, 0.3);
+  --checkbox-row-active: rgba(148, 163, 184, 0.08);
+  --toast-shadow: rgba(148, 163, 184, 0.4);
+  --bg-mesh: radial-gradient(at 0% 0%, rgba(148, 163, 184, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(148, 163, 184, 0.1) 0px, transparent 50%);
 }
 @media (prefers-color-scheme: light) {
-  body.theme-mocha {
-    --primary: #a2845e;
-    --accent: #a2845e;
-    --on-primary-container: #a2845e;
-    --purple: #a2845e;
-    --blue: #a2845e;
-    --purple-glow: rgba(162, 132, 94, 0.2);
-    --border-glow: rgba(162, 132, 94, 0.15);
-    --checkbox-row-active: rgba(162, 132, 94, 0.06);
-    --toast-shadow: rgba(162, 132, 94, 0.25);
-    --bg-mesh: radial-gradient(at 0% 0%, rgba(162, 132, 94, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(162, 132, 94, 0.05) 0px, transparent 50%);
+  body.theme-slate {
+    --primary: #475569;
+    --accent: #475569;
+    --on-primary-container: #475569;
+    --purple: #475569;
+    --blue: #475569;
+    --purple-glow: rgba(71, 85, 105, 0.2);
+    --border-glow: rgba(71, 85, 105, 0.15);
+    --checkbox-row-active: rgba(71, 85, 105, 0.06);
+    --toast-shadow: rgba(71, 85, 105, 0.25);
+    --bg-mesh: radial-gradient(at 0% 0%, rgba(71, 85, 105, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(71, 85, 105, 0.05) 0px, transparent 50%);
+  }
+}
+
+body.theme-burgundy {
+  --primary: #fb7185;
+  --accent: #fb7185;
+  --on-primary-container: #fb7185;
+  --purple: #fb7185;
+  --blue: #fb7185;
+  --purple-glow: rgba(251, 113, 133, 0.4);
+  --border-glow: rgba(251, 113, 133, 0.3);
+  --checkbox-row-active: rgba(251, 113, 133, 0.08);
+  --toast-shadow: rgba(251, 113, 133, 0.4);
+  --bg-mesh: radial-gradient(at 0% 0%, rgba(251, 113, 133, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(251, 113, 133, 0.1) 0px, transparent 50%);
+}
+@media (prefers-color-scheme: light) {
+  body.theme-burgundy {
+    --primary: #881337;
+    --accent: #881337;
+    --on-primary-container: #881337;
+    --purple: #881337;
+    --blue: #881337;
+    --purple-glow: rgba(136, 19, 55, 0.2);
+    --border-glow: rgba(136, 19, 55, 0.15);
+    --checkbox-row-active: rgba(136, 19, 55, 0.06);
+    --toast-shadow: rgba(136, 19, 55, 0.25);
+    --bg-mesh: radial-gradient(at 0% 0%, rgba(136, 19, 55, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(136, 19, 55, 0.05) 0px, transparent 50%);
   }
 }
 
 body.theme-teal {
-  --primary: #64d2ff;
-  --accent: #64d2ff;
-  --on-primary-container: #64d2ff;
-  --purple: #64d2ff;
-  --blue: #64d2ff;
-  --purple-glow: rgba(100, 210, 255, 0.4);
-  --border-glow: rgba(100, 210, 255, 0.3);
-  --checkbox-row-active: rgba(100, 210, 255, 0.08);
-  --toast-shadow: rgba(100, 210, 255, 0.4);
-  --bg-mesh: radial-gradient(at 0% 0%, rgba(100, 210, 255, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(100, 210, 255, 0.1) 0px, transparent 50%);
+  --primary: #2dd4bf;
+  --accent: #2dd4bf;
+  --on-primary-container: #2dd4bf;
+  --purple: #2dd4bf;
+  --blue: #2dd4bf;
+  --purple-glow: rgba(45, 212, 191, 0.4);
+  --border-glow: rgba(45, 212, 191, 0.3);
+  --checkbox-row-active: rgba(45, 212, 191, 0.08);
+  --toast-shadow: rgba(45, 212, 191, 0.4);
+  --bg-mesh: radial-gradient(at 0% 0%, rgba(45, 212, 191, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(45, 212, 191, 0.1) 0px, transparent 50%);
 }
 @media (prefers-color-scheme: light) {
   body.theme-teal {
-    --primary: #5ac8fa;
-    --accent: #5ac8fa;
-    --on-primary-container: #5ac8fa;
-    --purple: #5ac8fa;
-    --blue: #5ac8fa;
-    --purple-glow: rgba(90, 200, 250, 0.2);
-    --border-glow: rgba(90, 200, 250, 0.15);
-    --checkbox-row-active: rgba(90, 200, 250, 0.06);
-    --toast-shadow: rgba(90, 200, 250, 0.25);
-    --bg-mesh: radial-gradient(at 0% 0%, rgba(90, 200, 250, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(90, 200, 250, 0.05) 0px, transparent 50%);
-  }
-}
-
-body.theme-amethyst {
-  --primary: #bf5af2;
-  --accent: #bf5af2;
-  --on-primary-container: #bf5af2;
-  --purple: #bf5af2;
-  --blue: #bf5af2;
-  --purple-glow: rgba(191, 90, 242, 0.4);
-  --border-glow: rgba(191, 90, 242, 0.3);
-  --checkbox-row-active: rgba(191, 90, 242, 0.08);
-  --toast-shadow: rgba(191, 90, 242, 0.4);
-  --bg-mesh: radial-gradient(at 0% 0%, rgba(191, 90, 242, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(191, 90, 242, 0.1) 0px, transparent 50%);
-}
-@media (prefers-color-scheme: light) {
-  body.theme-amethyst {
-    --primary: #af52de;
-    --accent: #af52de;
-    --on-primary-container: #af52de;
-    --purple: #af52de;
-    --blue: #af52de;
-    --purple-glow: rgba(175, 82, 222, 0.2);
-    --border-glow: rgba(175, 82, 222, 0.15);
-    --checkbox-row-active: rgba(175, 82, 222, 0.06);
-    --toast-shadow: rgba(175, 82, 222, 0.25);
-    --bg-mesh: radial-gradient(at 0% 0%, rgba(175, 82, 222, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(175, 82, 222, 0.05) 0px, transparent 50%);
-  }
-}
-
-body.theme-cherry {
-  --primary: #ff453a;
-  --accent: #ff453a;
-  --on-primary-container: #ff453a;
-  --purple: #ff453a;
-  --blue: #ff453a;
-  --purple-glow: rgba(255, 69, 58, 0.4);
-  --border-glow: rgba(255, 69, 58, 0.3);
-  --checkbox-row-active: rgba(255, 69, 58, 0.08);
-  --toast-shadow: rgba(255, 69, 58, 0.4);
-  --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 69, 58, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 69, 58, 0.1) 0px, transparent 50%);
-}
-@media (prefers-color-scheme: light) {
-  body.theme-cherry {
-    --primary: #ff3b30;
-    --accent: #ff3b30;
-    --on-primary-container: #ff3b30;
-    --purple: #ff3b30;
-    --blue: #ff3b30;
-    --purple-glow: rgba(255, 59, 48, 0.2);
-    --border-glow: rgba(255, 59, 48, 0.15);
-    --checkbox-row-active: rgba(255, 59, 48, 0.06);
-    --toast-shadow: rgba(255, 59, 48, 0.25);
-    --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 59, 48, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 59, 48, 0.05) 0px, transparent 50%);
+    --primary: #0f766e;
+    --accent: #0f766e;
+    --on-primary-container: #0f766e;
+    --purple: #0f766e;
+    --blue: #0f766e;
+    --purple-glow: rgba(15, 118, 110, 0.2);
+    --border-glow: rgba(15, 118, 110, 0.15);
+    --checkbox-row-active: rgba(15, 118, 110, 0.06);
+    --toast-shadow: rgba(15, 118, 110, 0.25);
+    --bg-mesh: radial-gradient(at 0% 0%, rgba(15, 118, 110, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(15, 118, 110, 0.05) 0px, transparent 50%);
   }
 }
 
@@ -415,15 +388,14 @@ body.theme-cherry {
   transform: scale(1.15);
   box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
-.tc-default { display: none; }
-.tc-ocean { background: #0a84ff; }
-.tc-forest { background: #10B981; }
-.tc-sunset { background: #F59E0B; }
-.tc-rose { background: #F43F5E; }
-.tc-mocha { background: #8B4513; }
-.tc-teal { background: #1E3A8A; }
-.tc-amethyst { background: #374151; }
-.tc-cherry { background: #991B1B; }
+.tc-blue { background: #0a84ff; }
+.tc-graphite { background: #a1a1aa; }
+.tc-brown { background: #d6a99a; }
+.tc-navy { background: #60a5fa; }
+.tc-emerald { background: #34d399; }
+.tc-slate { background: #94a3b8; }
+.tc-burgundy { background: #fb7185; }
+.tc-teal { background: #2dd4bf; }
 
 .theme-btn {
   background: var(--checkbox-row-active);
