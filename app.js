@@ -786,7 +786,7 @@ function renderScoreChart() {
   const ctx = canvas.getContext('2d');
   const scores = getMockScores();
   const subjects = ['DT', 'IDT', 'IBS'];
-  const colors = { DT: '#6C3CE1', IDT: '#3B82F6', IBS: '#10B981' };
+  const colors = { DT: '#0a84ff', IDT: '#34c759', IBS: '#ff9f0a' };
   
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   
