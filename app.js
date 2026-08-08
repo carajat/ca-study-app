@@ -1105,15 +1105,28 @@ function computeProjection() {
   });
   const totalLoggedHours = totalLoggedMinutes / 60;
   const currentPct = calculateOverallProgress();
-  if (currentPct <= 0 || totalLoggedHours <= 0) return null;
-
-  const hoursPerPercent = totalLoggedHours / currentPct;
+  
+  // Use a default of 10 hours per percent (1000 hrs total) if no data is available
+  // Clamp historical pace between 6 and 18 hours per percent to prevent wild swings
+  let hoursPerPercent = 10;
+  if (currentPct > 0 && totalLoggedHours > 0) {
+    hoursPerPercent = totalLoggedHours / currentPct;
+    hoursPerPercent = Math.max(6, Math.min(hoursPerPercent, 18));
+  }
+  
   const remainingHours = (100 - currentPct) * hoursPerPercent;
 
-  const last14 = logDates.slice(-14);
-  const avgDailyMinutes = last14.reduce((sum, d) => sum + (dailyLog[d].actualMinutes || 0), 0) / last14.length;
-  const avgDailyHours = avgDailyMinutes / 60;
-  if (avgDailyHours <= 0) return null;
+  // Calculate average daily minutes over the last 14 CALENDAR days
+  let last14Min = 0;
+  const now = new Date();
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const dStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    last14Min += (dailyLog[dStr]?.actualMinutes || 0);
+  }
+  const avgDailyHours = (last14Min / 14) / 60;
+  if (avgDailyHours <= 0.1) return null; // Avoid divide by zero, need at least minimal activity
 
   const daysNeeded = remainingHours / avgDailyHours;
   const projectedDate = new Date();
