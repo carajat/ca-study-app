@@ -979,38 +979,56 @@ function computeDayAdherence(dateStr) {
   const now = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
 
-  studySlots.forEach(slot => {
-    const rangeParts = slot.startRange.split('-');
+  // 2-Pass Assignment to handle delayed starts gracefully
+  const unassignedRows = [...rowData];
+  const slotAssignments = studySlots.map(slot => ({ slot, actualMin: 0 }));
+
+  // Pass 1: Strict matches (session started within the planned startRange)
+  slotAssignments.forEach(assign => {
+    const rangeParts = assign.slot.startRange.split('-');
     const rangeStart = parseHHMM(rangeParts[0]);
     const rangeEnd = parseHHMM(rangeParts[1]);
+    if (rangeStart === null) return;
+    const rangeEndMin = rangeEnd !== null ? rangeEnd : rangeStart + 60;
+
+    for (let i = unassignedRows.length - 1; i >= 0; i--) {
+      const r = unassignedRows[i];
+      if (r.startMin !== null && r.startMin >= rangeStart && r.startMin < rangeEndMin) {
+        assign.actualMin += r.durationMin;
+        unassignedRows.splice(i, 1); // consume
+      }
+    }
+  });
+
+  // Pass 2: Broad matches (session started late, but within the duration of the slot)
+  slotAssignments.forEach(assign => {
+    const rangeParts = assign.slot.startRange.split('-');
+    const rangeStart = parseHHMM(rangeParts[0]);
+    if (rangeStart === null) return;
+    const rangeEnd = parseHHMM(rangeParts[1]);
+    const rangeEndMin = rangeEnd !== null ? rangeEnd : rangeStart + 60;
+    const broadEnd = rangeEndMin + (assign.slot.duration || 60);
+    const broadStart = rangeStart - 60; // Allow starting 1 hour early
+
+    for (let i = unassignedRows.length - 1; i >= 0; i--) {
+      const r = unassignedRows[i];
+      if (r.startMin !== null && r.startMin >= broadStart && r.startMin < broadEnd) {
+        assign.actualMin += r.durationMin;
+        unassignedRows.splice(i, 1); // consume
+      }
+    }
+  });
+
+  slotAssignments.forEach(assign => {
+    const slot = assign.slot;
+    const actualMin = assign.actualMin;
+    const rangeParts = slot.startRange.split('-');
+    const rangeStart = parseHHMM(rangeParts[0]);
+
     if (rangeStart === null) {
       slotResults.push({ slot, status: 'missed', actualMin: 0 });
       return;
     }
-    const rangeEndMin = rangeEnd !== null ? rangeEnd : rangeStart + 60;
-
-    // Anchor: first row whose startTime falls inside startRange
-    const anchor = rowData.find(r => r.startMin !== null && r.startMin >= rangeStart && r.startMin < rangeEndMin);
-
-    if (!anchor) {
-      if (dateStr === todayStr && nowMin < rangeStart) {
-        slotResults.push({ slot, status: 'upcoming', actualMin: 0 });
-      } else if (dateStr > todayStr) {
-        slotResults.push({ slot, status: 'upcoming', actualMin: 0 });
-      } else {
-        slotResults.push({ slot, status: 'missed', actualMin: 0 });
-      }
-      return;
-    }
-
-    // Session window: from anchor.startMin to anchor.startMin + slot.duration
-    const windowStart = anchor.startMin;
-    const windowEnd = anchor.startMin + (slot.duration || 0);
-
-    // Sum all rows whose startTime falls inside this window
-    const actualMin = rowData
-      .filter(r => r.startMin !== null && r.startMin >= windowStart && r.startMin < windowEnd)
-      .reduce((sum, r) => sum + r.durationMin, 0);
 
     const pct = slot.duration > 0 ? actualMin / slot.duration : 0;
     let status;
