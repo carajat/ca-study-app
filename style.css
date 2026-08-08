@@ -50,8 +50,7 @@
 }
 
 /* ─── Light Mode (Auto — follows device theme) ── */
-@media (prefers-color-scheme: light) {
-  :root {
+body[data-theme="light"] {
     --bg-primary: #f2f2f7;
     --bg-card: #ffffff;
     --text-primary: #000000;
@@ -88,7 +87,6 @@
     --nav-bg: rgba(255, 255, 255, 0.7);
     --bg-card-hover: #f2f2f7;
   }
-}
 
 /* ─── Themes ─── */
 body.theme-ocean {
@@ -103,8 +101,7 @@ body.theme-ocean {
   --toast-shadow: rgba(10, 132, 255, 0.4);
   --bg-mesh: radial-gradient(at 0% 0%, rgba(10, 132, 255, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(10, 132, 255, 0.1) 0px, transparent 50%);
 }
-@media (prefers-color-scheme: light) {
-  body.theme-ocean {
+body[data-theme="light"].theme-ocean {
     --primary: #007aff;
     --accent: #007aff;
     --on-primary-container: #007aff;
@@ -116,7 +113,6 @@ body.theme-ocean {
     --toast-shadow: rgba(0, 122, 255, 0.25);
     --bg-mesh: radial-gradient(at 0% 0%, rgba(0, 122, 255, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(0, 122, 255, 0.05) 0px, transparent 50%);
   }
-}
 
 body.theme-forest {
   --primary: #32d74b;
@@ -130,8 +126,7 @@ body.theme-forest {
   --toast-shadow: rgba(50, 215, 75, 0.4);
   --bg-mesh: radial-gradient(at 0% 0%, rgba(50, 215, 75, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(50, 215, 75, 0.1) 0px, transparent 50%);
 }
-@media (prefers-color-scheme: light) {
-  body.theme-forest {
+body[data-theme="light"].theme-forest {
     --primary: #28cd41; 
     --accent: #28cd41;
     --on-primary-container: #28cd41;
@@ -143,7 +138,6 @@ body.theme-forest {
     --toast-shadow: rgba(40, 205, 65, 0.25);
     --bg-mesh: radial-gradient(at 0% 0%, rgba(40, 205, 65, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(40, 205, 65, 0.05) 0px, transparent 50%);
   }
-}
 
 body.theme-sunset {
   --primary: #ff9f0a;
@@ -157,8 +151,7 @@ body.theme-sunset {
   --toast-shadow: rgba(255, 159, 10, 0.4);
   --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 159, 10, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 159, 10, 0.1) 0px, transparent 50%);
 }
-@media (prefers-color-scheme: light) {
-  body.theme-sunset {
+body[data-theme="light"].theme-sunset {
     --primary: #ff9500; 
     --accent: #ff9500;
     --on-primary-container: #ff9500;
@@ -170,7 +163,6 @@ body.theme-sunset {
     --toast-shadow: rgba(255, 149, 0, 0.25);
     --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 149, 0, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 149, 0, 0.05) 0px, transparent 50%);
   }
-}
 
 body.theme-rose {
   --primary: #ff375f;
@@ -184,8 +176,7 @@ body.theme-rose {
   --toast-shadow: rgba(255, 55, 95, 0.4);
   --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 55, 95, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 55, 95, 0.1) 0px, transparent 50%);
 }
-@media (prefers-color-scheme: light) {
-  body.theme-rose {
+body[data-theme="light"].theme-rose {
     --primary: #ff2d55;
     --accent: #ff2d55;
     --on-primary-container: #ff2d55;
@@ -197,7 +188,6 @@ body.theme-rose {
     --toast-shadow: rgba(255, 45, 85, 0.25);
     --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 45, 85, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 45, 85, 0.05) 0px, transparent 50%);
   }
-}
 
 body.theme-mocha {
   --primary: #ac8e68;
@@ -211,8 +201,7 @@ body.theme-mocha {
   --toast-shadow: rgba(172, 142, 104, 0.4);
   --bg-mesh: radial-gradient(at 0% 0%, rgba(172, 142, 104, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(172, 142, 104, 0.1) 0px, transparent 50%);
 }
-@media (prefers-color-scheme: light) {
-  body.theme-mocha {
+body[data-theme="light"].theme-mocha {
     --primary: #a2845e;
     --accent: #a2845e;
     --on-primary-container: #a2845e;
@@ -224,7 +213,6 @@ body.theme-mocha {
     --toast-shadow: rgba(162, 132, 94, 0.25);
     --bg-mesh: radial-gradient(at 0% 0%, rgba(162, 132, 94, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(162, 132, 94, 0.05) 0px, transparent 50%);
   }
-}
 
 body.theme-teal {
   --primary: #64d2ff;
@@ -238,8 +226,7 @@ body.theme-teal {
   --toast-shadow: rgba(100, 210, 255, 0.4);
   --bg-mesh: radial-gradient(at 0% 0%, rgba(100, 210, 255, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(100, 210, 255, 0.1) 0px, transparent 50%);
 }
-@media (prefers-color-scheme: light) {
-  body.theme-teal {
+body[data-theme="light"].theme-teal {
     --primary: #5ac8fa;
     --accent: #5ac8fa;
     --on-primary-container: #5ac8fa;
@@ -251,7 +238,6 @@ body.theme-teal {
     --toast-shadow: rgba(90, 200, 250, 0.25);
     --bg-mesh: radial-gradient(at 0% 0%, rgba(90, 200, 250, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(90, 200, 250, 0.05) 0px, transparent 50%);
   }
-}
 
 body.theme-amethyst {
   --primary: #bf5af2;
@@ -265,8 +251,7 @@ body.theme-amethyst {
   --toast-shadow: rgba(191, 90, 242, 0.4);
   --bg-mesh: radial-gradient(at 0% 0%, rgba(191, 90, 242, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(191, 90, 242, 0.1) 0px, transparent 50%);
 }
-@media (prefers-color-scheme: light) {
-  body.theme-amethyst {
+body[data-theme="light"].theme-amethyst {
     --primary: #af52de;
     --accent: #af52de;
     --on-primary-container: #af52de;
@@ -278,7 +263,6 @@ body.theme-amethyst {
     --toast-shadow: rgba(175, 82, 222, 0.25);
     --bg-mesh: radial-gradient(at 0% 0%, rgba(175, 82, 222, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(175, 82, 222, 0.05) 0px, transparent 50%);
   }
-}
 
 body.theme-cherry {
   --primary: #ff453a;
@@ -292,8 +276,7 @@ body.theme-cherry {
   --toast-shadow: rgba(255, 69, 58, 0.4);
   --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 69, 58, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 69, 58, 0.1) 0px, transparent 50%);
 }
-@media (prefers-color-scheme: light) {
-  body.theme-cherry {
+body[data-theme="light"].theme-cherry {
     --primary: #ff3b30;
     --accent: #ff3b30;
     --on-primary-container: #ff3b30;
@@ -305,7 +288,6 @@ body.theme-cherry {
     --toast-shadow: rgba(255, 59, 48, 0.25);
     --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 59, 48, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 59, 48, 0.05) 0px, transparent 50%);
   }
-}
 
 /* Theme Picker UI */
 .theme-picker {
@@ -1496,18 +1478,18 @@ input[type="checkbox"]:checked::before {
   text-align: center;
   min-height: 16px;
 }
-@media (prefers-color-scheme: light) {
-  .study-tracker {
+
+body[data-theme="light"]   .study-tracker {
     background: linear-gradient(135deg, var(--checkbox-row-active), transparent);
   }
-  .st-timer-display {
+body[data-theme="light"]   .st-timer-display {
     background: rgba(0,0,0,0.04);
     border-color: rgba(0,0,0,0.1);
   }
-  .st-timer-display span { color: var(--text-primary); }
-  .st-timer-display.running span { color: var(--primary); }
-  .st-timer-display.paused span { color: var(--warning); }
-}
+body[data-theme="light"]   .st-timer-display span { color: var(--text-primary); }
+body[data-theme="light"]   .st-timer-display.running span { color: var(--primary); }
+body[data-theme="light"]   .st-timer-display.paused span { color: var(--warning); }
+
 
 /* ═══════════ DAILY JOURNAL STYLES ═══════════ */
 .fullscreen-modal {
@@ -1545,11 +1527,9 @@ input[type="checkbox"]:checked::before {
 .journal-date-picker::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
-@media (prefers-color-scheme: light) {
-  .journal-date-picker::-webkit-calendar-picker-indicator {
+body[data-theme="light"] .journal-date-picker::-webkit-calendar-picker-indicator {
     filter: none;
   }
-}
 
 .journal-content {
   flex: 1;
@@ -1690,11 +1670,9 @@ input[type="checkbox"]:checked::before {
   background: rgba(30, 30, 30, 0.7); /* Give it a slightly more solid background to compensate */
 }
 
-@media (prefers-color-scheme: light) {
-  .schedule-slot {
+body[data-theme="light"] .schedule-slot {
     background: rgba(255, 255, 255, 0.8);
   }
-}
 
 /* Toggle Switch */
 .switch {
