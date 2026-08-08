@@ -1667,12 +1667,8 @@ body[data-theme="light"] .journal-date-picker::-webkit-calendar-picker-indicator
 .schedule-slot {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  background: rgba(30, 30, 30, 0.7); /* Give it a slightly more solid background to compensate */
+  background: var(--bg-card); /* Give it a slightly more solid background to compensate */
 }
-
-body[data-theme="light"] .schedule-slot {
-    background: rgba(255, 255, 255, 0.8);
-  }
 
 /* Toggle Switch */
 .switch {
