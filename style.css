@@ -523,7 +523,7 @@ body {
 .countdown-card {
   text-align: center;
   border-color: var(--purple);
-  box-shadow: 0 0 30px rgba(108, 60, 225, 0.15);
+  box-shadow: 0 0 30px var(--checkbox-row-active);
   background: var(--card-gradient-countdown);
 }
 .countdown-label {
@@ -617,7 +617,7 @@ body {
   cursor: pointer;
   transition: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform var(--transition);
 }
-.mock-item:active { background: rgba(108, 60, 225, 0.1); }
+.mock-item:active { background: var(--checkbox-row-active); }
 .mock-item.scored { border-left: 3px solid var(--green); }
 .mock-item.upcoming { border-left: 3px solid var(--yellow); background: rgba(249, 115, 22, 0.05); }
 .mock-subject { font-size: 14px; font-weight: 600; }
@@ -650,10 +650,10 @@ body {
   transition: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform var(--transition);
 }
 .toggle-btn.active {
-  background: rgba(108, 60, 225, 0.15);
-  border-color: var(--purple);
-  color: var(--purple);
-  box-shadow: 0 0 15px rgba(108, 60, 225, 0.2);
+  background: var(--checkbox-row-active);
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: 0 0 15px var(--border-glow);
 }
 
 /* ─── Schedule Summary ───────────────── */
@@ -948,7 +948,7 @@ body {
 .st-check { text-align: center; }
 .st-check input[type="checkbox"] { margin-top: 4px; }
 .st-row:nth-child(odd) { background: rgba(255,255,255,0.01); }
-.st-row:active { background: rgba(108, 60, 225, 0.08); }
+.st-row:active { background: var(--checkbox-row-active); }
 
 /* ─── Syllabus Simple (IBS) ──────────── */
 .syllabus-simple { margin: 0 16px; }
@@ -961,7 +961,7 @@ body {
   cursor: pointer;
   transition: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform var(--transition);
 }
-.ss-row:active { background: rgba(108, 60, 225, 0.08); }
+.ss-row:active { background: var(--checkbox-row-active); }
 .ss-row.done { opacity: 0.5; }
 .ss-row.done .ss-name { text-decoration: line-through; }
 .ss-check { font-size: 18px; flex-shrink: 0; }
