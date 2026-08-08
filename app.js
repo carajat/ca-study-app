@@ -4008,10 +4008,8 @@ window.openLogHistoryModal = function() {
       <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);" id="log-history-selected-date-label">Today</span>
       <span id="log-history-total" style="font-size: 13px; font-weight: 600; color: var(--primary-color);">Total: 0h 0m</span>
     </div>
-    <div id="log-history-list" style="display:flex; flex-direction:column; gap:8px;">
-    </div>
+    <div id="log-history-list" style="display:flex; flex-direction:column; gap:8px;"></div>
   `;
-  
   const html = `
     <div style="display:flex; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
       <button id="log-tab-stats" class="st-tab-btn active" style="flex:1; padding:8px; border:none; background:transparent; color:var(--text-primary); font-weight:600; cursor:pointer;" onclick="switchLogModalTab('stats')">All-Time Stats</button>
@@ -4023,13 +4021,18 @@ window.openLogHistoryModal = function() {
     </div>
     
     <div id="log-modal-history" style="display:none; max-height: 55vh; overflow-y: auto;">
-      ${historyHtml}
+      <div id="log-history-calendar-container"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);" id="log-history-selected-date-label">Today</span>
+        <span id="log-history-total" style="font-size: 13px; font-weight: 600; color: var(--primary-color);">Total: 0h 0m</span>
+      </div>
+      <div id="log-history-list" style="display:flex; flex-direction:column; gap:8px;">
+      </div>
     </div>
   `;
   
   openModal('Log History & Stats', html);
   
-  // Add some styles dynamically for tabs
   const styleId = 'log-tabs-style';
   if (!document.getElementById(styleId)) {
     const style = document.createElement('style');
@@ -4040,7 +4043,6 @@ window.openLogHistoryModal = function() {
     document.head.appendChild(style);
   }
   
-  // Initial render for history tab & stats calculation (runs behind the scenes)
   setTimeout(() => {
     window.renderHistoryCalendar(window.currentHistoryYear, window.currentHistoryMonth);
     window.selectHistoryDate(window.currentHistoryDate);
@@ -4066,7 +4068,6 @@ window.selectHistoryDate = function(dStr) {
   window.renderHistoryCalendar(window.currentHistoryYear, window.currentHistoryMonth);
   renderHistoryForDate(dStr);
   
-  // Update label
   const lbl = document.getElementById('log-history-selected-date-label');
   if (lbl) {
     const tStr = getTodayStr();
@@ -4088,12 +4089,12 @@ window.renderHistoryCalendar = function(yr, mo) {
   const cData = DYNAMIC_DATA.consistency || { dailyLog: {} };
   const tStr = getTodayStr();
   
-  let calHtml = \`
+  let calHtml = `
     <div style="background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:10px; padding:12px; margin-bottom:15px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <button onclick="changeHistoryMonth(-1)" class="icon-btn" style="padding:4px;"><span class="material-symbols-rounded" style="font-size:20px;">chevron_left</span></button>
         <div style="font-weight:600; font-size:14px; color:var(--primary-color);">
-          \${calMonthName}
+          ${calMonthName}
         </div>
         <button onclick="changeHistoryMonth(1)" class="icon-btn" style="padding:4px;"><span class="material-symbols-rounded" style="font-size:20px;">chevron_right</span></button>
       </div>
@@ -4107,8 +4108,8 @@ window.renderHistoryCalendar = function(yr, mo) {
         <div style="font-size:10px; color:var(--text-muted); padding:2px;">Sa</div>
       </div>
       <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; text-align:center;">
-  \`;
-  for (let i = 0; i < firstDay; i++) calHtml += \`<div></div>\`;
+  `;
+  for (let i = 0; i < firstDay; i++) calHtml += `<div></div>`;
   
   for (let day = 1; day <= daysInMo; day++) {
     const dStr = yr + '-' + String(mo+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
@@ -4137,9 +4138,9 @@ window.renderHistoryCalendar = function(yr, mo) {
       }
     }
     
-    calHtml += \`<div onclick="selectHistoryDate('\${dStr}')" style="background:\${bg}; border:\${border}; color:\${color}; font-size:12px; padding:6px 0; border-radius:4px; cursor:pointer; font-weight:500; transition:all 0.2s ease;" title="\${dStr}">\${day}</div>\`;
+    calHtml += `<div onclick="selectHistoryDate('${dStr}')" style="background:${bg}; border:${border}; color:${color}; font-size:12px; padding:6px 0; border-radius:4px; cursor:pointer; font-weight:500; transition:all 0.2s ease;" title="${dStr}">${day}</div>`;
   }
-  calHtml += \`</div></div>\`;
+  calHtml += `</div></div>`;
   
   container.innerHTML = calHtml;
 };
