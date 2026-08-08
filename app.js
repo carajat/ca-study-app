@@ -864,6 +864,10 @@ function renderSchedule() {
   const now = new Date();
   const currentMin = now.getHours() * 60 + now.getMinutes();
   
+  const todayResult = computeDayAdherence(getTodayStr());
+  const slotResultsMap = {};
+  todayResult.slotResults.forEach(r => { slotResultsMap[r.slot.id] = r; });
+  
   schedule.slots.forEach((slot, idx) => {
     const [startStr] = slot.startRange.split('-');
     const [sh, sm] = startStr.split(':').map(Number);
@@ -876,9 +880,18 @@ function renderSchedule() {
       <div class="schedule-slot glass-card slot-type-${slot.type} ${isActive ? 'slot-active' : ''}">
         
         ${isActive && !isEditMode ? '<div class="active-indicator"><span class="material-symbols-rounded icon-sm">circle</span> NOW</div>' : ''}
-        <div class="slot-header" style="flex:1">
-          <span class="material-symbols-rounded slot-icon">${(slot.icon || "").trim()}</span>
-          ${!isEditMode ? `<span class="slot-label">${slot.label}</span>` : `<input type="text" class="inline-input" value="${slot.label}" onchange="updateScheduleSlot('${state.activeSchedule}', ${idx}, 'label', this.value)">`}
+        <div class="slot-header" style="flex:1; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span class="material-symbols-rounded slot-icon">${(slot.icon || "").trim()}</span>
+            ${!isEditMode ? `<span class="slot-label">${slot.label}</span>` : `<input type="text" class="inline-input" value="${slot.label}" onchange="updateScheduleSlot('${state.activeSchedule}', ${idx}, 'label', this.value)">`}
+          </div>
+          ${(!isEditMode && slot.type === 'study' && slotResultsMap[slot.id]) ? (() => {
+            const st = slotResultsMap[slot.id].status;
+            if (st === 'done') return `<div class="cons-slot-status cons-status-done">${_svgCheck}</div>`;
+            if (st === 'partial') return `<div class="cons-slot-status cons-status-partial">${_svgPartial}<span>${_fmtMins(slotResultsMap[slot.id].actualMin)}</span></div>`;
+            if (st === 'upcoming') return `<div class="cons-slot-status cons-status-upcoming">${_svgUpcoming}<span>Upcoming</span></div>`;
+            return `<div class="cons-slot-status cons-status-missed">${_svgPartial}<span>Missed</span></div>`;
+          })() : ''}
         </div>
         <div class="slot-details" style="${isEditMode ? 'display:flex; flex-direction:column; gap:4px; margin-right:10px;' : ''}">
           ${!isEditMode ? `
@@ -956,10 +969,11 @@ function computeDayAdherence(dateStr) {
   const rowData = rows.map(r => ({
     startMin: parseHHMM(r.startTime),
     durationMin: (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0)
-  })).filter(r => r.startMin !== null && r.durationMin > 0);
+  })).filter(r => r.durationMin > 0);
 
   const slotResults = [];
-  let totalActual = 0;
+  // Old data compatibility: Day's total adherence uses ALL logged minutes, regardless of startTime mapping
+  let totalActual = rowData.reduce((sum, r) => sum + r.durationMin, 0);
 
   const todayStr = getTodayStr();
   const now = new Date();
@@ -976,7 +990,7 @@ function computeDayAdherence(dateStr) {
     const rangeEndMin = rangeEnd !== null ? rangeEnd : rangeStart + 60;
 
     // Anchor: first row whose startTime falls inside startRange
-    const anchor = rowData.find(r => r.startMin >= rangeStart && r.startMin < rangeEndMin);
+    const anchor = rowData.find(r => r.startMin !== null && r.startMin >= rangeStart && r.startMin < rangeEndMin);
 
     if (!anchor) {
       if (dateStr === todayStr && nowMin < rangeStart) {
@@ -995,7 +1009,7 @@ function computeDayAdherence(dateStr) {
 
     // Sum all rows whose startTime falls inside this window
     const actualMin = rowData
-      .filter(r => r.startMin >= windowStart && r.startMin < windowEnd)
+      .filter(r => r.startMin !== null && r.startMin >= windowStart && r.startMin < windowEnd)
       .reduce((sum, r) => sum + r.durationMin, 0);
 
     const pct = slot.duration > 0 ? actualMin / slot.duration : 0;
@@ -1006,7 +1020,6 @@ function computeDayAdherence(dateStr) {
     else status = 'missed';
 
     slotResults.push({ slot, status, actualMin });
-    totalActual += actualMin;
   });
 
   const adherencePct = targetMinutes > 0 ? Math.round((totalActual / targetMinutes) * 100) : 0;
@@ -1221,8 +1234,11 @@ function renderConsistencyDetail() {
 
   ensureConsistencyInit();
   const c = DYNAMIC_DATA.consistency;
+  const todayStr = getTodayStr();
+  const adherePct = c.dailyLog[todayStr]?.adherencePct || 0;
+  
   const proj = computeProjection();
-  const onTrack = proj ? proj.onTrack : true;
+  const onTrack = proj ? proj.onTrack : (adherePct >= 80);
   const schedule = DYNAMIC_DATA.schedules[state.activeSchedule];
 
   // This-week count: Mon to today
@@ -1237,7 +1253,7 @@ function renderConsistencyDetail() {
     const log = c.dailyLog[dStr];
     if (log && log.adherencePct >= 80) thisWeekCount++;
   }
-  const thisWeekTotal = daysFromMon + 1;
+  const thisWeekTotal = 7;
 
   // Header card
   const paceLabel = onTrack
@@ -1256,45 +1272,6 @@ function renderConsistencyDetail() {
       </div>
     </div>
   `;
-
-  // Slot status rows (only type === 'study' get status badge)
-  const todayStr = getTodayStr();
-  const todayAdherence = computeDayAdherence(todayStr);
-  const slotResultsMap = {};
-  todayAdherence.slotResults.forEach(r => { slotResultsMap[r.slot.id] = r; });
-
-  let slotsHtml = '<div style="margin-top:14px; display:flex; flex-direction:column; gap:8px;">';
-  schedule.slots.forEach(slot => {
-    if (slot.type !== 'study') return; // Non-study slots render as-is in existing view
-    const result = slotResultsMap[slot.id];
-    const status = result ? result.status : 'upcoming';
-    const durationStr = slot.duration >= 60 ? (slot.duration / 60) + 'h target' : slot.duration + 'min target';
-
-    let statusHtml = '';
-    let iconActive = false;
-    if (status === 'done') {
-      statusHtml = `<div class="cons-slot-status cons-status-done">${_svgCheck}</div>`;
-      iconActive = true;
-    } else if (status === 'partial') {
-      const actual = result ? _fmtMins(result.actualMin) : '';
-      statusHtml = `<div class="cons-slot-status cons-status-partial">${_svgPartial}<span>${actual}</span></div>`;
-    } else if (status === 'upcoming') {
-      statusHtml = `<div class="cons-slot-status cons-status-upcoming">${_svgUpcoming}<span>Upcoming</span></div>`;
-    } else {
-      statusHtml = `<div class="cons-slot-status cons-status-missed">${_svgPartial}<span>Missed</span></div>`;
-    }
-
-    slotsHtml += `
-      <div class="glass-card cons-slot-row">
-        <div class="cons-slot-icon ${iconActive ? 'cons-slot-icon-on' : 'cons-slot-icon-off'}">${_svgBook}</div>
-        <div class="cons-slot-body">
-          <div class="cons-slot-label">${slot.label}</div>
-          <div class="cons-slot-range">Window ${slot.startRange} · ${durationStr}</div>
-        </div>
-        ${statusHtml}
-      </div>`;
-  });
-  slotsHtml += '</div>';
 
   // 7-day heatmap
   const days = ['Mo','Tu','We','Th','Fr','Sa','Su'];
@@ -1317,7 +1294,7 @@ function renderConsistencyDetail() {
   }
   heatHtml += '</div></div>';
 
-  el.innerHTML = headerHtml + slotsHtml + heatHtml;
+  el.innerHTML = headerHtml + heatHtml;
 }
 
 let lastNotifiedTime = '';
