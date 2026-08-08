@@ -476,11 +476,13 @@ function isToday(date) {
 //  DASHBOARD
 // ═══════════════════════════════════════════
 function renderDashboard() {
+  refreshConsistencyData();
   updateCountdown();
   updateDashboardStats();
   updateCurrentActivity();
   updateDashboardPlanner();
   updateQuote();
+  updateConsistencyWidget();
 }
 
 function updateCountdown() {
@@ -904,6 +906,231 @@ function renderSchedule() {
   // Study rules
   const rulesList = document.getElementById('study-rules-list');
   rulesList.innerHTML = DYNAMIC_DATA.schedules.rules.map(r => `<li>${r}</li>`).join('');
+  refreshConsistencyData();
+  renderConsistencyDetail();
+}
+
+// ═══════════════════════════════════════════
+//  CONSISTENCY ENGINE
+// ═══════════════════════════════════════════
+
+/** Ensure DYNAMIC_DATA.consistency exists with all required fields */
+function ensureConsistencyInit() {
+  if (!DYNAMIC_DATA.consistency) {
+    DYNAMIC_DATA.consistency = {
+      currentStreak: 0,
+      longestStreak: 0,
+      lastCountedDate: null,
+      dailyLog: {}
+    };
+  }
+  if (!DYNAMIC_DATA.consistency.dailyLog) DYNAMIC_DATA.consistency.dailyLog = {};
+}
+
+/** Parse "HH:MM" to total minutes since midnight. Returns null if invalid. */
+function parseHHMM(str) {
+  if (!str || typeof str !== 'string') return null;
+  const parts = str.split(':');
+  if (parts.length < 2) return null;
+  const h = parseInt(parts[0]);
+  const m = parseInt(parts[1]);
+  if (isNaN(h) || isNaN(m)) return null;
+  return h * 60 + m;
+}
+
+/**
+ * Compute adherence for a given date against the active schedule.
+ * Returns { adherencePct, actualMinutes, targetMinutes, slotResults }
+ */
+function computeDayAdherence(dateStr) {
+  const schedule = DYNAMIC_DATA.schedules[state.activeSchedule];
+  if (!schedule) return { adherencePct: 0, actualMinutes: 0, targetMinutes: 0, slotResults: [] };
+
+  const studySlots = schedule.slots.filter(s => s.type === 'study');
+  const targetMinutes = studySlots.reduce((sum, s) => sum + (s.duration || 0), 0);
+
+  const rows = (DYNAMIC_DATA.journalEntries && DYNAMIC_DATA.journalEntries[dateStr] &&
+                DYNAMIC_DATA.journalEntries[dateStr].rows) || [];
+
+  // Pre-convert rows to { startMin, durationMin }
+  const rowData = rows.map(r => ({
+    startMin: parseHHMM(r.startTime),
+    durationMin: (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0)
+  })).filter(r => r.startMin !== null && r.durationMin > 0);
+
+  const slotResults = [];
+  let totalActual = 0;
+
+  const todayStr = getTodayStr();
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+
+  studySlots.forEach(slot => {
+    const rangeParts = slot.startRange.split('-');
+    const rangeStart = parseHHMM(rangeParts[0]);
+    const rangeEnd = parseHHMM(rangeParts[1]);
+    if (rangeStart === null) {
+      slotResults.push({ slot, status: 'missed', actualMin: 0 });
+      return;
+    }
+    const rangeEndMin = rangeEnd !== null ? rangeEnd : rangeStart + 60;
+
+    // Anchor: first row whose startTime falls inside startRange
+    const anchor = rowData.find(r => r.startMin >= rangeStart && r.startMin < rangeEndMin);
+
+    if (!anchor) {
+      if (dateStr === todayStr && nowMin < rangeStart) {
+        slotResults.push({ slot, status: 'upcoming', actualMin: 0 });
+      } else if (dateStr > todayStr) {
+        slotResults.push({ slot, status: 'upcoming', actualMin: 0 });
+      } else {
+        slotResults.push({ slot, status: 'missed', actualMin: 0 });
+      }
+      return;
+    }
+
+    // Session window: from anchor.startMin to anchor.startMin + slot.duration
+    const windowStart = anchor.startMin;
+    const windowEnd = anchor.startMin + (slot.duration || 0);
+
+    // Sum all rows whose startTime falls inside this window
+    const actualMin = rowData
+      .filter(r => r.startMin >= windowStart && r.startMin < windowEnd)
+      .reduce((sum, r) => sum + r.durationMin, 0);
+
+    const pct = slot.duration > 0 ? actualMin / slot.duration : 0;
+    let status;
+    if (pct >= 0.8) status = 'done';
+    else if (pct > 0) status = 'partial';
+    else if (dateStr === todayStr && nowMin < rangeStart) status = 'upcoming';
+    else status = 'missed';
+
+    slotResults.push({ slot, status, actualMin });
+    totalActual += actualMin;
+  });
+
+  const adherencePct = targetMinutes > 0 ? Math.round((totalActual / targetMinutes) * 100) : 0;
+  return { adherencePct, actualMinutes: totalActual, targetMinutes, slotResults };
+}
+
+/**
+ * Walk all dates in journalEntries, rebuild consistency.dailyLog,
+ * recompute currentStreak and longestStreak.
+ */
+function refreshConsistencyData() {
+  ensureConsistencyInit();
+  const c = DYNAMIC_DATA.consistency;
+  const journal = DYNAMIC_DATA.journalEntries || {};
+
+  const allDates = Object.keys(journal).filter(d => {
+    const entry = journal[d];
+    return entry && entry.rows && entry.rows.length > 0;
+  }).sort();
+
+  allDates.forEach(dateStr => {
+    const result = computeDayAdherence(dateStr);
+    c.dailyLog[dateStr] = {
+      adherencePct: result.adherencePct,
+      actualMinutes: result.actualMinutes,
+      targetMinutes: result.targetMinutes
+    };
+  });
+
+  const todayStr = getTodayStr();
+  if (!c.dailyLog[todayStr]) {
+    const result = computeDayAdherence(todayStr);
+    c.dailyLog[todayStr] = {
+      adherencePct: result.adherencePct,
+      actualMinutes: result.actualMinutes,
+      targetMinutes: result.targetMinutes
+    };
+  }
+
+  // Current streak: consecutive days ending yesterday/today with adherencePct >= 80
+  let streak = 0;
+  const base = new Date();
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(base);
+    d.setDate(d.getDate() - i);
+    const dStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    const log = c.dailyLog[dStr];
+    if (dStr === todayStr) {
+      // Today: count if done, else skip (in-progress — don't break streak)
+      if (log && log.adherencePct >= 80) streak++;
+      continue;
+    }
+    if (log && log.adherencePct >= 80) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  c.currentStreak = streak;
+  if (streak > (c.longestStreak || 0)) c.longestStreak = streak;
+  c.lastCountedDate = todayStr;
+}
+
+/**
+ * Compute syllabus completion projection.
+ * Returns null if < 7 days of dailyLog data exist.
+ */
+function computeProjection() {
+  ensureConsistencyInit();
+  const c = DYNAMIC_DATA.consistency;
+  const dailyLog = c.dailyLog || {};
+  const logDates = Object.keys(dailyLog).sort();
+  if (logDates.length < 7) return null;
+
+  const journal = DYNAMIC_DATA.journalEntries || {};
+  let totalLoggedMinutes = 0;
+  Object.values(journal).forEach(entry => {
+    if (entry && entry.rows) {
+      entry.rows.forEach(r => {
+        totalLoggedMinutes += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
+      });
+    }
+  });
+  const totalLoggedHours = totalLoggedMinutes / 60;
+  const currentPct = calculateOverallProgress();
+  if (currentPct <= 0 || totalLoggedHours <= 0) return null;
+
+  const hoursPerPercent = totalLoggedHours / currentPct;
+  const remainingHours = (100 - currentPct) * hoursPerPercent;
+
+  const last14 = logDates.slice(-14);
+  const avgDailyMinutes = last14.reduce((sum, d) => sum + (dailyLog[d].actualMinutes || 0), 0) / last14.length;
+  const avgDailyHours = avgDailyMinutes / 60;
+  if (avgDailyHours <= 0) return null;
+
+  const daysNeeded = remainingHours / avgDailyHours;
+  const projectedDate = new Date();
+  projectedDate.setDate(projectedDate.getDate() + Math.round(daysNeeded));
+
+  let examDate = new Date(DYNAMIC_DATA.exam.date);
+  if (DYNAMIC_DATA.finalExams && DYNAMIC_DATA.finalExams.length > 0) {
+    const dates = DYNAMIC_DATA.finalExams.map(x => new Date(x.date)).filter(d => !isNaN(d.valueOf()));
+    if (dates.length > 0) examDate = new Date(Math.min(...dates));
+  }
+
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const daysVsExam = Math.round((examDate - projectedDate) / msPerDay);
+  const daysUntilExamVal = Math.round((examDate - new Date()) / msPerDay);
+  const onTrack = daysVsExam >= 0;
+
+  let nudgeHours = null;
+  if (!onTrack && daysUntilExamVal > 0) {
+    const requiredDaily = remainingHours / daysUntilExamVal;
+    nudgeHours = Math.round((requiredDaily - avgDailyHours) * 10) / 10;
+    if (nudgeHours < 0.1) nudgeHours = 0.1;
+  }
+
+  return {
+    projectedDate,
+    daysVsExam: Math.abs(daysVsExam),
+    onTrack,
+    nudgeHours,
+    avgDailyHours: Math.round(avgDailyHours * 10) / 10
+  };
 }
 
 function switchSchedule(type) {
@@ -913,6 +1140,184 @@ function switchSchedule(type) {
   saveState({ activeSchedule: type });
   renderSchedule();
   updateNotifToggleUI();
+}
+
+// ─── Consistency UI helpers ──────────────────────────────
+const _svgCheck = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--success)" stroke-width="1.8"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const _svgPartial = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--warning)" stroke-width="1.8"/><path d="M12 8v5" stroke="var(--warning)" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1" fill="var(--warning)"/></svg>`;
+const _svgUpcoming = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--text-muted)" stroke-width="1.8"/><path d="M12 7v5l3 3" stroke="var(--text-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const _svgTrendUp = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 17l6-6 4 4 8-8" stroke="var(--success)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h6v6" stroke="var(--success)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const _svgWarn = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" stroke="var(--warning)" stroke-width="2" stroke-linejoin="round"/><path d="M12 9v5" stroke="var(--warning)" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="var(--warning)"/></svg>`;
+const _svgStar = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z" fill="var(--primary)"/></svg>`;
+const _svgWarnSm = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" stroke="var(--warning)" stroke-width="2" stroke-linejoin="round"/><path d="M12 9v5" stroke="var(--warning)" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="var(--warning)"/></svg>`;
+const _svgBook = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5A1.5 1.5 0 0 1 4 18.5v-13z" stroke="currentColor" stroke-width="1.8"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5a1.5 1.5 0 0 0 1.5-1.5v-13z" stroke="currentColor" stroke-width="1.8"/></svg>`;
+
+function _fmtMins(m) {
+  const h = Math.floor(m / 60), mm = m % 60;
+  if (h === 0) return mm + 'm';
+  return h + 'h ' + (mm > 0 ? mm + 'm' : '');
+}
+
+/**
+ * Render (or update) the compact Consistency widget on the Home tab.
+ * The widget lives in #consistency-home-widget which is injected into index.html.
+ */
+function updateConsistencyWidget() {
+  const el = document.getElementById('consistency-home-widget');
+  if (!el) return;
+
+  ensureConsistencyInit();
+  const c = DYNAMIC_DATA.consistency;
+  const todayStr = getTodayStr();
+  const todayResult = computeDayAdherence(todayStr);
+  const proj = computeProjection();
+  const schedName = state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night';
+  const adherePct = Math.min(todayResult.adherencePct, 100);
+  const isGood = adherePct >= 80;
+
+  // Pace pill
+  const onTrack = proj ? proj.onTrack : (adherePct >= 80);
+  const pillClass = onTrack ? 'cons-pill-on' : 'cons-pill-warn';
+  const pillIcon = onTrack ? _svgStar : _svgWarnSm;
+  const pillLabel = onTrack ? 'Exam-Ready Pace' : 'Behind Pace';
+
+  // Insight card
+  let insightHtml = '';
+  if (proj) {
+    if (proj.onTrack) {
+      insightHtml = `<div class="cons-insight cons-insight-good">${_svgTrendUp}<p>At this pace, your <b>syllabus</b> completes <b>${proj.daysVsExam} days before</b> your exam date.</p></div>`;
+    } else {
+      const nudgeStr = proj.nudgeHours !== null ? `<span class="cons-nudge">Increase daily average by ~${proj.nudgeHours} hrs to get back on track.</span>` : '';
+      insightHtml = `<div class="cons-insight cons-insight-warn">${_svgWarn}<p>At this pace, syllabus completes <b>${proj.daysVsExam} days after</b> your exam date.${nudgeStr}</p></div>`;
+    }
+  }
+
+  el.innerHTML = `
+    <div class="cons-hw-top">
+      <div>
+        <div class="cons-pill ${pillClass}">${pillIcon}${pillLabel}</div>
+        <div class="cons-streak-num">${c.currentStreak}<span>days consistent</span></div>
+      </div>
+      <div class="cons-best">Longest run<b>${c.longestStreak}</b></div>
+    </div>
+    <div class="cons-divider"></div>
+    <div class="cons-adhere-row">
+      <span class="cons-adhere-label">Today's Adherence</span>
+      <span class="cons-adhere-val ${isGood ? 'cons-val-good' : 'cons-val-warn'}">${adherePct}%</span>
+    </div>
+    <div class="cons-bar-track"><div class="cons-bar-fill ${isGood ? 'cons-fill-primary' : 'cons-fill-warn'}" style="width:${adherePct}%"></div></div>
+    <div class="cons-sub">${_fmtMins(todayResult.actualMinutes)} of ${_fmtMins(todayResult.targetMinutes)} · ${schedName} routine</div>
+    ${insightHtml}
+  `;
+}
+
+/**
+ * Render the full Consistency detail section in the Timetable tab.
+ * Injects into #consistency-timetable-section.
+ */
+function renderConsistencyDetail() {
+  const el = document.getElementById('consistency-timetable-section');
+  if (!el) return;
+
+  ensureConsistencyInit();
+  const c = DYNAMIC_DATA.consistency;
+  const proj = computeProjection();
+  const onTrack = proj ? proj.onTrack : true;
+  const schedule = DYNAMIC_DATA.schedules[state.activeSchedule];
+
+  // This-week count: Mon to today
+  const todayDate = new Date();
+  const dayOfWeek = todayDate.getDay(); // 0=Sun
+  const daysFromMon = (dayOfWeek + 6) % 7;
+  let thisWeekCount = 0;
+  for (let i = 0; i <= daysFromMon; i++) {
+    const d = new Date(todayDate);
+    d.setDate(d.getDate() - i);
+    const dStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    const log = c.dailyLog[dStr];
+    if (log && log.adherencePct >= 80) thisWeekCount++;
+  }
+  const thisWeekTotal = daysFromMon + 1;
+
+  // Header card
+  const paceLabel = onTrack
+    ? `<div class="cons-tt-pace">${_svgStar.replace('13','15')} Exam-Ready Pace</div>`
+    : `<div class="cons-tt-pace cons-tt-pace-warn">${_svgWarnSm.replace('13','15')} Behind Pace</div>`;
+
+  let headerHtml = `
+    <div class="glass-card cons-tt-header">
+      <div class="cons-tt-hrow">
+        <div class="cons-tt-num">${c.currentStreak}<span>day streak</span></div>
+        ${paceLabel}
+      </div>
+      <div class="cons-tt-best-row">
+        <div>Longest streak<b>${c.longestStreak} days</b></div>
+        <div style="text-align:right">This week<b>${thisWeekCount} / ${thisWeekTotal} days</b></div>
+      </div>
+    </div>
+  `;
+
+  // Slot status rows (only type === 'study' get status badge)
+  const todayStr = getTodayStr();
+  const todayAdherence = computeDayAdherence(todayStr);
+  const slotResultsMap = {};
+  todayAdherence.slotResults.forEach(r => { slotResultsMap[r.slot.id] = r; });
+
+  let slotsHtml = '<div style="margin-top:14px; display:flex; flex-direction:column; gap:8px;">';
+  schedule.slots.forEach(slot => {
+    if (slot.type !== 'study') return; // Non-study slots render as-is in existing view
+    const result = slotResultsMap[slot.id];
+    const status = result ? result.status : 'upcoming';
+    const durationStr = slot.duration >= 60 ? (slot.duration / 60) + 'h target' : slot.duration + 'min target';
+
+    let statusHtml = '';
+    let iconActive = false;
+    if (status === 'done') {
+      statusHtml = `<div class="cons-slot-status cons-status-done">${_svgCheck}</div>`;
+      iconActive = true;
+    } else if (status === 'partial') {
+      const actual = result ? _fmtMins(result.actualMin) : '';
+      statusHtml = `<div class="cons-slot-status cons-status-partial">${_svgPartial}<span>${actual}</span></div>`;
+    } else if (status === 'upcoming') {
+      statusHtml = `<div class="cons-slot-status cons-status-upcoming">${_svgUpcoming}<span>Upcoming</span></div>`;
+    } else {
+      statusHtml = `<div class="cons-slot-status cons-status-missed">${_svgPartial}<span>Missed</span></div>`;
+    }
+
+    slotsHtml += `
+      <div class="glass-card cons-slot-row">
+        <div class="cons-slot-icon ${iconActive ? 'cons-slot-icon-on' : 'cons-slot-icon-off'}">${_svgBook}</div>
+        <div class="cons-slot-body">
+          <div class="cons-slot-label">${slot.label}</div>
+          <div class="cons-slot-range">Window ${slot.startRange} · ${durationStr}</div>
+        </div>
+        ${statusHtml}
+      </div>`;
+  });
+  slotsHtml += '</div>';
+
+  // 7-day heatmap
+  const days = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+  let heatHtml = '<div class="glass-card cons-heatmap"><div class="cons-heatmap-title">Last 7 days</div><div class="cons-heat-row">';
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    const dayLabel = days[(d.getDay() + 6) % 7];
+    const isToday = dStr === todayStr;
+    const log = c.dailyLog[dStr];
+    const pct = log ? log.adherencePct : 0;
+
+    let boxClass = 'cons-heat-missed';
+    if (isToday) boxClass = 'cons-heat-today';
+    else if (pct >= 80) boxClass = 'cons-heat-full';
+    else if (pct > 0) boxClass = 'cons-heat-partial';
+
+    heatHtml += `<div class="cons-heat-day"><div class="cons-heat-box ${boxClass}"></div><span class="cons-heat-label">${dayLabel}</span></div>`;
+  }
+  heatHtml += '</div></div>';
+
+  el.innerHTML = headerHtml + slotsHtml + heatHtml;
 }
 
 let lastNotifiedTime = '';
@@ -2624,6 +3029,13 @@ function trackerStop() {
   var topic = trackerState.topic || document.getElementById('st-topic').value;
   var task = document.getElementById('st-task-desc').value;
   
+  // Capture startTime BEFORE nulling trackerState (format: "HH:MM")
+  var sessionStartTime = '';
+  if (trackerState.startTime) {
+    var st = new Date(trackerState.startTime);
+    sessionStartTime = String(st.getHours()).padStart(2,'0') + ':' + String(st.getMinutes()).padStart(2,'0');
+  }
+  
   // Reset tracker state BEFORE saving to prevent Firebase triggering an active tracker
   trackerState.isRunning = false; trackerState.isPaused = false;
   trackerState.startTime = null; trackerState.pausedTime = 0; trackerState.pauseStart = null;
@@ -2641,7 +3053,8 @@ function trackerStop() {
     if (!DYNAMIC_DATA.journalEntries[todayStr].rows) { DYNAMIC_DATA.journalEntries[todayStr].rows = []; }
     DYNAMIC_DATA.journalEntries[todayStr].rows.push({
       subject: subject, topic: topic, tasks: task,
-      durHH: String(hh), durMM: String(mm), status: 'Done'
+      durHH: String(hh), durMM: String(mm), status: 'Done',
+      startTime: sessionStartTime
     });
     saveDynamicData();
     renderTodaysLog();
@@ -2883,6 +3296,16 @@ window.openManualLogModal = function(idx) {
     subjOptions += `<option value="${s.name}" ${s.name === subjValue ? 'selected' : ''}>${s.name}</option>`;
   });
   
+  // Pre-fill startTime: current time for new entry, existing value for edit
+  let startTimeValue = '';
+  if (isEditing) {
+    const editRow = DYNAMIC_DATA.journalEntries[dateValue] && DYNAMIC_DATA.journalEntries[dateValue].rows[idx];
+    startTimeValue = (editRow && editRow.startTime) || '';
+  } else {
+    const nowT = new Date();
+    startTimeValue = String(nowT.getHours()).padStart(2,'0') + ':' + String(nowT.getMinutes()).padStart(2,'0');
+  }
+
   body.innerHTML = `
     <div style="display:flex; flex-direction:column; gap:10px;">
       <select id="ml-subj" class="st-select" onchange="onManualLogSubjChange()">${subjOptions}<option value="__custom__">Other...</option></select>
@@ -2890,6 +3313,7 @@ window.openManualLogModal = function(idx) {
       <input type="text" id="ml-task" class="st-input" placeholder="Task Description" value="${taskValue}">
       <input type="date" id="ml-date" class="st-input" value="${dateValue}" style="font-family:inherit;">
       <div style="display:flex; gap:10px;">
+        <div style="flex:1"><label style="font-size:12px; color:var(--text-secondary);">Start Time</label><input type="time" id="ml-starttime" class="st-input" value="${startTimeValue}" style="margin-bottom:0; font-family:inherit;"></div>
         <div style="flex:1"><label style="font-size:12px; color:var(--text-secondary);">Hours</label><input type="number" id="ml-hh" class="st-input" min="0" value="${hhValue}" style="margin-bottom:0;"></div>
         <div style="flex:1"><label style="font-size:12px; color:var(--text-secondary);">Minutes</label><input type="number" id="ml-mm" class="st-input" min="0" max="59" value="${mmValue}" style="margin-bottom:0;"></div>
       </div>
@@ -2945,6 +3369,8 @@ window.saveManualLog = function() {
   const dateVal = document.getElementById('ml-date').value;
   const hh = parseInt(document.getElementById('ml-hh').value) || 0;
   const mm = parseInt(document.getElementById('ml-mm').value) || 0;
+  const startTimeEl = document.getElementById('ml-starttime');
+  const startTime = startTimeEl ? startTimeEl.value : '';
   
   if (!subj) { alert('Please select a subject'); return; }
   if (hh === 0 && mm === 0) { alert('Please enter duration'); return; }
@@ -2970,7 +3396,8 @@ window.saveManualLog = function() {
     tasks: task,
     durHH: String(hh),
     durMM: String(mm),
-    status: 'Done'
+    status: 'Done',
+    startTime: startTime
   });
   
   saveDynamicData();

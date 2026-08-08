@@ -1668,5 +1668,117 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
+/* ═══════════════════════════════════════════
+   CONSISTENCY FEATURE STYLES
+   All colors via CSS vars — adapts to all themes + dark/light mode
+   ═══════════════════════════════════════════ */
 
+/* ── Home Widget ── */
+.cons-hw { padding: 18px; }
+.cons-hw-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.cons-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11.5px; font-weight: 600;
+  padding: 5px 11px 5px 8px; border-radius: 20px;
+}
+.cons-pill svg { flex-shrink: 0; }
+.cons-pill-on  { color: var(--primary); background: rgba(10,132,255,0.12); }
+.cons-pill-warn { color: var(--warning); background: rgba(255,214,10,0.12); }
 
+.cons-streak-num {
+  font-size: 38px; font-weight: 800;
+  letter-spacing: -0.02em; margin-top: 12px; line-height: 1;
+}
+.cons-streak-num span {
+  font-size: 15px; font-weight: 600;
+  color: var(--text-muted); margin-left: 6px;
+}
+.cons-best { text-align: right; font-size: 11px; color: var(--text-muted); }
+.cons-best b { display: block; font-size: 16px; font-weight: 700; color: var(--text-secondary); margin-top: 2px; }
+
+.cons-divider { height: 1px; background: var(--glass-border); margin: 16px 0 14px; }
+
+.cons-adhere-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.cons-adhere-label { font-size: 12.5px; color: var(--text-secondary); font-weight: 500; }
+.cons-adhere-val { font-size: 12.5px; font-weight: 700; }
+.cons-val-good { color: var(--success); }
+.cons-val-warn { color: var(--warning); }
+
+.cons-bar-track { height: 7px; border-radius: 5px; background: rgba(128,128,128,0.15); overflow: hidden; }
+.cons-bar-fill { height: 100%; border-radius: 5px; transition: width 0.4s ease; }
+.cons-fill-primary { background: var(--primary); }
+.cons-fill-warn { background: var(--warning); }
+
+.cons-sub { font-size: 11px; color: var(--text-muted); margin-top: 7px; }
+
+.cons-insight {
+  margin-top: 16px; padding: 12px 13px; border-radius: 12px;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.cons-insight svg { flex-shrink: 0; margin-top: 1px; }
+.cons-insight p { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--text-secondary); }
+.cons-insight b { color: var(--text-primary); }
+.cons-insight-good { background: rgba(52,199,89,0.08); border: 1px solid rgba(52,199,89,0.2); }
+.cons-insight-warn { background: rgba(255,214,10,0.08); border: 1px solid rgba(255,214,10,0.22); }
+.cons-nudge { display: block; margin-top: 6px; font-size: 11.5px; color: var(--text-muted); }
+
+/* ── Timetable Header Card ── */
+.cons-tt-header { padding: 16px; }
+.cons-tt-hrow { display: flex; justify-content: space-between; align-items: center; }
+.cons-tt-num { font-size: 30px; font-weight: 800; }
+.cons-tt-num span { font-size: 14px; font-weight: 600; color: var(--text-muted); margin-left: 5px; }
+.cons-tt-pace {
+  font-size: 12px; font-weight: 600; color: var(--primary);
+  display: flex; align-items: center; gap: 6px;
+}
+.cons-tt-pace-warn { color: var(--warning); }
+.cons-tt-best-row {
+  display: flex; justify-content: space-between;
+  margin-top: 14px; padding-top: 14px;
+  border-top: 1px solid var(--glass-border);
+  font-size: 11.5px; color: var(--text-muted);
+}
+.cons-tt-best-row b {
+  color: var(--text-secondary); font-weight: 700;
+  display: block; font-size: 14px; margin-top: 2px;
+}
+
+/* ── Slot Status Rows ── */
+.cons-slot-row {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+}
+.cons-slot-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.cons-slot-icon-on  { background: rgba(10,132,255,0.12); color: var(--primary); }
+.cons-slot-icon-off { background: rgba(128,128,128,0.08); color: var(--text-muted); }
+.cons-slot-body { flex: 1; min-width: 0; }
+.cons-slot-label { font-size: 14px; font-weight: 600; }
+.cons-slot-range { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.cons-slot-status {
+  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+}
+.cons-status-done    { color: var(--success); }
+.cons-status-partial { color: var(--warning); }
+.cons-status-upcoming { color: var(--text-muted); font-weight: 600; }
+.cons-status-missed  { color: var(--warning); opacity: 0.7; }
+
+/* ── 7-Day Heatmap ── */
+.cons-heatmap { padding: 16px; margin-top: 14px; }
+.cons-heatmap-title { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px; }
+.cons-heat-row { display: flex; gap: 6px; justify-content: space-between; }
+.cons-heat-day { flex: 1; text-align: center; }
+.cons-heat-box { width: 100%; aspect-ratio: 1; border-radius: 7px; margin-bottom: 5px; }
+.cons-heat-full    { background: var(--primary); }
+.cons-heat-partial { background: var(--primary); opacity: 0.35; }
+.cons-heat-missed  { background: rgba(128,128,128,0.08); border: 1px solid var(--glass-border); }
+.cons-heat-today   {
+  background: var(--primary); opacity: 0.9;
+  box-shadow: 0 0 0 2px var(--primary);
+  outline: 2px solid var(--glass-bg);
+  outline-offset: 1px;
+}
+.cons-heat-label { font-size: 10px; color: var(--text-muted); }
