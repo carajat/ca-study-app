@@ -4185,7 +4185,7 @@ async function checkForUpdates() {
     }
 
     // New version available! Prompt user.
-    const confirmUpdate = confirm(\Update available (\). Install now? This will restart the app.\);
+    const confirmUpdate = confirm(`Update available (${latestVersion}). Install now? This will restart the app.`);
     if (!confirmUpdate) return;
 
     showToast('Downloading update...', 'info');
