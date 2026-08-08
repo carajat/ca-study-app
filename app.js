@@ -1319,28 +1319,7 @@ function renderConsistencyDetail() {
     </div>
   `;
 
-  // 7-day heatmap
-  const days = ['Mo','Tu','We','Th','Fr','Sa','Su'];
-  let heatHtml = '<div class="glass-card cons-heatmap"><div class="cons-heatmap-title">Last 7 days</div><div class="cons-heat-row">';
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const dStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-    const dayLabel = days[(d.getDay() + 6) % 7];
-    const isToday = dStr === todayStr;
-    const log = c.dailyLog[dStr];
-    const pct = log ? log.adherencePct : 0;
-
-    let boxClass = 'cons-heat-missed';
-    if (isToday) boxClass = 'cons-heat-today';
-    else if (pct >= 80) boxClass = 'cons-heat-full';
-    else if (pct > 0) boxClass = 'cons-heat-partial';
-
-    heatHtml += `<div class="cons-heat-day"><div class="cons-heat-box ${boxClass}"></div><span class="cons-heat-label">${dayLabel}</span></div>`;
-  }
-  heatHtml += '</div></div>';
-
-  el.innerHTML = headerHtml + heatHtml;
+  el.innerHTML = headerHtml;
 }
 
 let lastNotifiedTime = '';
@@ -4066,9 +4045,60 @@ window.openLogHistoryModal = function() {
     </div>
   </div>`;
   
+  // Build Calendar HTML
+  const tDt = new Date();
+  const yr = tDt.getFullYear();
+  const mo = tDt.getMonth();
+  const firstDay = new Date(yr, mo, 1).getDay(); // 0(Sun) to 6(Sat)
+  const daysInMo = new Date(yr, mo + 1, 0).getDate();
+  const calMonthName = new Date(yr, mo).toLocaleString('default', { month: 'long', year: 'numeric' });
+  const cData = DYNAMIC_DATA.consistency || { dailyLog: {} };
+  const tStr = getTodayStr();
+  
+  let calHtml = `
+    <div style="background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:10px; padding:12px; margin-bottom:15px;">
+      <div style="font-weight:600; font-size:14px; text-align:center; margin-bottom:10px; color:var(--primary-color);">
+        ${calMonthName}
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; text-align:center;">
+        <div style="font-size:10px; color:var(--text-muted); padding:2px;">Su</div>
+        <div style="font-size:10px; color:var(--text-muted); padding:2px;">Mo</div>
+        <div style="font-size:10px; color:var(--text-muted); padding:2px;">Tu</div>
+        <div style="font-size:10px; color:var(--text-muted); padding:2px;">We</div>
+        <div style="font-size:10px; color:var(--text-muted); padding:2px;">Th</div>
+        <div style="font-size:10px; color:var(--text-muted); padding:2px;">Fr</div>
+        <div style="font-size:10px; color:var(--text-muted); padding:2px;">Sa</div>
+  `;
+  for (let i = 0; i < firstDay; i++) calHtml += `<div></div>`;
+  
+  for (let day = 1; day <= daysInMo; day++) {
+    const dStr = yr + '-' + String(mo+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+    const log = cData.dailyLog[dStr];
+    const pct = log ? log.adherencePct : 0;
+    const isFuture = dStr > tStr;
+    const isToday = dStr === tStr;
+    
+    let bg = 'rgba(255,255,255,0.03)';
+    let border = '1px solid rgba(255,255,255,0.05)';
+    let color = 'var(--text-secondary)';
+    
+    if (isToday) border = '1px solid var(--primary-color)';
+    
+    if (!isFuture) {
+      if (pct >= 80) { bg = 'var(--success)'; border = '1px solid var(--success)'; color = '#fff'; }
+      else if (pct > 0) { bg = 'var(--warning)'; border = '1px solid var(--warning)'; color = '#12141e'; }
+      else if (dStr < tStr) {
+        color = 'var(--text-muted)';
+      }
+    }
+    
+    calHtml += `<div onclick="document.getElementById('log-history-date').value='${dStr}'; renderHistoryForDate('${dStr}')" style="background:${bg}; border:${border}; color:${color}; font-size:12px; padding:6px 0; border-radius:4px; cursor:pointer; font-weight:500;" title="${dStr}">${day}</div>`;
+  }
+  calHtml += `</div></div>`;
+
   // Build History HTML
   const todayIso = new Date().toISOString().split('T')[0];
-  const historyHtml = `
+  const historyHtml = calHtml + `
     <div style="margin-bottom: 12px;">
       <input type="date" id="log-history-date" class="st-input" style="width:100%; margin-bottom:0;" value="${todayIso}" onchange="renderHistoryForDate(this.value)">
     </div>
