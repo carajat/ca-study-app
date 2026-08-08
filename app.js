@@ -4131,9 +4131,9 @@ window.renderHistoryCalendar = function(yr, mo) {
     }
     
     if (isSelected) {
-      border = '1.5px solid var(--primary-color)';
+      border = '1.5px solid var(--primary)';
       if (bg === 'rgba(255,255,255,0.03)') {
-         bg = 'rgba(108,60,225,0.15)'; 
+         bg = 'var(--purple-glow)'; 
          color = 'var(--text-primary)';
       }
     }

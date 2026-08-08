@@ -92,138 +92,170 @@
 
 /* ─── Themes ─── */
 body.theme-ocean {
-  --purple: #3B82F6;
-  --purple-glow: rgba(59, 130, 246, 0.4);
-  --border-glow: rgba(59, 130, 246, 0.3);
-  --checkbox-row-active: rgba(59, 130, 246, 0.08);
-  --toast-shadow: rgba(59, 130, 246, 0.4);
+  --purple: #0a84ff;
+  --blue: #0a84ff;
+  --purple-glow: rgba(10, 132, 255, 0.4);
+  --border-glow: rgba(10, 132, 255, 0.3);
+  --checkbox-row-active: rgba(10, 132, 255, 0.08);
+  --toast-shadow: rgba(10, 132, 255, 0.4);
+  --bg-mesh: radial-gradient(at 0% 0%, rgba(10, 132, 255, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(10, 132, 255, 0.1) 0px, transparent 50%);
 }
 @media (prefers-color-scheme: light) {
   body.theme-ocean {
-    --purple: #2563EB;
-    --purple-glow: rgba(37, 99, 235, 0.2);
-    --border-glow: rgba(37, 99, 235, 0.15);
-    --checkbox-row-active: rgba(37, 99, 235, 0.06);
-    --toast-shadow: rgba(37, 99, 235, 0.25);
+    --purple: #007aff;
+    --blue: #007aff;
+    --purple-glow: rgba(0, 122, 255, 0.2);
+    --border-glow: rgba(0, 122, 255, 0.15);
+    --checkbox-row-active: rgba(0, 122, 255, 0.06);
+    --toast-shadow: rgba(0, 122, 255, 0.25);
+    --bg-mesh: radial-gradient(at 0% 0%, rgba(0, 122, 255, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(0, 122, 255, 0.05) 0px, transparent 50%);
   }
 }
 
 body.theme-forest {
-  --purple: #10B981;
-  --purple-glow: rgba(16, 185, 129, 0.4);
-  --border-glow: rgba(16, 185, 129, 0.3);
-  --checkbox-row-active: rgba(16, 185, 129, 0.08);
-  --toast-shadow: rgba(16, 185, 129, 0.4);
+  --purple: #32d74b;
+  --blue: #32d74b;
+  --purple-glow: rgba(50, 215, 75, 0.4);
+  --border-glow: rgba(50, 215, 75, 0.3);
+  --checkbox-row-active: rgba(50, 215, 75, 0.08);
+  --toast-shadow: rgba(50, 215, 75, 0.4);
+  --bg-mesh: radial-gradient(at 0% 0%, rgba(50, 215, 75, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(50, 215, 75, 0.1) 0px, transparent 50%);
 }
 @media (prefers-color-scheme: light) {
   body.theme-forest {
-    --purple: #059669; 
-    --purple-glow: rgba(5, 150, 105, 0.2);
-    --border-glow: rgba(5, 150, 105, 0.15);
-    --checkbox-row-active: rgba(5, 150, 105, 0.06);
-    --toast-shadow: rgba(5, 150, 105, 0.25);
+    --purple: #28cd41; 
+    --blue: #28cd41;
+    --purple-glow: rgba(40, 205, 65, 0.2);
+    --border-glow: rgba(40, 205, 65, 0.15);
+    --checkbox-row-active: rgba(40, 205, 65, 0.06);
+    --toast-shadow: rgba(40, 205, 65, 0.25);
+    --bg-mesh: radial-gradient(at 0% 0%, rgba(40, 205, 65, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(40, 205, 65, 0.05) 0px, transparent 50%);
   }
 }
 
 body.theme-sunset {
-  --purple: #F59E0B;
-  --purple-glow: rgba(245, 158, 11, 0.4);
-  --border-glow: rgba(245, 158, 11, 0.3);
-  --checkbox-row-active: rgba(245, 158, 11, 0.08);
-  --toast-shadow: rgba(245, 158, 11, 0.4);
+  --purple: #ff9f0a;
+  --blue: #ff9f0a;
+  --purple-glow: rgba(255, 159, 10, 0.4);
+  --border-glow: rgba(255, 159, 10, 0.3);
+  --checkbox-row-active: rgba(255, 159, 10, 0.08);
+  --toast-shadow: rgba(255, 159, 10, 0.4);
+  --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 159, 10, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 159, 10, 0.1) 0px, transparent 50%);
 }
 @media (prefers-color-scheme: light) {
   body.theme-sunset {
-    --purple: #D97706; 
-    --purple-glow: rgba(217, 119, 6, 0.2);
-    --border-glow: rgba(217, 119, 6, 0.15);
-    --checkbox-row-active: rgba(217, 119, 6, 0.06);
-    --toast-shadow: rgba(217, 119, 6, 0.25);
+    --purple: #ff9500; 
+    --blue: #ff9500;
+    --purple-glow: rgba(255, 149, 0, 0.2);
+    --border-glow: rgba(255, 149, 0, 0.15);
+    --checkbox-row-active: rgba(255, 149, 0, 0.06);
+    --toast-shadow: rgba(255, 149, 0, 0.25);
+    --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 149, 0, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 149, 0, 0.05) 0px, transparent 50%);
   }
 }
 
 body.theme-rose {
-  --purple: #F43F5E;
-  --purple-glow: rgba(244, 63, 94, 0.4);
-  --border-glow: rgba(244, 63, 94, 0.3);
-  --checkbox-row-active: rgba(244, 63, 94, 0.08);
-  --toast-shadow: rgba(244, 63, 94, 0.4);
+  --purple: #ff375f;
+  --blue: #ff375f;
+  --purple-glow: rgba(255, 55, 95, 0.4);
+  --border-glow: rgba(255, 55, 95, 0.3);
+  --checkbox-row-active: rgba(255, 55, 95, 0.08);
+  --toast-shadow: rgba(255, 55, 95, 0.4);
+  --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 55, 95, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 55, 95, 0.1) 0px, transparent 50%);
 }
 @media (prefers-color-scheme: light) {
   body.theme-rose {
-    --purple: #E11D48;
-    --purple-glow: rgba(225, 29, 72, 0.2);
-    --border-glow: rgba(225, 29, 72, 0.15);
-    --checkbox-row-active: rgba(225, 29, 72, 0.06);
-    --toast-shadow: rgba(225, 29, 72, 0.25);
+    --purple: #ff2d55;
+    --blue: #ff2d55;
+    --purple-glow: rgba(255, 45, 85, 0.2);
+    --border-glow: rgba(255, 45, 85, 0.15);
+    --checkbox-row-active: rgba(255, 45, 85, 0.06);
+    --toast-shadow: rgba(255, 45, 85, 0.25);
+    --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 45, 85, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 45, 85, 0.05) 0px, transparent 50%);
   }
 }
 
 body.theme-mocha {
-  --purple: #8B4513; /* SaddleBrown */
-  --purple-glow: rgba(139, 69, 19, 0.4);
-  --border-glow: rgba(139, 69, 19, 0.3);
-  --checkbox-row-active: rgba(139, 69, 19, 0.08);
-  --toast-shadow: rgba(139, 69, 19, 0.4);
+  --purple: #ac8e68;
+  --blue: #ac8e68;
+  --purple-glow: rgba(172, 142, 104, 0.4);
+  --border-glow: rgba(172, 142, 104, 0.3);
+  --checkbox-row-active: rgba(172, 142, 104, 0.08);
+  --toast-shadow: rgba(172, 142, 104, 0.4);
+  --bg-mesh: radial-gradient(at 0% 0%, rgba(172, 142, 104, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(172, 142, 104, 0.1) 0px, transparent 50%);
 }
 @media (prefers-color-scheme: light) {
   body.theme-mocha {
-    --purple: #A0522D; /* Sienna */
-    --purple-glow: rgba(160, 82, 45, 0.2);
-    --border-glow: rgba(160, 82, 45, 0.15);
-    --checkbox-row-active: rgba(160, 82, 45, 0.06);
-    --toast-shadow: rgba(160, 82, 45, 0.25);
+    --purple: #a2845e;
+    --blue: #a2845e;
+    --purple-glow: rgba(162, 132, 94, 0.2);
+    --border-glow: rgba(162, 132, 94, 0.15);
+    --checkbox-row-active: rgba(162, 132, 94, 0.06);
+    --toast-shadow: rgba(162, 132, 94, 0.25);
+    --bg-mesh: radial-gradient(at 0% 0%, rgba(162, 132, 94, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(162, 132, 94, 0.05) 0px, transparent 50%);
   }
 }
 
 body.theme-teal {
-  --purple: #1E3A8A; /* Deep Navy */
-  --purple-glow: rgba(30, 58, 138, 0.4);
-  --border-glow: rgba(30, 58, 138, 0.3);
-  --checkbox-row-active: rgba(30, 58, 138, 0.08);
-  --toast-shadow: rgba(30, 58, 138, 0.4);
+  --purple: #64d2ff;
+  --blue: #64d2ff;
+  --purple-glow: rgba(100, 210, 255, 0.4);
+  --border-glow: rgba(100, 210, 255, 0.3);
+  --checkbox-row-active: rgba(100, 210, 255, 0.08);
+  --toast-shadow: rgba(100, 210, 255, 0.4);
+  --bg-mesh: radial-gradient(at 0% 0%, rgba(100, 210, 255, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(100, 210, 255, 0.1) 0px, transparent 50%);
 }
 @media (prefers-color-scheme: light) {
   body.theme-teal {
-    --purple: #1D4ED8; /* Professional Blue */
-    --purple-glow: rgba(29, 78, 216, 0.2);
-    --border-glow: rgba(29, 78, 216, 0.15);
-    --checkbox-row-active: rgba(29, 78, 216, 0.06);
-    --toast-shadow: rgba(29, 78, 216, 0.25);
+    --purple: #5ac8fa;
+    --blue: #5ac8fa;
+    --purple-glow: rgba(90, 200, 250, 0.2);
+    --border-glow: rgba(90, 200, 250, 0.15);
+    --checkbox-row-active: rgba(90, 200, 250, 0.06);
+    --toast-shadow: rgba(90, 200, 250, 0.25);
+    --bg-mesh: radial-gradient(at 0% 0%, rgba(90, 200, 250, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(90, 200, 250, 0.05) 0px, transparent 50%);
   }
 }
 
 body.theme-amethyst {
-  --purple: #374151; /* Graphite / Dark Gray */
-  --purple-glow: rgba(55, 65, 81, 0.4);
-  --border-glow: rgba(55, 65, 81, 0.3);
-  --checkbox-row-active: rgba(55, 65, 81, 0.08);
-  --toast-shadow: rgba(55, 65, 81, 0.4);
+  --purple: #bf5af2;
+  --blue: #bf5af2;
+  --purple-glow: rgba(191, 90, 242, 0.4);
+  --border-glow: rgba(191, 90, 242, 0.3);
+  --checkbox-row-active: rgba(191, 90, 242, 0.08);
+  --toast-shadow: rgba(191, 90, 242, 0.4);
+  --bg-mesh: radial-gradient(at 0% 0%, rgba(191, 90, 242, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(191, 90, 242, 0.1) 0px, transparent 50%);
 }
 @media (prefers-color-scheme: light) {
   body.theme-amethyst {
-    --purple: #4B5563; /* Medium Gray */
-    --purple-glow: rgba(75, 85, 99, 0.2);
-    --border-glow: rgba(75, 85, 99, 0.15);
-    --checkbox-row-active: rgba(75, 85, 99, 0.06);
-    --toast-shadow: rgba(75, 85, 99, 0.25);
+    --purple: #af52de;
+    --blue: #af52de;
+    --purple-glow: rgba(175, 82, 222, 0.2);
+    --border-glow: rgba(175, 82, 222, 0.15);
+    --checkbox-row-active: rgba(175, 82, 222, 0.06);
+    --toast-shadow: rgba(175, 82, 222, 0.25);
+    --bg-mesh: radial-gradient(at 0% 0%, rgba(175, 82, 222, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(175, 82, 222, 0.05) 0px, transparent 50%);
   }
 }
 
 body.theme-cherry {
-  --purple: #991B1B; /* Dark Crimson/Ruby */
-  --purple-glow: rgba(153, 27, 27, 0.4);
-  --border-glow: rgba(153, 27, 27, 0.3);
-  --checkbox-row-active: rgba(153, 27, 27, 0.08);
-  --toast-shadow: rgba(153, 27, 27, 0.4);
+  --purple: #ff453a;
+  --blue: #ff453a;
+  --purple-glow: rgba(255, 69, 58, 0.4);
+  --border-glow: rgba(255, 69, 58, 0.3);
+  --checkbox-row-active: rgba(255, 69, 58, 0.08);
+  --toast-shadow: rgba(255, 69, 58, 0.4);
+  --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 69, 58, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 69, 58, 0.1) 0px, transparent 50%);
 }
 @media (prefers-color-scheme: light) {
   body.theme-cherry {
-    --purple: #B91C1C; /* Professional Red */
-    --purple-glow: rgba(185, 28, 28, 0.2);
-    --border-glow: rgba(185, 28, 28, 0.15);
-    --checkbox-row-active: rgba(185, 28, 28, 0.06);
-    --toast-shadow: rgba(185, 28, 28, 0.25);
+    --purple: #ff3b30;
+    --blue: #ff3b30;
+    --purple-glow: rgba(255, 59, 48, 0.2);
+    --border-glow: rgba(255, 59, 48, 0.15);
+    --checkbox-row-active: rgba(255, 59, 48, 0.06);
+    --toast-shadow: rgba(255, 59, 48, 0.25);
+    --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 59, 48, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 59, 48, 0.05) 0px, transparent 50%);
   }
 }
 
