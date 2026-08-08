@@ -2196,8 +2196,7 @@ function openMenuModal() {
 }
 
 function openThemeModal() {
-  let currentTheme = localStorage.getItem('ca-theme') || 'blue';
-  if (currentTheme === 'default' || currentTheme === 'ocean') currentTheme = 'blue';
+  const currentTheme = localStorage.getItem('ca-theme') || 'default';
   const savedMode = localStorage.getItem('theme');
   
   let modeIcon, modeText, nextMode;
@@ -2215,14 +2214,15 @@ function openThemeModal() {
     </button>
     <p style="text-align:center; color:var(--text-secondary); margin-bottom: 20px;">Personalize your app colors</p>
     <div class="theme-picker" style="flex-wrap: wrap;">
-      <div class="theme-circle tc-blue ${currentTheme === 'blue' ? 'active' : ''}" onclick="setTheme('blue', this)"></div>
-      <div class="theme-circle tc-graphite ${currentTheme === 'graphite' ? 'active' : ''}" onclick="setTheme('graphite', this)"></div>
-      <div class="theme-circle tc-brown ${currentTheme === 'brown' ? 'active' : ''}" onclick="setTheme('brown', this)"></div>
-      <div class="theme-circle tc-navy ${currentTheme === 'navy' ? 'active' : ''}" onclick="setTheme('navy', this)"></div>
-      <div class="theme-circle tc-emerald ${currentTheme === 'emerald' ? 'active' : ''}" onclick="setTheme('emerald', this)"></div>
-      <div class="theme-circle tc-slate ${currentTheme === 'slate' ? 'active' : ''}" onclick="setTheme('slate', this)"></div>
-      <div class="theme-circle tc-burgundy ${currentTheme === 'burgundy' ? 'active' : ''}" onclick="setTheme('burgundy', this)"></div>
+      <div class="theme-circle tc-default ${currentTheme === 'default' ? 'active' : ''}" onclick="setTheme('default', this)"></div>
+      <div class="theme-circle tc-ocean ${currentTheme === 'ocean' ? 'active' : ''}" onclick="setTheme('ocean', this)"></div>
+      <div class="theme-circle tc-forest ${currentTheme === 'forest' ? 'active' : ''}" onclick="setTheme('forest', this)"></div>
+      <div class="theme-circle tc-sunset ${currentTheme === 'sunset' ? 'active' : ''}" onclick="setTheme('sunset', this)"></div>
+      <div class="theme-circle tc-rose ${currentTheme === 'rose' ? 'active' : ''}" onclick="setTheme('rose', this)"></div>
+      <div class="theme-circle tc-mocha ${currentTheme === 'mocha' ? 'active' : ''}" onclick="setTheme('mocha', this)"></div>
       <div class="theme-circle tc-teal ${currentTheme === 'teal' ? 'active' : ''}" onclick="setTheme('teal', this)"></div>
+      <div class="theme-circle tc-amethyst ${currentTheme === 'amethyst' ? 'active' : ''}" onclick="setTheme('amethyst', this)"></div>
+      <div class="theme-circle tc-cherry ${currentTheme === 'cherry' ? 'active' : ''}" onclick="setTheme('cherry', this)"></div>
     </div>
     <button class="btn-primary" style="margin-top:20px" onclick="openMenuModal()">Back to Menu</button>
   `);
@@ -2230,9 +2230,9 @@ function openThemeModal() {
 
 function setTheme(themeName, element) {
   // Remove all theme classes
-  document.body.classList.remove('theme-blue', 'theme-graphite', 'theme-brown', 'theme-navy', 'theme-emerald', 'theme-slate', 'theme-burgundy', 'theme-teal', 'theme-ocean', 'theme-forest', 'theme-sunset', 'theme-rose', 'theme-mocha', 'theme-amethyst', 'theme-cherry');
+  document.body.classList.remove('theme-ocean', 'theme-forest', 'theme-sunset', 'theme-rose', 'theme-mocha', 'theme-teal', 'theme-amethyst', 'theme-cherry');
   
-  if (themeName && themeName !== 'blue') {
+  if (themeName !== 'default') {
     document.body.classList.add('theme-' + themeName);
   }
   localStorage.setItem('ca-theme', themeName);
