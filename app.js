@@ -1124,13 +1124,9 @@ function computeProjection() {
   const totalLoggedHours = totalLoggedMinutes / 60;
   const currentPct = calculateOverallProgress();
   
-  // Use a default of 10 hours per percent (1000 hrs total) if no data is available
-  // Clamp historical pace between 6 and 18 hours per percent to prevent wild swings
-  let hoursPerPercent = 10;
-  if (currentPct > 0 && totalLoggedHours > 0) {
-    hoursPerPercent = totalLoggedHours / currentPct;
-    hoursPerPercent = Math.max(6, Math.min(hoursPerPercent, 18));
-  }
+  if (currentPct <= 0 || totalLoggedHours <= 0) return null;
+
+  const hoursPerPercent = totalLoggedHours / currentPct;
   
   const remainingHours = (100 - currentPct) * hoursPerPercent;
 
@@ -1227,7 +1223,12 @@ function updateConsistencyWidget() {
 
   // Insight card
   let insightHtml = '';
-  if (proj) {
+  const logDatesCount = Object.keys(c.dailyLog || {}).length;
+  const currentPct = calculateOverallProgress();
+
+  if (logDatesCount < 7 || currentPct < 10) {
+    insightHtml = `<div class="cons-insight" style="background:transparent; border:1px dashed var(--glass-border); align-items:center;"><span class="material-symbols-rounded" style="color:var(--text-muted); font-size:18px;">hourglass_empty</span><p style="color:var(--text-muted); font-size:11.5px;">Building your pace profile &mdash; check back after a bit more progress.</p></div>`;
+  } else if (proj) {
     if (proj.onTrack) {
       insightHtml = `<div class="cons-insight cons-insight-good">${_svgTrendUp}<p>At this pace, your <b>syllabus</b> completes <b>${proj.daysVsExam} days before</b> your exam date.</p></div>`;
     } else {
