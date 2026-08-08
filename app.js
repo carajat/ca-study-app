@@ -3997,53 +3997,20 @@ window.openLogHistoryModal = function() {
   const cData = DYNAMIC_DATA.consistency || { dailyLog: {} };
   const tStr = getTodayStr();
   
-  let calHtml = `
-    <div style="background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:10px; padding:12px; margin-bottom:15px;">
-      <div style="font-weight:600; font-size:14px; text-align:center; margin-bottom:10px; color:var(--primary-color);">
-        ${calMonthName}
-      </div>
-      <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; text-align:center;">
-        <div style="font-size:10px; color:var(--text-muted); padding:2px;">Su</div>
-        <div style="font-size:10px; color:var(--text-muted); padding:2px;">Mo</div>
-        <div style="font-size:10px; color:var(--text-muted); padding:2px;">Tu</div>
-        <div style="font-size:10px; color:var(--text-muted); padding:2px;">We</div>
-        <div style="font-size:10px; color:var(--text-muted); padding:2px;">Th</div>
-        <div style="font-size:10px; color:var(--text-muted); padding:2px;">Fr</div>
-        <div style="font-size:10px; color:var(--text-muted); padding:2px;">Sa</div>
-  `;
-  for (let i = 0; i < firstDay; i++) calHtml += `<div></div>`;
-  
-  for (let day = 1; day <= daysInMo; day++) {
-    const dStr = yr + '-' + String(mo+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
-    const log = cData.dailyLog[dStr];
-    const pct = log ? log.adherencePct : 0;
-    const isFuture = dStr > tStr;
-    const isToday = dStr === tStr;
-    
-    let bg = 'rgba(255,255,255,0.03)';
-    let border = '1px solid rgba(255,255,255,0.05)';
-    let color = 'var(--text-secondary)';
-    
-    if (isToday) border = '1px solid var(--primary-color)';
-    
-    if (!isFuture) {
-      if (pct >= 80) { bg = 'var(--success)'; border = '1px solid var(--success)'; color = '#fff'; }
-      else if (pct > 0) { bg = 'var(--warning)'; border = '1px solid var(--warning)'; color = '#12141e'; }
-      else if (dStr < tStr) {
-        color = 'var(--text-muted)';
-      }
-    }
-    
-    calHtml += `<div onclick="document.getElementById('log-history-date').value='${dStr}'; renderHistoryForDate('${dStr}')" style="background:${bg}; border:${border}; color:${color}; font-size:12px; padding:6px 0; border-radius:4px; cursor:pointer; font-weight:500;" title="${dStr}">${day}</div>`;
-  }
-  calHtml += `</div></div>`;
-
   // Build History HTML
-  const todayIso = new Date().toISOString().split('T')[0];
-  const historyHtml = calHtml + `
-    <div style="margin-bottom: 12px;">
-      <input type="date" id="log-history-date" class="st-input" style="width:100%; margin-bottom:0;" value="${todayIso}" onchange="renderHistoryForDate(this.value)">
+  window.currentHistoryDate = new Date().toISOString().split('T')[0];
+  window.currentHistoryMonth = new Date().getMonth();
+  window.currentHistoryYear = new Date().getFullYear();
+
+  const historyHtml = `
+    <div id="log-history-calendar-container"></div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);" id="log-history-selected-date-label">Today</span>
+      <span id="log-history-total" style="font-size: 13px; font-weight: 600; color: var(--primary-color);">Total: 0h 0m</span>
     </div>
+    <div id="log-history-list" style="display:flex; flex-direction:column; gap:8px;">
+    </div>
+  `;
     <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
       <span id="log-history-total" style="font-size: 13px; font-weight: 600; color: var(--primary);">Total: 0h 0m</span>
     </div>
@@ -4081,9 +4048,104 @@ window.openLogHistoryModal = function() {
   
   // Initial render for history tab & stats calculation (runs behind the scenes)
   setTimeout(() => {
-    const dateEl = document.getElementById('log-history-date');
-    if (dateEl) renderHistoryForDate(dateEl.value);
+    window.renderHistoryCalendar(window.currentHistoryYear, window.currentHistoryMonth);
+    window.selectHistoryDate(window.currentHistoryDate);
     const startEl = document.getElementById('stats-start-date');
     if (startEl) updateDailyAverage(startEl.value, totalMinutes, false);
   }, 50);
+};
+
+window.changeHistoryMonth = function(offset) {
+  window.currentHistoryMonth += offset;
+  if (window.currentHistoryMonth < 0) {
+    window.currentHistoryMonth = 11;
+    window.currentHistoryYear--;
+  } else if (window.currentHistoryMonth > 11) {
+    window.currentHistoryMonth = 0;
+    window.currentHistoryYear++;
+  }
+  window.renderHistoryCalendar(window.currentHistoryYear, window.currentHistoryMonth);
+};
+
+window.selectHistoryDate = function(dStr) {
+  window.currentHistoryDate = dStr;
+  window.renderHistoryCalendar(window.currentHistoryYear, window.currentHistoryMonth);
+  renderHistoryForDate(dStr);
+  
+  // Update label
+  const lbl = document.getElementById('log-history-selected-date-label');
+  if (lbl) {
+    const tStr = getTodayStr();
+    if (dStr === tStr) lbl.innerText = 'Today';
+    else {
+      const parts = dStr.split('-');
+      lbl.innerText = new Date(parts[0], parts[1]-1, parts[2]).toLocaleDateString('default', { month:'short', day:'numeric' });
+    }
+  }
+};
+
+window.renderHistoryCalendar = function(yr, mo) {
+  const container = document.getElementById('log-history-calendar-container');
+  if (!container) return;
+  
+  const firstDay = new Date(yr, mo, 1).getDay(); // 0(Sun) to 6(Sat)
+  const daysInMo = new Date(yr, mo + 1, 0).getDate();
+  const calMonthName = new Date(yr, mo).toLocaleString('default', { month: 'long', year: 'numeric' });
+  const cData = DYNAMIC_DATA.consistency || { dailyLog: {} };
+  const tStr = getTodayStr();
+  
+  let calHtml = \`
+    <div style="background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:10px; padding:12px; margin-bottom:15px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <button onclick="changeHistoryMonth(-1)" class="icon-btn" style="padding:4px;"><span class="material-symbols-rounded" style="font-size:20px;">chevron_left</span></button>
+        <div style="font-weight:600; font-size:14px; color:var(--primary-color);">
+          \${calMonthName}
+        </div>
+        <button onclick="changeHistoryMonth(1)" class="icon-btn" style="padding:4px;"><span class="material-symbols-rounded" style="font-size:20px;">chevron_right</span></button>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; text-align:center; margin-bottom:6px;">
+        <div style="font-size:10px; color:var(--text-muted); padding:2px;">Su</div>
+        <div style="font-size:10px; color:var(--text-muted); padding:2px;">Mo</div>
+        <div style="font-size:10px; color:var(--text-muted); padding:2px;">Tu</div>
+        <div style="font-size:10px; color:var(--text-muted); padding:2px;">We</div>
+        <div style="font-size:10px; color:var(--text-muted); padding:2px;">Th</div>
+        <div style="font-size:10px; color:var(--text-muted); padding:2px;">Fr</div>
+        <div style="font-size:10px; color:var(--text-muted); padding:2px;">Sa</div>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; text-align:center;">
+  \`;
+  for (let i = 0; i < firstDay; i++) calHtml += \`<div></div>\`;
+  
+  for (let day = 1; day <= daysInMo; day++) {
+    const dStr = yr + '-' + String(mo+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+    const log = cData.dailyLog[dStr];
+    const pct = log ? log.adherencePct : 0;
+    const isFuture = dStr > tStr;
+    const isSelected = dStr === window.currentHistoryDate;
+    
+    let bg = 'rgba(255,255,255,0.03)';
+    let border = '1px solid rgba(255,255,255,0.05)';
+    let color = 'var(--text-secondary)';
+    
+    if (!isFuture) {
+      if (pct >= 80) { bg = 'var(--success)'; border = '1px solid var(--success)'; color = '#fff'; }
+      else if (pct > 0) { bg = 'var(--warning)'; border = '1px solid var(--warning)'; color = '#12141e'; }
+      else if (dStr < tStr) {
+        color = 'var(--text-muted)';
+      }
+    }
+    
+    if (isSelected) {
+      border = '1.5px solid var(--primary-color)';
+      if (bg === 'rgba(255,255,255,0.03)') {
+         bg = 'rgba(108,60,225,0.15)'; 
+         color = 'var(--text-primary)';
+      }
+    }
+    
+    calHtml += \`<div onclick="selectHistoryDate('\${dStr}')" style="background:\${bg}; border:\${border}; color:\${color}; font-size:12px; padding:6px 0; border-radius:4px; cursor:pointer; font-weight:500; transition:all 0.2s ease;" title="\${dStr}">\${day}</div>\`;
+  }
+  calHtml += \`</div></div>\`;
+  
+  container.innerHTML = calHtml;
 };
