@@ -4011,12 +4011,6 @@ window.openLogHistoryModal = function() {
     <div id="log-history-list" style="display:flex; flex-direction:column; gap:8px;">
     </div>
   `;
-    <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
-      <span id="log-history-total" style="font-size: 13px; font-weight: 600; color: var(--primary);">Total: 0h 0m</span>
-    </div>
-    <div id="log-history-list" style="display:flex; flex-direction:column; gap:8px;">
-    </div>
-  `;
   
   const html = `
     <div style="display:flex; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
