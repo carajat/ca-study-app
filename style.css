@@ -42,7 +42,7 @@
   --checkbox-row-odd: rgba(255,255,255,0.01);
   --checkbox-row-active: rgba(10, 132, 255, 0.1);
   --card-gradient-final: linear-gradient(145deg, #1a1a1c, #1c1c1e);
-  --card-gradient-countdown: linear-gradient(145deg, #151830, #1c1c1e);
+  --card-gradient-countdown: linear-gradient(145deg, var(--checkbox-row-active), var(--bg-card));
   --toast-shadow: rgba(0,0,0,0.5);
   --scrollbar-thumb: #3a3a3c;
   --nav-bg: rgba(28, 28, 30, 0.7);
@@ -82,7 +82,7 @@
     --checkbox-row-odd: rgba(0,0,0,0.02);
     --checkbox-row-active: rgba(0, 122, 255, 0.08);
     --card-gradient-final: linear-gradient(145deg, #fdf2f2, #ffffff);
-    --card-gradient-countdown: linear-gradient(145deg, #eef0ff, #ffffff);
+    --card-gradient-countdown: linear-gradient(145deg, var(--checkbox-row-active), var(--bg-card));
     --toast-shadow: rgba(0, 122, 255, 0.25);
     --scrollbar-thumb: #d1d5db;
     --nav-bg: rgba(255, 255, 255, 0.7);
@@ -426,8 +426,8 @@ body.theme-cherry {
 .tc-cherry { background: #991B1B; }
 
 .theme-btn {
-  background: rgba(10, 132, 255, 0.1);
-  border: 1px solid rgba(10, 132, 255, 0.2);
+  background: var(--checkbox-row-active);
+  border: 1px solid var(--border-glow);
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -440,7 +440,7 @@ body.theme-cherry {
   color: var(--primary);
 }
 .theme-btn:hover {
-  background: rgba(10, 132, 255, 0.2);
+  background: var(--border-glow);
   transform: scale(1.05);
 }
 .theme-btn svg {
@@ -1220,7 +1220,7 @@ body.edit-mode-active .add-item-btn {
     --checkbox-row-odd: rgba(0,0,0,0.02);
     --checkbox-row-active: rgba(0, 122, 255, 0.08);
     --card-gradient-final: linear-gradient(145deg, #fdf2f2, #ffffff);
-    --card-gradient-countdown: linear-gradient(145deg, #eef0ff, #ffffff);
+    --card-gradient-countdown: linear-gradient(145deg, var(--checkbox-row-active), var(--bg-card));
     --toast-shadow: rgba(0, 122, 255, 0.25);
     --scrollbar-thumb: #d1d5db;
     --nav-bg: rgba(255, 255, 255, 0.7);
@@ -1257,7 +1257,7 @@ body.edit-mode-active .add-item-btn {
   --checkbox-row-odd: rgba(255,255,255,0.01);
   --checkbox-row-active: rgba(10, 132, 255, 0.1);
   --card-gradient-final: linear-gradient(145deg, #1a1a1c, #1c1c1e);
-  --card-gradient-countdown: linear-gradient(145deg, #151830, #1c1c1e);
+  --card-gradient-countdown: linear-gradient(145deg, var(--checkbox-row-active), var(--bg-card));
   --toast-shadow: rgba(0,0,0,0.5);
   --scrollbar-thumb: #3a3a3c;
   --nav-bg: rgba(28, 28, 30, 0.7);
@@ -1351,8 +1351,8 @@ input[type="checkbox"]:checked::before {
 .study-tracker {
   margin-bottom: 20px;
   padding: 20px;
-  border: 1px solid rgba(10, 132, 255, 0.2);
-  background: linear-gradient(135deg, rgba(10, 132, 255, 0.08), rgba(10, 132, 255, 0.02));
+  border: 1px solid var(--border-glow);
+  background: linear-gradient(135deg, var(--checkbox-row-active), transparent);
 }
 .study-tracker-header {
   display: flex;
@@ -1385,8 +1385,8 @@ input[type="checkbox"]:checked::before {
   font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
 }
 .st-timer-display.running {
-  border-color: rgba(10, 132, 255, 0.4);
-  box-shadow: 0 0 20px rgba(10, 132, 255, 0.15);
+  border-color: var(--purple-glow);
+  box-shadow: 0 0 20px var(--checkbox-row-active);
 }
 .st-timer-display.running span {
   color: var(--primary);
@@ -1479,7 +1479,7 @@ input[type="checkbox"]:checked::before {
   color: #fff;
 }
 .st-btn-start:hover {
-  box-shadow: 0 4px 16px rgba(10, 132, 255, 0.4);
+  box-shadow: 0 4px 16px var(--purple-glow);
 }
 .st-btn-pause {
   background: var(--warning);
@@ -1498,7 +1498,7 @@ input[type="checkbox"]:checked::before {
 }
 @media (prefers-color-scheme: light) {
   .study-tracker {
-    background: linear-gradient(135deg, rgba(10, 132, 255, 0.06), rgba(10, 132, 255, 0.01));
+    background: linear-gradient(135deg, var(--checkbox-row-active), transparent);
   }
   .st-timer-display {
     background: rgba(0,0,0,0.04);
