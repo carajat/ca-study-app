@@ -51,7 +51,7 @@
 
 /* ─── Light Mode (Auto — follows device theme) ── */
 body[data-theme="light"] {
-    --bg-primary: #f2f2f7;
+    --bg-primary: #f0f2f5;
     --bg-card: #ffffff;
     --text-primary: #000000;
     --text-secondary: #3c3c43;
@@ -69,9 +69,9 @@ body[data-theme="light"] {
     --input-bg-focus: rgba(0,0,0,0.08);
     --input-border: rgba(0,0,0,0.1);
     
-    --glass-bg: rgba(255, 255, 255, 0.65);
-    --glass-border: rgba(255, 255, 255, 0.5);
-    --bg-mesh: radial-gradient(at 0% 0%, rgba(0, 122, 255, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(0, 122, 255, 0.05) 0px, transparent 50%);
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(0, 0, 0, 0.08);
+    --bg-mesh: none;
     --purple: #007aff;
     --blue: #007aff;
     --green: #34c759;
@@ -111,7 +111,7 @@ body[data-theme="light"].theme-ocean {
     --border-glow: rgba(0, 122, 255, 0.15);
     --checkbox-row-active: rgba(0, 122, 255, 0.06);
     --toast-shadow: rgba(0, 122, 255, 0.25);
-    --bg-mesh: radial-gradient(at 0% 0%, rgba(0, 122, 255, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(0, 122, 255, 0.05) 0px, transparent 50%);
+    --bg-mesh: none;
   }
 
 body.theme-forest {
@@ -136,7 +136,7 @@ body[data-theme="light"].theme-forest {
     --border-glow: rgba(40, 205, 65, 0.15);
     --checkbox-row-active: rgba(40, 205, 65, 0.06);
     --toast-shadow: rgba(40, 205, 65, 0.25);
-    --bg-mesh: radial-gradient(at 0% 0%, rgba(40, 205, 65, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(40, 205, 65, 0.05) 0px, transparent 50%);
+    --bg-mesh: none;
   }
 
 body.theme-sunset {
@@ -161,7 +161,7 @@ body[data-theme="light"].theme-sunset {
     --border-glow: rgba(255, 149, 0, 0.15);
     --checkbox-row-active: rgba(255, 149, 0, 0.06);
     --toast-shadow: rgba(255, 149, 0, 0.25);
-    --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 149, 0, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 149, 0, 0.05) 0px, transparent 50%);
+    --bg-mesh: none;
   }
 
 body.theme-rose {
@@ -186,7 +186,7 @@ body[data-theme="light"].theme-rose {
     --border-glow: rgba(255, 45, 85, 0.15);
     --checkbox-row-active: rgba(255, 45, 85, 0.06);
     --toast-shadow: rgba(255, 45, 85, 0.25);
-    --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 45, 85, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 45, 85, 0.05) 0px, transparent 50%);
+    --bg-mesh: none;
   }
 
 body.theme-mocha {
@@ -211,7 +211,7 @@ body[data-theme="light"].theme-mocha {
     --border-glow: rgba(162, 132, 94, 0.15);
     --checkbox-row-active: rgba(162, 132, 94, 0.06);
     --toast-shadow: rgba(162, 132, 94, 0.25);
-    --bg-mesh: radial-gradient(at 0% 0%, rgba(162, 132, 94, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(162, 132, 94, 0.05) 0px, transparent 50%);
+    --bg-mesh: none;
   }
 
 body.theme-teal {
@@ -236,7 +236,7 @@ body[data-theme="light"].theme-teal {
     --border-glow: rgba(90, 200, 250, 0.15);
     --checkbox-row-active: rgba(90, 200, 250, 0.06);
     --toast-shadow: rgba(90, 200, 250, 0.25);
-    --bg-mesh: radial-gradient(at 0% 0%, rgba(90, 200, 250, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(90, 200, 250, 0.05) 0px, transparent 50%);
+    --bg-mesh: none;
   }
 
 body.theme-amethyst {
@@ -261,7 +261,7 @@ body[data-theme="light"].theme-amethyst {
     --border-glow: rgba(175, 82, 222, 0.15);
     --checkbox-row-active: rgba(175, 82, 222, 0.06);
     --toast-shadow: rgba(175, 82, 222, 0.25);
-    --bg-mesh: radial-gradient(at 0% 0%, rgba(175, 82, 222, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(175, 82, 222, 0.05) 0px, transparent 50%);
+    --bg-mesh: none;
   }
 
 body.theme-cherry {
@@ -286,7 +286,7 @@ body[data-theme="light"].theme-cherry {
     --border-glow: rgba(255, 59, 48, 0.15);
     --checkbox-row-active: rgba(255, 59, 48, 0.06);
     --toast-shadow: rgba(255, 59, 48, 0.25);
-    --bg-mesh: radial-gradient(at 0% 0%, rgba(255, 59, 48, 0.1) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 59, 48, 0.05) 0px, transparent 50%);
+    --bg-mesh: none;
   }
 
 /* Theme Picker UI */
@@ -1667,7 +1667,9 @@ body[data-theme="light"] .journal-date-picker::-webkit-calendar-picker-indicator
 .schedule-slot {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  background: var(--bg-card); /* Give it a slightly more solid background to compensate */
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 /* Toggle Switch */
