@@ -5,6 +5,9 @@ on:
   push:
     branches: [ "main" ]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build Signed APK
@@ -48,6 +51,12 @@ jobs:
           # Keystore ko absolute path par save kar rahe hain
           echo "$ENCODED_KEYSTORE" | base64 --decode > "$GITHUB_WORKSPACE/castudyapp.jks"
 
+      - name: Zip Web Assets for OTA Update
+        run: |
+          cd www
+          zip -r ../update.zip .
+          cd ..
+
       - name: Build Release APK
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -58,8 +67,17 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease -x lint -Pandroid.injected.signing.store.file="$GITHUB_WORKSPACE/castudyapp.jks" -Pandroid.injected.signing.store.password="${KEYSTORE_PASSWORD}" -Pandroid.injected.signing.key.alias="${KEY_ALIAS}" -Pandroid.injected.signing.key.password="${KEY_PASSWORD}"
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - name: Generate Release Tag
+        id: tag
+        run: echo "tag=v$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: app-release-apk
-          path: android/app/build/outputs/apk/release/app-release.apk
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: Release ${{ steps.tag.outputs.tag }}
+          files: |
+            update.zip
+            android/app/build/outputs/apk/release/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
