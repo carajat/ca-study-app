@@ -2126,26 +2126,44 @@ window.editCustomUsername = function() {
 
 window.openBackupModal = function() {
   closeModal(); // Close the main menu first
-  openModal('<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">folder_managed</span> Data & Backups', `
+  
+  const allKeys = Object.keys(localStorage);
+  const backupKeys = allKeys.filter(k => k.startsWith('ca_app_daily_backup_')).sort().reverse();
+  
+  let backupOptions = backupKeys.map(k => {
+    const dateStr = k.replace('ca_app_daily_backup_', '');
+    return `<option value="${dateStr}">${dateStr}</option>`;
+  }).join('');
+  
+  if (backupOptions === '') {
+    backupOptions = '<option value="">No backups available</option>';
+  }
+
+  openModal(
+    '<div class="back-arrow" onclick="openMenuModal()"><span class="material-symbols-rounded">arrow_back</span> Data & Backups</div>', 
+    `
     <div style="display:flex; flex-direction:column; gap:12px;">
       <p style="font-size:13px; color:var(--text-secondary); text-align:center; margin-bottom:8px;">Manage your local backups and export/import data.</p>
       
-      <button class="menu-btn" style="background: rgba(10,132,255,0.15); border-color: var(--primary); color: var(--primary);" onclick="restoreDailyBackup()">
-        <span class="material-symbols-rounded menu-btn-icon" style="color: var(--primary);">history</span> Restore Yesterday's Auto-Backup
-      </button>
+      <div style="display:flex; gap:8px;">
+        <select id="backup-date-select" style="flex:1; padding:8px; border-radius:8px; background:rgba(255,255,255,0.05); color:var(--text-primary); border:1px solid rgba(255,255,255,0.1);">
+          ${backupOptions}
+        </select>
+        <button class="menu-btn btn-warning" style="margin:0; width:auto; padding:8px 12px; border-radius:8px;" onclick="restoreDailyBackup()">
+          Restore
+        </button>
+      </div>
       
-      <button class="menu-btn" style="background: rgba(48,209,88,0.15); border-color: var(--success-color); color: var(--success-color);" onclick="exportData()">
+      <button class="menu-btn btn-neutral" onclick="exportData()">
         <span class="material-symbols-rounded menu-btn-icon" style="color: var(--success-color);">upload</span> Export JSON (Save to Device)
       </button>
       
-      <button class="menu-btn" style="background: rgba(255,159,10,0.15); border-color: #ff9f0a; color: #ff9f0a;" onclick="triggerImport()">
+      <button class="menu-btn btn-neutral" onclick="triggerImport()">
         <span class="material-symbols-rounded menu-btn-icon" style="color: #ff9f0a;">download</span> Import JSON (Load from Device)
       </button>
-      
-      <button class="btn-primary" style="margin-top:16px;" onclick="openMenuModal()">Back to Menu</button>
     </div>
   `);
-};
+}
 
 window.restoreDailyBackup = function() {
   const backupStr = localStorage.getItem('ca_app_daily_backup');
@@ -2166,78 +2184,97 @@ window.restoreDailyBackup = function() {
   }
 };
 
-function openMenuModal() {
+window.openMenuModal = function() {
   const uName = typeof window.getDisplayUsername === 'function' ? window.getDisplayUsername(window.loggedUserEmail) : (window.loggedUserEmail ? window.loggedUserEmail.split('@')[0].toUpperCase() : 'USER');
+  
   openModal('<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">settings</span> Settings & Tools' + (window.isReadOnlyMode ? ' <span style="color:var(--error-color); font-size:12px; margin-left:10px;">(Read-Only)</span>' : ''), `
-    
-    
     ${(window.isCloudLoggedIn) 
       ? `<div style="padding: 12px; margin-bottom: 12px; background: rgba(10,132,255,0.1); border: 1px solid rgba(10,132,255,0.3); border-radius: 12px; display:flex; align-items:center; justify-content:space-between;">
            <div>
-             <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:700;">Active Cloud Account</div>
-             <div style="font-size:14px; color:var(--primary, #0a84ff); font-weight:700; margin-top:2px; display:flex; align-items:center; gap:6px;">
-               <span>👤 ${uName}</span>
-               <span style="font-size:11px; color:var(--text-secondary); font-weight:400;">(${window.isReadOnlyMode ? 'View Mode' : 'Admin Mode'})</span>
-               ${!window.isReadOnlyMode ? `<button style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; padding:0; display:flex;" onclick="editCustomUsername()" title="Edit Display Name"><span class="material-symbols-rounded" style="font-size:15px; color:var(--primary);">edit</span></button>` : ''}
-             </div>
+             <div style="font-size:11px; color:var(--primary); font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px;">Cloud Sync Active</div>
+             <div style="font-size:13px; color:var(--text-primary);">Logged in as <b>${uName}</b></div>
+             <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;" id="cloud-last-sync-status">Checking sync status...</div>
            </div>
-           <button style="background:linear-gradient(135deg, #ff453a, #d63630); color:#fff; border:none; padding:7px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;" onclick="closeModal(); if(typeof logoutFromCloud === 'function') logoutFromCloud();">Logout</button>
+           <span class="material-symbols-rounded" style="color:var(--primary); font-size:28px;">cloud_done</span>
          </div>` 
-      : `<button class="menu-btn" style="background: rgba(10,132,255,0.15); border-color: var(--primary); color: var(--primary);" onclick="closeModal(); document.getElementById('welcome-overlay').style.display='flex';">
-          <span class="material-symbols-rounded menu-btn-icon">login</span> Login to Cloud Sync
-         </button>`
-    }
+      : `<div style="padding: 12px; margin-bottom: 12px; background: rgba(255,159,10,0.1); border: 1px solid rgba(255,159,10,0.3); border-radius: 12px; display:flex; align-items:center; justify-content:space-between;">
+           <div>
+             <div style="font-size:11px; color:#ff9f0a; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px;">Local Mode</div>
+             <div style="font-size:12px; color:var(--text-secondary);">Data is saved only on this device.</div>
+           </div>
+           <button class="btn-primary" style="padding: 6px 12px; font-size: 12px; width: auto; margin:0;" onclick="window.location.reload()">Login</button>
+         </div>`}
+
+    <div class="menu-section-tag">Account</div>
+    ${window.isCloudLoggedIn ? `<button class="menu-btn btn-neutral" onclick="window.confirmLogout()">
+      <span class="material-symbols-rounded menu-btn-icon">logout</span> Logout
+    </button>` : ''}
+
+    <div class="menu-section-tag">Appearance</div>
+    <button class="menu-btn btn-neutral" onclick="openThemeModal()">
+      <span class="material-symbols-rounded menu-btn-icon" style="color: var(--purple);">palette</span> Change Theme Color
+    </button>
+    ${window.isCloudLoggedIn ? `
+    <button class="menu-btn btn-neutral" onclick="toggleEditMode()">
+      <span class="material-symbols-rounded menu-btn-icon">${window.isEditMode ? 'edit_off' : 'edit'}</span> ${window.isEditMode ? 'Exit Edit Mode' : 'Enter Edit Mode'}
+    </button>` : ''}
+
+    <div class="menu-section-tag">Data Safety</div>
+    <button class="menu-btn btn-neutral" onclick="openBackupModal()">
+      <span class="material-symbols-rounded menu-btn-icon" style="color: #30d158;">folder_managed</span> Manage Data & Backups
+    </button>
+
+    <div class="menu-section-tag">Sharing</div>
+    <button class="menu-btn btn-neutral" onclick="window.printReport()">
+      <span class="material-symbols-rounded menu-btn-icon" style="color: #ff9f0a;">picture_as_pdf</span> Export as PDF Report
+    </button>
+    <button class="menu-btn btn-neutral" onclick="navigator.clipboard.writeText('https://carajat.github.io/ca-study-app/'); showToast('App Link Copied!');">
+      <span class="material-symbols-rounded menu-btn-icon" style="color: var(--primary);">share</span> Share App Link
+    </button>
+
+    <div class="menu-section-tag">System</div>
+    <button class="menu-btn btn-neutral" id="btn-ota-update" onclick="checkForUpdates()">
+      <span class="material-symbols-rounded menu-btn-icon">system_update</span> Check for Updates
+    </button>
     
-    <button id="editModeBtn" class="menu-btn" onclick="toggleEditMode(); closeModal()">
-      <span class="menu-btn-icon">${isEditMode ? '<span class="material-symbols-rounded icon-sm">check_circle</span>' : '<span class="material-symbols-rounded icon-sm">edit</span>'}</span> Edit Mode: <strong style="color: ${isEditMode ? 'var(--color-primary)' : 'inherit'}">${isEditMode ? 'ON' : 'OFF'}</strong>
-    </button>
-    <button class="menu-btn" style="background: rgba(40,205,65,0.1); border-color: var(--success);" onclick="checkForUpdates()">
-      <span class="material-symbols-rounded menu-btn-icon" style="color: var(--success);">system_update</span> 
-      <span style="color: var(--success); font-weight: 600;">Check for Updates</span>
-    </button>
-    <button class="menu-btn" onclick="openThemeModal()">
-      <span class="material-symbols-rounded menu-btn-icon">palette</span> Customize Theme
-    </button>
-    <button class="menu-btn" onclick="shareProgressPDF()">
-      <span class="material-symbols-rounded menu-btn-icon">picture_as_pdf</span> Share Progress (PDF)
-    </button>
-    <button class="menu-btn" onclick="openBackupModal()">
-      <span class="material-symbols-rounded menu-btn-icon">folder_managed</span> Manage Data & Backups
-    </button>
+    <div style="text-align:center; font-size:11px; color:var(--text-muted); margin-top:16px;">
+      App Version: ${localStorage.getItem('app_ota_version') || 'v1.0 (Local)'}
+    </div>
   `);
+  
+  if(window.isCloudLoggedIn && typeof window.updateSyncStatusDisplay === 'function') {
+     window.updateSyncStatusDisplay();
+  }
 }
 
-function openThemeModal() {
-  const currentTheme = localStorage.getItem('ca-theme') || 'default';
-  const savedMode = localStorage.getItem('theme');
+window.openThemeModal = function() {
+  closeModal();
   
-  let modeIcon, modeText, nextMode;
-  if (savedMode === 'light') {
-      modeIcon = 'dark_mode'; modeText = 'Switch to Dark Mode'; nextMode = 'dark';
-  } else if (savedMode === 'dark') {
-      modeIcon = 'brightness_auto'; modeText = 'Switch to System Auto'; nextMode = 'auto';
-  } else {
-      modeIcon = 'light_mode'; modeText = 'Switch to Light Mode'; nextMode = 'light';
-  }
+  const currentHue = localStorage.getItem('ca_theme_hue') || '260';
   
-  openModal('Select Theme', `
-    <button class="menu-btn" style="margin-bottom: 20px; text-align: center; justify-content: center; background: rgba(10,132,255,0.1); color: var(--primary);" onclick="setMode('${nextMode}'); openThemeModal();">
-      <span class="material-symbols-rounded menu-btn-icon" style="margin-right: 8px;">${modeIcon}</span> ${modeText}
-    </button>
-    <p style="text-align:center; color:var(--text-secondary); margin-bottom: 20px;">Personalize your app colors</p>
-    <div class="theme-picker" style="flex-wrap: wrap;">
-      <div class="theme-circle tc-default ${currentTheme === 'default' ? 'active' : ''}" onclick="setTheme('default', this)"></div>
-      <div class="theme-circle tc-ocean ${currentTheme === 'ocean' ? 'active' : ''}" onclick="setTheme('ocean', this)"></div>
-      <div class="theme-circle tc-forest ${currentTheme === 'forest' ? 'active' : ''}" onclick="setTheme('forest', this)"></div>
-      <div class="theme-circle tc-sunset ${currentTheme === 'sunset' ? 'active' : ''}" onclick="setTheme('sunset', this)"></div>
-      <div class="theme-circle tc-rose ${currentTheme === 'rose' ? 'active' : ''}" onclick="setTheme('rose', this)"></div>
-      <div class="theme-circle tc-mocha ${currentTheme === 'mocha' ? 'active' : ''}" onclick="setTheme('mocha', this)"></div>
-      <div class="theme-circle tc-teal ${currentTheme === 'teal' ? 'active' : ''}" onclick="setTheme('teal', this)"></div>
-      <div class="theme-circle tc-amethyst ${currentTheme === 'amethyst' ? 'active' : ''}" onclick="setTheme('amethyst', this)"></div>
-      <div class="theme-circle tc-cherry ${currentTheme === 'cherry' ? 'active' : ''}" onclick="setTheme('cherry', this)"></div>
-    </div>
-    <button class="btn-primary" style="margin-top:20px" onclick="openMenuModal()">Back to Menu</button>
-  `);
+  const themes = [
+    { hue: '260', name: 'Deep Purple' },
+    { hue: '220', name: 'Ocean Blue' },
+    { hue: '330', name: 'Hot Pink' },
+    { hue: '160', name: 'Emerald' },
+    { hue: '190', name: 'Cyan' },
+    { hue: '20',  name: 'Sunset Orange' },
+    { hue: '350', name: 'Crimson' },
+    { hue: '280', name: 'Amethyst' },
+    { hue: '0',   name: 'Monochrome' }
+  ];
+  
+  let html = '<div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:16px;">';
+  themes.forEach(t => {
+    const isSelected = t.hue === currentHue;
+    html += `<div style="display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer;" onclick="setAppTheme('${t.hue}')">
+      <div style="width: 48px; height: 48px; border-radius: 50%; background: hsl(${t.hue}, 70%, 55%); border: ${isSelected ? '3px solid white' : '2px solid transparent'}; box-shadow: ${isSelected ? '0 0 12px hsl(' + t.hue + ', 70%, 55%)' : 'none'}; transition: 0.2s;"></div>
+      <div style="font-size:11px; color:${isSelected ? 'var(--text-primary)' : 'var(--text-secondary)'}; font-weight:${isSelected ? '600' : '400'}; text-align:center;">${t.name}</div>
+    </div>`;
+  });
+  html += '</div>';
+
+  openModal('<div class="back-arrow" onclick="openMenuModal()"><span class="material-symbols-rounded">arrow_back</span> App Theme</div>', html);
 }
 
 function setTheme(themeName, element) {
@@ -4230,3 +4267,44 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+
+window.openConfirmModal = function(title, body, confirmText, onConfirm) {
+  openModal('', `
+    <div class="confirm-icon-wrap">
+      <span class="material-symbols-rounded">warning</span>
+    </div>
+    <div class="confirm-title">${title}</div>
+    <div class="confirm-body">${body}</div>
+    <div class="confirm-row">
+      <button class="confirm-btn cb-cancel" onclick="closeModal()">Cancel</button>
+      <button class="confirm-btn cb-confirm" id="confirm-action-btn">${confirmText}</button>
+    </div>
+  `);
+  setTimeout(() => {
+    document.getElementById('confirm-action-btn').onclick = () => {
+      closeModal();
+      if(onConfirm) onConfirm();
+    };
+  }, 100);
+};
+window.setAppTheme = function(hue) {
+  localStorage.setItem('ca_theme_hue', hue);
+  document.documentElement.style.setProperty('--primary-hue', hue);
+  const primary = 'hsl(' + hue + ', 70%, 55%)';
+  document.documentElement.style.setProperty('--primary-color', primary);
+  document.documentElement.style.setProperty('--primary', primary);
+  document.documentElement.style.setProperty('--purple', primary);
+  openThemeModal();
+};
+const origInitTheme = initTheme;
+window.initTheme = function() {
+  origInitTheme();
+  const hue = localStorage.getItem('ca_theme_hue');
+  if (hue) {
+    const primary = 'hsl(' + hue + ', 70%, 55%)';
+    document.documentElement.style.setProperty('--primary-color', primary);
+    document.documentElement.style.setProperty('--primary', primary);
+    document.documentElement.style.setProperty('--purple', primary);
+  }
+};
+initTheme = window.initTheme;

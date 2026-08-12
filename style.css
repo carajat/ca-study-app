@@ -1838,3 +1838,121 @@ input:checked + .slider:before {
   outline-offset: 1px;
 }
 .cons-heat-label { font-size: 10px; color: var(--text-muted); }
+
+/* --- SECTION 2: Menu & Modals --- */
+.btn-neutral {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+.btn-warning {
+  background: rgba(255, 159, 10, 0.15);
+  border-color: #ff9f0a;
+  color: #ff9f0a;
+}
+.menu-section-tag {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+  margin: 16px 0 8px 4px;
+  font-weight: 600;
+}
+.back-arrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+.back-arrow:active {
+  color: var(--text-primary);
+}
+.close-x {
+  background: rgba(255,255,255,0.05);
+  border: none;
+  color: var(--text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Custom Confirm Modal */
+.confirm-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 159, 10, 0.15);
+  margin: 0 auto 16px;
+}
+.confirm-icon-wrap .material-symbols-rounded {
+  color: #ff9f0a;
+  font-size: 28px;
+}
+.confirm-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.confirm-body {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+.confirm-row {
+  display: flex;
+  gap: 12px;
+}
+.confirm-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+}
+.cb-cancel {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+.cb-confirm {
+  background: var(--purple);
+  color: white;
+}
+
+/* Edit Mode Indicators */
+body.edit-mode-active .tab-content {
+  border: 2px dashed #ff9f0a !important;
+  border-radius: 12px;
+  position: relative;
+}
+#edit-badge {
+  display: none;
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ff9f0a;
+  color: #000;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(255, 159, 10, 0.4);
+}
+body.edit-mode-active #edit-badge {
+  display: block;
+}
