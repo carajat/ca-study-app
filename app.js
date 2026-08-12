@@ -205,6 +205,21 @@ function saveDynamicData() {
 function toggleEditMode() {
   isEditMode = !isEditMode;
   document.body.classList.toggle('edit-mode-active', isEditMode);
+  
+  let pill = document.getElementById('edit-mode-indicator-pill');
+  if (isEditMode) {
+    if (!pill) {
+      pill = document.createElement('div');
+      pill.id = 'edit-mode-indicator-pill';
+      pill.innerHTML = '<span class="material-symbols-rounded" style="font-size:14px; margin-right:4px;">edit</span> Editing';
+      pill.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); display:flex; align-items:center; background:var(--warning); color:#241a10; font-size:11px; font-weight:800; padding:5px 12px; border-radius:20px; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.3); pointer-events:none;';
+      document.body.appendChild(pill);
+    }
+    pill.style.display = 'flex';
+  } else {
+    if (pill) pill.style.display = 'none';
+  }
+  
   switchTab(state.activeTab); // re-render current tab
 }
 
@@ -2219,12 +2234,12 @@ window.openMenuModal = function() {
     <button class="menu-btn btn-neutral" onclick="openThemeModal()">
       <span class="material-symbols-rounded menu-btn-icon" style="color: var(--purple);">palette</span> Change Theme Color
     </button>
+
+    <div class="menu-section-tag">Data Safety</div>
     ${window.isCloudLoggedIn ? `
     <button class="menu-btn btn-neutral" onclick="toggleEditMode()">
       <span class="material-symbols-rounded menu-btn-icon">${window.isEditMode ? 'edit_off' : 'edit'}</span> ${window.isEditMode ? 'Exit Edit Mode' : 'Enter Edit Mode'}
     </button>` : ''}
-
-    <div class="menu-section-tag">Data Safety</div>
     <button class="menu-btn btn-neutral" onclick="openBackupModal()">
       <span class="material-symbols-rounded menu-btn-icon" style="color: #30d158;">folder_managed</span> Manage Data & Backups
     </button>
@@ -2611,48 +2626,151 @@ function handleImportFile(event) {
 }
 
 // ─── PDF Generation ───
-function shareProgressPDF() {
+window.shareProgressPDF = function() {
   const overallPct = calculateOverallProgress();
-  const dtPct = calculateSubjectProgress('dt', 'main');
-  const idtPct = calculateSubjectProgress('idt', 'main');
   
-  const scores = getMockScores();
-  let mocksHtml = '';
-  Object.keys(scores).forEach(k => {
-    mocksHtml += `<div class="print-row"><span>Mock ${k}</span> <strong>${scores[k].score}/100</strong></div>`;
+  let subjectsHtml = '';
+  DYNAMIC_DATA.syllabusSubjects.forEach(subject => {
+    const pct = calculateSubjectProgress(subject.id, subject.type || 'main');
+    subjectsHtml += `
+      <div class="pdf-subj-row">
+        <div class="pdf-subj-top"><span class="name">${subject.name}</span><span class="pct">${pct}%</span></div>
+        <div class="pdf-bar-track"><div class="pdf-bar-fill" style="width:${pct}%;"></div></div>
+      </div>
+    `;
   });
-  if (!mocksHtml) mocksHtml = '<p style="color:#666">No mock scores recorded yet.</p>';
+  
+  let totalMinutes = 0;
+  let last14DaysMinutes = 0;
+  const now = new Date();
+  
+  Object.keys(DYNAMIC_DATA.journalEntries || {}).forEach(dateStr => {
+    const entry = DYNAMIC_DATA.journalEntries[dateStr];
+    if (entry && entry.rows) {
+      entry.rows.forEach(r => {
+        const mins = (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
+        totalMinutes += mins;
+        
+        const entryDate = new Date(dateStr);
+        const diffTime = Math.abs(now - entryDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        if (diffDays <= 14) {
+          last14DaysMinutes += mins;
+        }
+      });
+    }
+  });
+  
+  const totalLoggedH = Math.floor(totalMinutes / 60);
+  const dailyAvg14d = (last14DaysMinutes / 60 / 14).toFixed(1);
+  const streak = DYNAMIC_DATA.consistency ? (DYNAMIC_DATA.consistency.currentStreak || 0) : 0;
+  
+  let mocksHtml = '';
+  const scores = getMockScores();
+  const sortedMockIds = Object.keys(scores).sort((a,b) => new Date(scores[a].date) - new Date(scores[b].date));
+  
+  const subjPrevScores = {};
+  
+  if (sortedMockIds.length === 0) {
+    mocksHtml = '<tr><td colspan="4" style="text-align:center; color:#666; padding: 15px;">No mock scores recorded yet.</td></tr>';
+  } else {
+    const rows = [];
+    sortedMockIds.forEach(mockId => {
+      const s = scores[mockId];
+      let subjName = "Unknown";
+      let testName = "Test";
+      
+      const allSeries = DYNAMIC_DATA.testSeries || (window.APP_DATA ? window.APP_DATA.group1.testSeries : []);
+      const allSeriesG2 = window.APP_DATA_GROUP2 ? window.APP_DATA_GROUP2.testSeries : [];
+      [...allSeries, ...allSeriesG2].forEach(series => {
+        const t = series.tests.find(x => x.id === mockId);
+        if (t) {
+          subjName = t.subject || "Subject";
+          testName = series.name;
+        }
+      });
+      
+      let trendHtml = '-';
+      if (subjPrevScores[subjName] !== undefined) {
+        const diff = s.score - subjPrevScores[subjName];
+        if (diff > 0) trendHtml = `<span class="trend-up">↑ +${diff}</span>`;
+        else if (diff < 0) trendHtml = `<span class="trend-down">↓ ${Math.abs(diff)}</span>`;
+      }
+      subjPrevScores[subjName] = s.score;
+      
+      rows.unshift(`
+        <tr>
+          <td>${testName}</td>
+          <td>${subjName}</td>
+          <td class="num" style="text-align:right;">${s.score}/100</td>
+          <td class="num" style="text-align:right;">${trendHtml}</td>
+        </tr>
+      `);
+    });
+    mocksHtml = rows.join('');
+  }
+  
+  const uName = typeof window.getDisplayUsername === 'function' ? window.getDisplayUsername(window.loggedUserEmail) : (window.loggedUserEmail ? window.loggedUserEmail.split('@')[0].toUpperCase() : 'USER');
+  const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  let diffDays = 0;
+  if (state.targetAttempt) {
+     diffDays = Math.ceil((new Date(state.targetAttempt) - new Date()) / (1000 * 60 * 60 * 24));
+  }
   
   const html = `
-    <div class="print-title">CA Final Group 2 Progress Report</div>
-    
-    <div class="print-card">
-      <h3 style="margin-bottom:10px">Overall Syllabus Completion</h3>
-      <div style="font-size:32px; font-weight:900; text-align:center">${overallPct}%</div>
-      <div class="print-bar"><div class="print-bar-fill" style="width:${overallPct}%"></div></div>
+    <div class="pdf-page">
+      <div class="pdf-header">
+        <div>
+          <h2>CA Final Progress Report</h2>
+          <div class="sub">Group 2 — Direct Tax · Indirect Tax · IBS</div>
+        </div>
+        <div class="meta">
+          <b style="display:block; font-size:13px; color:#1a1a1a; margin-bottom:3px;">${uName}</b>
+          Generated ${dateStr}
+        </div>
+      </div>
+      <div class="pdf-countdown">
+        <span class="label">Exam Countdown</span>
+        <span class="days">${diffDays > 0 ? diffDays + ' days remaining' : 'Exam Time!'}</span>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-section-title">Overall Syllabus Completion</div>
+        <div style="display:flex; align-items:center; gap:15px; margin-bottom:15px;">
+          <div style="font-size:32px; font-weight:800; color:#1a1a1a;">${overallPct}% <span style="font-size:14px; font-weight:500; color:#666;">Complete</span></div>
+        </div>
+        <p style="font-size:13px; color:#555; margin:0; line-height:1.4;">Weighted across all subjects. At current pace, projected completion is on track.</p>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-section-title">Subject-wise Breakdown</div>
+        ${subjectsHtml}
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-section-title">Study Activity</div>
+        <div class="pdf-stat-grid">
+          <div class="pdf-stat-box"><div class="num">${totalLoggedH}h</div><div class="lbl">Total Logged</div></div>
+          <div class="pdf-stat-box"><div class="num">${dailyAvg14d}h</div><div class="lbl">Daily Avg (14d)</div></div>
+          <div class="pdf-stat-box"><div class="num">${streak}</div><div class="lbl">Day Streak</div></div>
+        </div>
+      </div>
+
+      <div class="pdf-section">
+        <div class="pdf-section-title">Mock Test Scores</div>
+        <table class="pdf-table">
+          <tr><th>Test</th><th>Subject</th><th style="text-align:right;">Score</th><th style="text-align:right;">Trend</th></tr>
+          ${mocksHtml}
+        </table>
+      </div>
     </div>
-    
-    <div class="print-card">
-      <h3 style="margin-bottom:10px">Subject Details</h3>
-      <div class="print-row"><span>Paper 4: Direct Tax</span> <strong>${dtPct}%</strong></div>
-      <div class="print-bar" style="margin-bottom:15px"><div class="print-bar-fill" style="width:${dtPct}%"></div></div>
-      
-      <div class="print-row"><span>Paper 5: Indirect Tax</span> <strong>${idtPct}%</strong></div>
-      <div class="print-bar"><div class="print-bar-fill" style="width:${idtPct}%"></div></div>
-    </div>
-    
-    <div class="print-card">
-      <h3 style="margin-bottom:10px">Mock Test Scores</h3>
-      ${mocksHtml}
-    </div>
-    
-    <p style="text-align:center; color:#666; margin-top:30px; font-size:12px;">Generated via CA Final Study Companion PWA</p>
   `;
   
   document.getElementById('print-section').innerHTML = html;
   closeModal();
   setTimeout(() => window.print(), 500);
 }
+window.printReport = window.shareProgressPDF;
 
 // ─── Test Series Managers ─────────────────────
 function addMockSeries() {

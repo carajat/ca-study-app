@@ -1956,3 +1956,41 @@ body.edit-mode-active .tab-content {
 body.edit-mode-active #edit-badge {
   display: block;
 }
+
+
+/* Edit Mode Active Indicator */
+body.edit-mode-active .tab-content { border: 1.5px solid rgba(232,163,61,0.5); }
+
+
+
+/* PDF Print Styles */
+@media print {
+  body { background: white !important; color: #1a1a1a !important; padding: 0 !important; margin: 0 !important; font-family: sans-serif; }
+  #print-section { display: block !important; padding: 20px; }
+  .app-container, .bottom-nav, #edit-mode-indicator-pill { display: none !important; }
+  .pdf-page { max-width: 100%; margin: 0 auto; }
+  .pdf-header { border-bottom: 2px solid #eaeaea; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .pdf-header h2 { font-family: serif; margin: 0 0 5px 0; font-size: 24px; color: #111; }
+  .pdf-header .sub { color: #666; font-size: 14px; }
+  .pdf-header .meta { text-align: right; color: #888; font-size: 12px; }
+  .pdf-countdown { background: #fdfbf7; border-left: 4px solid #C9A15B; padding: 12px 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; border-radius: 0 6px 6px 0; }
+  .pdf-countdown .label { font-weight: 600; font-size: 14px; color: #554326; }
+  .pdf-countdown .days { font-weight: 700; font-size: 16px; color: #1a1a1a; }
+  .pdf-section { margin-bottom: 30px; }
+  .pdf-section-title { font-size: 16px; font-weight: 700; border-bottom: 1px solid #eaeaea; padding-bottom: 8px; margin-bottom: 15px; color: #333; }
+  .pdf-subj-row { margin-bottom: 12px; }
+  .pdf-subj-top { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; font-weight: 600; }
+  .pdf-bar-track { background: #f0f0f0; height: 6px; border-radius: 3px; overflow: hidden; }
+  .pdf-bar-fill { background: #4a5560; height: 100%; }
+  .pdf-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+  .pdf-stat-box { background: #fafafa; border: 1px solid #eaeaea; padding: 15px; border-radius: 8px; text-align: center; }
+  .pdf-stat-box .num { font-size: 22px; font-weight: 800; color: #111; margin-bottom: 4px; }
+  .pdf-stat-box .lbl { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+  .pdf-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .pdf-table th { text-align: left; border-bottom: 2px solid #eaeaea; padding: 10px 8px; color: #666; font-weight: 600; }
+  .pdf-table td { border-bottom: 1px solid #eaeaea; padding: 10px 8px; color: #1a1a1a; }
+  .pdf-table .num { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .trend-up { color: #30d158; }
+  .trend-down { color: #ff453a; }
+}
+
