@@ -2255,25 +2255,22 @@ window.openMenuModal = function() {
 window.openThemeModal = function() {
   closeModal();
   
-  const currentHue = localStorage.getItem('ca_theme_hue') || '260';
+  const currentHex = localStorage.getItem('ca_theme_hex') || '#C9A15B';
   
   const themes = [
-    { hue: '260', name: 'Deep Purple' },
-    { hue: '220', name: 'Ocean Blue' },
-    { hue: '330', name: 'Hot Pink' },
-    { hue: '160', name: 'Emerald' },
-    { hue: '190', name: 'Cyan' },
-    { hue: '20',  name: 'Sunset Orange' },
-    { hue: '350', name: 'Crimson' },
-    { hue: '280', name: 'Amethyst' },
-    { hue: '0',   name: 'Monochrome' }
+    { hex: '#C9A15B', name: 'Midnight Gold' },
+    { hex: '#2C4A6E', name: 'Navy' },
+    { hex: '#6B4A34', name: 'Espresso' },
+    { hex: '#8C5A2E', name: 'Bronze' },
+    { hex: '#4A5560', name: 'Charcoal Slate' },
+    { hex: '#AEB0B4', name: 'Platinum' }
   ];
   
   let html = '<div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:16px;">';
   themes.forEach(t => {
-    const isSelected = t.hue === currentHue;
-    html += `<div style="display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer;" onclick="setAppTheme('${t.hue}')">
-      <div style="width: 48px; height: 48px; border-radius: 50%; background: hsl(${t.hue}, 70%, 55%); border: ${isSelected ? '3px solid white' : '2px solid transparent'}; box-shadow: ${isSelected ? '0 0 12px hsl(' + t.hue + ', 70%, 55%)' : 'none'}; transition: 0.2s;"></div>
+    const isSelected = t.hex === currentHex;
+    html += `<div style="display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer;" onclick="setAppTheme('${t.hex}')">
+      <div style="width: 48px; height: 48px; border-radius: 50%; background: ${t.hex}; border: ${isSelected ? '3px solid white' : '2px solid transparent'}; box-shadow: ${isSelected ? '0 0 12px ' + t.hex : 'none'}; transition: 0.2s;"></div>
       <div style="font-size:11px; color:${isSelected ? 'var(--text-primary)' : 'var(--text-secondary)'}; font-weight:${isSelected ? '600' : '400'}; text-align:center;">${t.name}</div>
     </div>`;
   });
@@ -4305,24 +4302,21 @@ window.openConfirmModal = function(title, body, confirmText, onConfirm) {
     };
   }, 100);
 };
-window.setAppTheme = function(hue) {
-  localStorage.setItem('ca_theme_hue', hue);
-  document.documentElement.style.setProperty('--primary-hue', hue);
-  const primary = 'hsl(' + hue + ', 70%, 55%)';
-  document.documentElement.style.setProperty('--primary-color', primary);
-  document.documentElement.style.setProperty('--primary', primary);
-  document.documentElement.style.setProperty('--purple', primary);
+window.setAppTheme = function(hex) {
+  localStorage.setItem('ca_theme_hex', hex);
+  document.documentElement.style.setProperty('--primary-color', hex);
+  document.documentElement.style.setProperty('--primary', hex);
+  document.documentElement.style.setProperty('--purple', hex);
   openThemeModal();
 };
 const origInitTheme = initTheme;
 window.initTheme = function() {
   origInitTheme();
-  const hue = localStorage.getItem('ca_theme_hue');
-  if (hue) {
-    const primary = 'hsl(' + hue + ', 70%, 55%)';
-    document.documentElement.style.setProperty('--primary-color', primary);
-    document.documentElement.style.setProperty('--primary', primary);
-    document.documentElement.style.setProperty('--purple', primary);
+  const hex = localStorage.getItem('ca_theme_hex');
+  if (hex) {
+    document.documentElement.style.setProperty('--primary-color', hex);
+    document.documentElement.style.setProperty('--primary', hex);
+    document.documentElement.style.setProperty('--purple', hex);
   }
 };
 initTheme = window.initTheme;
