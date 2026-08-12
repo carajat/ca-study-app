@@ -2057,7 +2057,7 @@ function init() {
 }
 
 function performDailyBackup() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getTodayStr();
   const lastBackup = localStorage.getItem('ca_last_backup_date');
   if (lastBackup !== today) {
     try {
@@ -2073,8 +2073,16 @@ function performDailyBackup() {
         trackerData: parsedTracker,
         dynamicData: DYNAMIC_DATA
       };
-      localStorage.setItem('ca_app_daily_backup', JSON.stringify(dataToBackup));
+      localStorage.setItem('ca_app_daily_backup_' + today, JSON.stringify(dataToBackup));
       localStorage.setItem('ca_last_backup_date', today);
+      
+      const allKeys = Object.keys(localStorage);
+      const backupKeys = allKeys.filter(k => k.startsWith('ca_app_daily_backup_')).sort();
+      if (backupKeys.length > 7) {
+        const keysToDelete = backupKeys.slice(0, backupKeys.length - 7);
+        keysToDelete.forEach(k => localStorage.removeItem(k));
+      }
+      
       console.log("Daily local backup created successfully for " + today);
     } catch (e) {
       console.error("Failed to create daily backup:", e);
@@ -4177,7 +4185,8 @@ async function checkForUpdates() {
     }
 
     // Check current version (we can store it in localStorage after an update)
-    const currentVersion = localStorage.getItem('app_ota_version') || 'v0';
+    const currentVersion = localStorage.getItem('app_ota_version') || (typeof BUILD_VERSION !== 'undefined' ? BUILD_VERSION : 'v0');
+    if (!localStorage.getItem('app_ota_version') && typeof BUILD_VERSION !== 'undefined') localStorage.setItem('app_ota_version', BUILD_VERSION);
     
     if (latestVersion === currentVersion) {
       showToast('App is already up to date!', 'success');
