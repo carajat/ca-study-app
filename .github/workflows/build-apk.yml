@@ -25,12 +25,18 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      - name: Generate Release Tag
+        id: tag
+        run: echo "tag=v$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+
       - name: Prepare Web Assets for Capacitor
         run: |
           mkdir -p www
           cp index.html app.js data.js sync.js style.css sw.js Sortable.min.js datesheets.json manifest.json www/
           cp icon-192.png icon-512.png www/
           cp -r .well-known www/ 2>/dev/null || true
+          echo "const BUILD_VERSION = '${{ steps.tag.outputs.tag }}';" > www/version.js
+
       - name: Sync Capacitor
         run: npx cap sync android
 
@@ -66,10 +72,6 @@ jobs:
           cd android
           chmod +x gradlew
           ./gradlew assembleRelease -x lint -Pandroid.injected.signing.store.file="$GITHUB_WORKSPACE/castudyapp.jks" -Pandroid.injected.signing.store.password="${KEYSTORE_PASSWORD}" -Pandroid.injected.signing.key.alias="${KEY_ALIAS}" -Pandroid.injected.signing.key.password="${KEY_PASSWORD}"
-
-      - name: Generate Release Tag
-        id: tag
-        run: echo "tag=v$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
