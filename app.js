@@ -2184,6 +2184,11 @@ window.restoreDailyBackup = function() {
   }
 };
 
+window.openLoginModal = function() {
+  closeModal();
+  document.getElementById('welcome-overlay').style.display = 'flex';
+};
+
 window.openMenuModal = function() {
   const uName = typeof window.getDisplayUsername === 'function' ? window.getDisplayUsername(window.loggedUserEmail) : (window.loggedUserEmail ? window.loggedUserEmail.split('@')[0].toUpperCase() : 'USER');
   
@@ -2202,7 +2207,7 @@ window.openMenuModal = function() {
              <div style="font-size:11px; color:#ff9f0a; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px;">Local Mode</div>
              <div style="font-size:12px; color:var(--text-secondary);">Data is saved only on this device.</div>
            </div>
-           <button class="btn-primary" style="padding: 6px 12px; font-size: 12px; width: auto; margin:0;" onclick="window.location.reload()">Login</button>
+           <button class="btn-primary" style="padding: 6px 12px; font-size: 12px; width: auto; margin:0;" onclick="window.openLoginModal()">Login</button>
          </div>`}
 
     <div class="menu-section-tag">Account</div>
@@ -2273,6 +2278,19 @@ window.openThemeModal = function() {
     </div>`;
   });
   html += '</div>';
+
+  let modeIcon, modeText, nextMode;
+  let savedMode = localStorage.getItem('ca_theme_mode') || 'auto';
+  if (savedMode === 'light') {
+      modeIcon = 'dark_mode'; modeText = 'Switch to Dark Mode'; nextMode = 'dark';
+  } else if (savedMode === 'dark') {
+      modeIcon = 'brightness_auto'; modeText = 'Switch to System Auto'; nextMode = 'auto';
+  } else {
+      modeIcon = 'light_mode'; modeText = 'Switch to Light Mode'; nextMode = 'light';
+  }
+  html += `<button class="menu-btn" style="margin-bottom: 20px; text-align: center; justify-content: center; background: rgba(10,132,255,0.1); color: var(--primary);" onclick="window.setMode('${nextMode}'); window.openThemeModal();">
+    <span class="material-symbols-rounded menu-btn-icon" style="margin-right: 8px;">${modeIcon}</span> ${modeText}
+  </button>`;
 
   openModal('<div class="back-arrow" onclick="openMenuModal()"><span class="material-symbols-rounded">arrow_back</span> App Theme</div>', html);
 }
