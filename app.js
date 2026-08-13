@@ -2925,6 +2925,13 @@ function shareProgressPDF() {
   
   const isNativeApp = window.Capacitor && window.Capacitor.isNativePlatform();
   if (isNativeApp) {
+    const decodeHtml = (htmlStr) => {
+      if (!htmlStr) return '';
+      const txt = document.createElement("textarea");
+      txt.innerHTML = htmlStr;
+      return txt.value;
+    };
+  
     let textSummary = `CA Final Progress Report (${state.activeGroup === 'group1' ? 'Group 1' : 'Group 2'})\n`;
     textSummary += `Overall Progress: ${overallPct}%\n`;
     textSummary += `Total Logged: ${totalHours}h | Pace: ${avgStr}h/day | Streak: ${streak}\n\n`;
@@ -2934,10 +2941,10 @@ function shareProgressPDF() {
       DYNAMIC_DATA.syllabusSubjects.forEach(s => {
         if (s.type === 'folder' && s.children) {
           s.children.forEach(child => {
-            textSummary += `- ${child.name}: ${calculateSubjectProgress(child.id, child.type)}%\n`;
+            textSummary += `- ${decodeHtml(child.name)}: ${calculateSubjectProgress(child.id, child.type)}%\n`;
           });
         } else {
-          textSummary += `- ${s.name}: ${calculateSubjectProgress(s.id, s.type)}%\n`;
+          textSummary += `- ${decodeHtml(s.name)}: ${calculateSubjectProgress(s.id, s.type)}%\n`;
         }
       });
     }
@@ -2945,7 +2952,7 @@ function shareProgressPDF() {
     if (sortedMocks.length > 0) {
       textSummary += `\n--- RECENT MOCKS ---\n`;
       sortedMocks.slice(-5).forEach(m => {
-         textSummary += `- ${m.name}: ${m.score}/100\n`;
+         textSummary += `- ${decodeHtml(m.name)}: ${m.score}/100\n`;
       });
     }
     
