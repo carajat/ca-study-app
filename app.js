@@ -2800,7 +2800,7 @@ function shareProgressPDF() {
     });
   }
   
-  allJournalEntries.forEach(e => totalMins += (e.durHH * 60 + e.durMM));
+  allJournalEntries.forEach(e => totalMins += ((parseInt(e.durHH)||0) * 60 + (parseInt(e.durMM)||0)));
   let totalHours = (totalMins / 60).toFixed(1);
   
   // Calculate streak
@@ -2822,7 +2822,7 @@ function shareProgressPDF() {
      let dStr = `${year}-${month}-${day}`;
      
      let dayMins = 0;
-     allJournalEntries.filter(e => e.date === dStr).forEach(e => dayMins += (e.durHH * 60 + e.durMM));
+     allJournalEntries.filter(e => e.date === dStr).forEach(e => dayMins += ((parseInt(e.durHH)||0) * 60 + (parseInt(e.durMM)||0)));
      minsIn14 += dayMins;
      if (dayMins > 0) daysWithData++;
   }
