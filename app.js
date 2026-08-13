@@ -2577,45 +2577,122 @@ async function exportData() {
     const data = localStorage.getItem(getStorageKey()) || '{}';
     const exportPayload = { trackerData: JSON.parse(data), dynamicData: DYNAMIC_DATA };
     const jsonString = JSON.stringify(exportPayload, null, 2);
+    window._tempExportData = jsonString;
+
+    openModal('Backup Options', `
+      <div style="font-size:14px; color:var(--text-secondary); margin-bottom:15px; text-align:center;">
+        Mobile apps often block direct file downloads. Choose how you want to backup:
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button class="menu-btn" style="background:var(--primary); color:var(--on-primary); border:none;" onclick="downloadExportFile()">
+          <span class="material-symbols-rounded" style="vertical-align:middle;">download</span> Try Saving File
+        </button>
+        <button class="menu-btn btn-neutral" onclick="copyExportToClipboard()">
+          <span class="material-symbols-rounded" style="vertical-align:middle;">content_copy</span> Copy to Clipboard
+        </button>
+        <button class="menu-btn btn-neutral" onclick="shareExportText()">
+          <span class="material-symbols-rounded" style="vertical-align:middle;">share</span> Share Data
+        </button>
+      </div>
+    `);
+  } catch (e) {
+    showToast("Failed to prepare export", "error");
+  }
+}
+
+window.downloadExportFile = function() {
+    const jsonString = window._tempExportData;
+    if (!jsonString) return;
     const blob = new Blob([jsonString], { type: 'application/json' });
-    const fileName = `ca-progress-${state.activeGroup}.json`;
-    
-    if (navigator.canShare) {
-      const file = new File([blob], fileName, { type: 'application/json' });
-      if (navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({
-            files: [file],
-            title: 'CA Progress Backup',
-            text: 'Backup data from CA Final Study Companion'
-          });
-          showToast("Data exported successfully!");
-          return;
-        } catch (err) {
-          console.log('Share API cancelled or failed', err);
-        }
-      }
-    }
-    
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = fileName;
+    a.download = `ca-progress-${state.activeGroup}.json`;
     document.body.appendChild(a);
     a.click();
     setTimeout(() => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }, 100);
-    showToast("Data exported successfully!");
-  } catch (e) {
-    showToast("Failed to export data");
+    closeModal();
+    showToast("Download triggered!");
+};
+
+window.copyExportToClipboard = function() {
+    const jsonString = window._tempExportData;
+    if (!jsonString) return;
+    navigator.clipboard.writeText(jsonString).then(() => {
+        closeModal();
+        showToast("Copied to clipboard! Paste it safely somewhere.");
+    }).catch(err => {
+        showToast("Failed to copy", "error");
+    });
+};
+
+window.shareExportText = async function() {
+  const jsonString = window._tempExportData;
+  if (navigator.share && jsonString) {
+    try {
+      await navigator.share({
+        title: 'CA Progress Backup',
+        text: jsonString
+      });
+      closeModal();
+      showToast("Data shared!");
+    } catch (err) {
+      console.log('Share API cancelled', err);
+    }
+  } else {
+    showToast("Sharing not supported on this device", "warning");
   }
-}
+};
 
 function triggerImport() {
-  document.getElementById('import-file').click();
+  openModal('Restore Backup', `
+    <div style="font-size:14px; color:var(--text-secondary); margin-bottom:15px; text-align:center;">
+      How would you like to restore your data?
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <button class="menu-btn" style="background:var(--primary); color:var(--on-primary); border:none;" onclick="document.getElementById('import-file').click(); closeModal();">
+        <span class="material-symbols-rounded" style="vertical-align:middle;">upload_file</span> Select .json File
+      </button>
+      <button class="menu-btn btn-neutral" onclick="importFromClipboard()">
+        <span class="material-symbols-rounded" style="vertical-align:middle;">content_paste</span> Paste from Clipboard
+      </button>
+    </div>
+  `);
 }
+
+window.importFromClipboard = async function() {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (!text) throw new Error('Clipboard is empty');
+    const data = JSON.parse(text);
+    processImportData(data);
+    closeModal();
+  } catch (err) {
+    console.error(err);
+    showToast("Failed to read valid JSON backup from clipboard", "error");
+  }
+};
+
+window.processImportData = function(data) {
+    if (data && typeof data === 'object') {
+        if (data.trackerData) {
+            localStorage.setItem(getStorageKey(), JSON.stringify(data.trackerData));
+        } else {
+            localStorage.setItem(getStorageKey(), JSON.stringify(data));
+        }
+        if (data.dynamicData) {
+            DYNAMIC_DATA = data.dynamicData;
+            saveDynamicData();
+        }
+        if (typeof showToast === 'function') showToast('Data restored successfully! Refreshing...', 'success');
+        setTimeout(() => window.location.reload(), 1500);
+    } else {
+        throw new Error('Invalid data format');
+    }
+};
 
 function handleImportFile(event) {
   const file = event.target.files[0];
@@ -2625,19 +2702,7 @@ function handleImportFile(event) {
   reader.onload = function(e) {
     try {
       const data = JSON.parse(e.target.result);
-      if (data && typeof data === 'object') {
-        if (data.trackerData) {
-          localStorage.setItem(getStorageKey(), JSON.stringify(data.trackerData));
-        } else {
-          localStorage.setItem(getStorageKey(), JSON.stringify(data));
-        }
-        if (data.dynamicData) {
-          DYNAMIC_DATA = data.dynamicData;
-          saveDynamicData(); // This pushes to cloud and saves locally
-        }
-        if (typeof showToast === 'function') showToast('Data restored successfully! Refreshing...');
-        setTimeout(() => window.location.reload(), 1500);
-      }
+      window.processImportData(data);
     } catch (err) {
       console.error(err);
       alert('Invalid backup file! Make sure you selected the correct .json file.');
