@@ -206,18 +206,17 @@ function toggleEditMode() {
   isEditMode = !isEditMode;
   document.body.classList.toggle('edit-mode-active', isEditMode);
   
-  let pill = document.getElementById('edit-mode-indicator-pill');
   if (isEditMode) {
-    if (!pill) {
-      pill = document.createElement('div');
-      pill.id = 'edit-mode-indicator-pill';
-      pill.innerHTML = '<span class="material-symbols-rounded" style="font-size:14px; margin-right:4px;">edit</span> Editing';
-      pill.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); display:flex; align-items:center; background:var(--warning); color:#241a10; font-size:11px; font-weight:800; padding:5px 12px; border-radius:20px; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.3); pointer-events:none;';
-      document.body.appendChild(pill);
+    if (!document.getElementById('edit-mode-indicator')) {
+      const indicator = document.createElement('div');
+      indicator.id = 'edit-mode-indicator';
+      indicator.innerHTML = '<span class="material-symbols-rounded" style="font-size:16px;">edit</span> Editing Mode';
+      indicator.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--warning-color, #f59e0b); color:#fff; padding:6px 16px; border-radius:20px; font-weight:700; font-size:12px; z-index:9999; display:flex; align-items:center; gap:6px; box-shadow:0 4px 12px rgba(245, 158, 11, 0.4); pointer-events:none;';
+      document.body.appendChild(indicator);
     }
-    pill.style.display = 'flex';
   } else {
-    if (pill) pill.style.display = 'none';
+    const indicator = document.getElementById('edit-mode-indicator');
+    if (indicator) indicator.remove();
   }
   
   switchTab(state.activeTab); // re-render current tab
@@ -2153,37 +2152,40 @@ window.openBackupModal = function() {
   if (backupOptions === '') {
     backupOptions = '<option value="">No backups available</option>';
   }
-
-  openModal(
-    '<div class="back-arrow" onclick="openMenuModal()"><span class="material-symbols-rounded">arrow_back</span> Data & Backups</div>', 
-    `
+  
+  openModal('<div style="display:flex; align-items:center; gap:10px;"><button class="back-arrow-btn" onclick="openMenuModal()" title="Back to Menu"><span class="material-symbols-rounded" style="font-size:18px;">arrow_back</span></button><span>Data &amp; Backups</span></div>', `
     <div style="display:flex; flex-direction:column; gap:12px;">
       <p style="font-size:13px; color:var(--text-secondary); text-align:center; margin-bottom:8px;">Manage your local backups and export/import data.</p>
       
+      <div class="menu-section-tag" style="margin-top:4px;">Safe — no data overwritten</div>
+      <button class="menu-btn btn-neutral" onclick="exportData()">
+        <span class="material-symbols-rounded menu-btn-icon">upload</span> Export JSON (Save to Device)
+      </button>
+
+      <div class="menu-section-tag">Overwrites current data</div>
       <div style="display:flex; gap:8px;">
-        <select id="backup-date-select" style="flex:1; padding:8px; border-radius:8px; background:rgba(255,255,255,0.05); color:var(--text-primary); border:1px solid rgba(255,255,255,0.1);">
+        <select id="backup-date-select" class="inline-input" style="flex:1;">
           ${backupOptions}
         </select>
-        <button class="menu-btn btn-warning" style="margin:0; width:auto; padding:8px 12px; border-radius:8px;" onclick="restoreDailyBackup()">
-          Restore
+        <button class="menu-btn btn-warning" style="width:auto; padding:8px 12px; margin:0;" onclick="restoreDailyBackup()">
+          <span class="material-symbols-rounded menu-btn-icon">history</span> Restore
         </button>
       </div>
-      
-      <button class="menu-btn btn-neutral" onclick="exportData()">
-        <span class="material-symbols-rounded menu-btn-icon" style="color: var(--success-color);">upload</span> Export JSON (Save to Device)
-      </button>
-      
-      <button class="menu-btn btn-neutral" onclick="triggerImport()">
-        <span class="material-symbols-rounded menu-btn-icon" style="color: #ff9f0a;">download</span> Import JSON (Load from Device)
+      <button class="menu-btn btn-warning" onclick="triggerImport()">
+        <span class="material-symbols-rounded menu-btn-icon">download</span> Import JSON (Load from Device)
+        <div style="font-size:10px; margin-top:2px; opacity:0.75;">Replaces all current data with the selected file</div>
       </button>
     </div>
   `);
-}
+};
 
 window.restoreDailyBackup = function() {
-  const backupStr = localStorage.getItem('ca_app_daily_backup');
-  if (!backupStr) return alert("No auto-backup found for yesterday!");
-  if (confirm("Are you sure you want to overwrite current data with yesterday's auto-backup? This will replace both cloud and local data.")) {
+  const sel = document.getElementById('backup-date-select');
+  const dateToRestore = sel ? sel.value : null;
+  if (!dateToRestore) return alert("No auto-backup found!");
+  const backupStr = localStorage.getItem('ca_app_daily_backup_' + dateToRestore);
+  if (!backupStr) return alert("Backup data missing!");
+  if (confirm("Are you sure you want to overwrite current data with backup from " + dateToRestore + "? This will replace both cloud and local data.")) {
     try {
       const data = JSON.parse(backupStr);
       if (data.trackerData) localStorage.setItem(getStorageKey(), JSON.stringify(data.trackerData));
@@ -2191,108 +2193,83 @@ window.restoreDailyBackup = function() {
         DYNAMIC_DATA = data.dynamicData;
         saveDynamicData();
       }
-      alert("Backup restored successfully! Reloading app...");
-      window.location.reload();
+      showToast('Backup restored! Reloading...');
+      setTimeout(() => window.location.reload(), 1200);
     } catch (e) {
-      alert("Failed to restore backup.");
+      showToast('Failed to restore backup.');
     }
   }
 };
 
-window.openLoginModal = function() {
-  closeModal();
-  document.getElementById('welcome-overlay').style.display = 'flex';
-};
-
-window.openMenuModal = function() {
+function openMenuModal() {
   const uName = typeof window.getDisplayUsername === 'function' ? window.getDisplayUsername(window.loggedUserEmail) : (window.loggedUserEmail ? window.loggedUserEmail.split('@')[0].toUpperCase() : 'USER');
-  
   openModal('<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">settings</span> Settings & Tools' + (window.isReadOnlyMode ? ' <span style="color:var(--error-color); font-size:12px; margin-left:10px;">(Read-Only)</span>' : ''), `
+    
+    <div class="menu-section-tag" style="margin-top:0;">Account</div>
     ${(window.isCloudLoggedIn) 
       ? `<div style="padding: 12px; margin-bottom: 12px; background: rgba(10,132,255,0.1); border: 1px solid rgba(10,132,255,0.3); border-radius: 12px; display:flex; align-items:center; justify-content:space-between;">
            <div>
-             <div style="font-size:11px; color:var(--primary); font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px;">Cloud Sync Active</div>
-             <div style="font-size:13px; color:var(--text-primary);">Logged in as <b>${uName}</b></div>
-             <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;" id="cloud-last-sync-status">Checking sync status...</div>
+             <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:700;">Active Cloud Account</div>
+             <div style="font-size:14px; color:var(--primary, #0a84ff); font-weight:700; margin-top:2px; display:flex; align-items:center; gap:6px;">
+               <span>👤 ${uName}</span>
+               <span style="font-size:11px; color:var(--text-secondary); font-weight:400;">(${window.isReadOnlyMode ? 'View Mode' : 'Admin Mode'})</span>
+               ${!window.isReadOnlyMode ? `<button style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; padding:0; display:flex;" onclick="editCustomUsername()" title="Edit Display Name"><span class="material-symbols-rounded" style="font-size:15px; color:var(--primary);">edit</span></button>` : ''}
+             </div>
            </div>
-           <span class="material-symbols-rounded" style="color:var(--primary); font-size:28px;">cloud_done</span>
+           <button style="background:linear-gradient(135deg, #ff453a, #d63630); color:#fff; border:none; padding:7px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;" onclick="confirmLogout()">Logout</button>
          </div>` 
-      : `<div style="padding: 12px; margin-bottom: 12px; background: rgba(255,159,10,0.1); border: 1px solid rgba(255,159,10,0.3); border-radius: 12px; display:flex; align-items:center; justify-content:space-between;">
-           <div>
-             <div style="font-size:11px; color:#ff9f0a; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px;">Local Mode</div>
-             <div style="font-size:12px; color:var(--text-secondary);">Data is saved only on this device.</div>
-           </div>
-           <button class="btn-primary" style="padding: 6px 12px; font-size: 12px; width: auto; margin:0;" onclick="window.openLoginModal()">Login</button>
-         </div>`}
-
-    <div class="menu-section-tag">Account</div>
-    ${window.isCloudLoggedIn ? `<button class="menu-btn btn-neutral" onclick="window.confirmLogout()">
-      <span class="material-symbols-rounded menu-btn-icon">logout</span> Logout
-    </button>` : ''}
-
+      : `<button class="menu-btn" style="background: rgba(10,132,255,0.15); border-color: var(--primary); color: var(--primary);" onclick="closeModal(); document.getElementById('welcome-overlay').style.display='flex';">
+          <span class="material-symbols-rounded menu-btn-icon">login</span> Login to Cloud Sync
+         </button>`
+    }
+    
     <div class="menu-section-tag">Appearance</div>
-    <button class="menu-btn btn-neutral" onclick="openThemeModal()">
-      <span class="material-symbols-rounded menu-btn-icon" style="color: var(--purple);">palette</span> Change Theme Color
+    <button class="menu-btn" onclick="openThemeModal()">
+      <span class="material-symbols-rounded menu-btn-icon">palette</span> Customize Theme & Colors
     </button>
-
+    
     <div class="menu-section-tag">Data Safety</div>
-    ${window.isCloudLoggedIn ? `
-    <button class="menu-btn btn-neutral" onclick="toggleEditMode()">
-      <span class="material-symbols-rounded menu-btn-icon">${window.isEditMode ? 'edit_off' : 'edit'}</span> ${window.isEditMode ? 'Exit Edit Mode' : 'Enter Edit Mode'}
-    </button>` : ''}
-    <button class="menu-btn btn-neutral" onclick="openBackupModal()">
-      <span class="material-symbols-rounded menu-btn-icon" style="color: #30d158;">folder_managed</span> Manage Data & Backups
+    <button id="editModeBtn" class="menu-btn" onclick="toggleEditMode(); closeModal()">
+      <span class="menu-btn-icon">${isEditMode ? '<span class="material-symbols-rounded icon-sm">check_circle</span>' : '<span class="material-symbols-rounded icon-sm">edit</span>'}</span> Edit Mode: <strong style="color: ${isEditMode ? 'var(--color-primary)' : 'inherit'}">${isEditMode ? 'ON' : 'OFF'}</strong>
+    </button>
+    <button class="menu-btn" onclick="openBackupModal()">
+      <span class="material-symbols-rounded menu-btn-icon">folder_managed</span> Manage Data & Backups
     </button>
 
     <div class="menu-section-tag">Sharing</div>
-    <button class="menu-btn btn-neutral" onclick="window.printReport()">
-      <span class="material-symbols-rounded menu-btn-icon" style="color: #ff9f0a;">picture_as_pdf</span> Export as PDF Report
-    </button>
-    <button class="menu-btn btn-neutral" onclick="navigator.clipboard.writeText('https://carajat.github.io/ca-study-app/'); showToast('App Link Copied!');">
-      <span class="material-symbols-rounded menu-btn-icon" style="color: var(--primary);">share</span> Share App Link
+    <button class="menu-btn" onclick="shareProgressPDF()">
+      <span class="material-symbols-rounded menu-btn-icon">picture_as_pdf</span> Share Progress (PDF)
     </button>
 
     <div class="menu-section-tag">System</div>
-    <button class="menu-btn btn-neutral" id="btn-ota-update" onclick="checkForUpdates()">
-      <span class="material-symbols-rounded menu-btn-icon">system_update</span> Check for Updates
+    <button class="menu-btn btn-neutral" onclick="checkForUpdates()">
+      <span class="material-symbols-rounded menu-btn-icon">system_update</span> 
+      <span>Check for Updates</span>
     </button>
-    
-    <div style="text-align:center; font-size:11px; color:var(--text-muted); margin-top:16px;">
-      App Version: ${localStorage.getItem('app_ota_version') || 'v1.0 (Local)'}
-    </div>
   `);
-  
-  if(window.isCloudLoggedIn && typeof window.updateSyncStatusDisplay === 'function') {
-     window.updateSyncStatusDisplay();
-  }
 }
 
-window.openThemeModal = function() {
-  closeModal();
-  
-  const currentHex = localStorage.getItem('ca_theme_hex') || '#C9A15B';
-  
-  const themes = [
-    { hex: '#C9A15B', name: 'Midnight Gold' },
-    { hex: '#2C4A6E', name: 'Navy' },
-    { hex: '#6B4A34', name: 'Espresso' },
-    { hex: '#8C5A2E', name: 'Bronze' },
-    { hex: '#4A5560', name: 'Charcoal Slate' },
-    { hex: '#AEB0B4', name: 'Platinum' }
-  ];
-  
-  let html = '<div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:16px;">';
-  themes.forEach(t => {
-    const isSelected = t.hex === currentHex;
-    html += `<div style="display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer;" onclick="setAppTheme('${t.hex}')">
-      <div style="width: 48px; height: 48px; border-radius: 50%; background: ${t.hex}; border: ${isSelected ? '3px solid white' : '2px solid transparent'}; box-shadow: ${isSelected ? '0 0 12px ' + t.hex : 'none'}; transition: 0.2s;"></div>
-      <div style="font-size:11px; color:${isSelected ? 'var(--text-primary)' : 'var(--text-secondary)'}; font-weight:${isSelected ? '600' : '400'}; text-align:center;">${t.name}</div>
-    </div>`;
-  });
-  html += '</div>';
+window.confirmLogout = function() {
+  openModal('', `
+    <div style="text-align:center; padding: 8px 0;">
+      <div style="width:48px; height:48px; border-radius:50%; background:rgba(232,163,61,0.15); border:1px solid rgba(232,163,61,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 14px;">
+        <span class="material-symbols-rounded" style="color:#e8a33d; font-size:22px;">logout</span>
+      </div>
+      <div style="font-size:16px; font-weight:800; margin-bottom:7px;">Log Out?</div>
+      <div style="font-size:13px; color:var(--text-muted); line-height:1.55; margin-bottom:20px;">Your <b style="color:var(--text-secondary);">local data stays on this device</b>. Only the cloud sync connection will be removed.</div>
+      <div style="display:flex; gap:10px;">
+        <button class="menu-btn btn-neutral" style="flex:1; margin:0; text-align:center;" onclick="openMenuModal()">Cancel</button>
+        <button class="menu-btn btn-warning" style="flex:1; margin:0; text-align:center;" onclick="closeModal(); if(typeof logoutFromCloud === 'function') logoutFromCloud();">Log Out</button>
+      </div>
+    </div>
+  `);
+};
 
+function openThemeModal() {
+  const currentTheme = localStorage.getItem('ca-theme') || 'default';
+  const savedMode = localStorage.getItem('theme');
+  
   let modeIcon, modeText, nextMode;
-  let savedMode = localStorage.getItem('ca_theme_mode') || 'auto';
   if (savedMode === 'light') {
       modeIcon = 'dark_mode'; modeText = 'Switch to Dark Mode'; nextMode = 'dark';
   } else if (savedMode === 'dark') {
@@ -2300,26 +2277,54 @@ window.openThemeModal = function() {
   } else {
       modeIcon = 'light_mode'; modeText = 'Switch to Light Mode'; nextMode = 'light';
   }
-  html += `<button class="menu-btn" style="margin-bottom: 20px; text-align: center; justify-content: center; background: rgba(10,132,255,0.1); color: var(--primary);" onclick="window.setMode('${nextMode}'); window.openThemeModal();">
-    <span class="material-symbols-rounded menu-btn-icon" style="margin-right: 8px;">${modeIcon}</span> ${modeText}
-  </button>`;
 
-  openModal('<div class="back-arrow" onclick="openMenuModal()"><span class="material-symbols-rounded">arrow_back</span> App Theme</div>', html);
+  const themes = [
+    { id: 'default', label: 'Midnight Gold', color: '#C9A15B' },
+    { id: 'navy',    label: 'Navy',          color: '#2C4A6E' },
+    { id: 'espresso',label: 'Espresso',      color: '#6B4A34' },
+    { id: 'bronze',  label: 'Bronze',        color: '#8C5A2E' },
+    { id: 'slate',   label: 'Charcoal Slate',color: '#4A5560' },
+    { id: 'platinum',label: 'Platinum',      color: '#AEB0B4' },
+  ];
+
+  const swatchesHtml = themes.map(t => `
+    <div class="theme-item" onclick="setTheme('${t.id}', this.querySelector('.theme-circle'))">
+      <div class="theme-circle ${currentTheme === t.id ? 'active' : ''}" style="background:${t.color}; width:42px; height:42px; border-radius:50%; cursor:pointer; border: 2px solid ${currentTheme === t.id ? 'var(--text-primary)' : 'transparent'}; transition:0.2s;"></div>
+      <span class="theme-item-label">${t.label}</span>
+    </div>
+  `).join('');
+  
+  openModal(`<div style="display:flex; align-items:center; gap:10px;">
+    <button class="back-arrow-btn" onclick="openMenuModal()" title="Back to Menu">
+      <span class="material-symbols-rounded" style="font-size:18px;">arrow_back</span>
+    </button>
+    <span>Select Theme</span>
+  </div>`, `
+    <button class="menu-btn btn-neutral" style="margin-bottom: 16px; text-align: center; justify-content: center;" onclick="setMode('${nextMode}'); openThemeModal();">
+      <span class="material-symbols-rounded menu-btn-icon" style="margin-right: 8px;">${modeIcon}</span> ${modeText}
+    </button>
+    <p style="text-align:center; color:var(--text-secondary); margin-bottom: 4px; font-size:13px;">Personalize your app colors</p>
+    <div class="theme-grid">${swatchesHtml}</div>
+  `);
 }
 
 function setTheme(themeName, element) {
   // Remove all theme classes
-  document.body.classList.remove('theme-ocean', 'theme-forest', 'theme-sunset', 'theme-rose', 'theme-mocha', 'theme-teal', 'theme-amethyst', 'theme-cherry');
+  document.body.classList.remove('theme-navy', 'theme-espresso', 'theme-bronze', 'theme-slate', 'theme-platinum');
   
   if (themeName !== 'default') {
     document.body.classList.add('theme-' + themeName);
   }
   localStorage.setItem('ca-theme', themeName);
   
-  // Update UI
+  // Update swatch borders (inline-styled swatches need direct style update)
+  document.querySelectorAll('.theme-circle').forEach(el => {
+    el.classList.remove('active');
+    el.style.border = '2px solid transparent';
+  });
   if (element) {
-    document.querySelectorAll('.theme-circle').forEach(el => el.classList.remove('active'));
     element.classList.add('active');
+    element.style.border = '2px solid var(--text-primary)';
   }
   
   // Re-render chart if on Exams tab to update chart color
@@ -2626,151 +2631,215 @@ function handleImportFile(event) {
 }
 
 // ─── PDF Generation ───
-window.shareProgressPDF = function() {
+function shareProgressPDF() {
   const overallPct = calculateOverallProgress();
   
   let subjectsHtml = '';
-  DYNAMIC_DATA.syllabusSubjects.forEach(subject => {
-    const pct = calculateSubjectProgress(subject.id, subject.type || 'main');
-    subjectsHtml += `
-      <div class="pdf-subj-row">
-        <div class="pdf-subj-top"><span class="name">${subject.name}</span><span class="pct">${pct}%</span></div>
-        <div class="pdf-bar-track"><div class="pdf-bar-fill" style="width:${pct}%;"></div></div>
-      </div>
-    `;
-  });
-  
-  let totalMinutes = 0;
-  let last14DaysMinutes = 0;
-  const now = new Date();
-  
-  Object.keys(DYNAMIC_DATA.journalEntries || {}).forEach(dateStr => {
-    const entry = DYNAMIC_DATA.journalEntries[dateStr];
-    if (entry && entry.rows) {
-      entry.rows.forEach(r => {
-        const mins = (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
-        totalMinutes += mins;
-        
-        const entryDate = new Date(dateStr);
-        const diffTime = Math.abs(now - entryDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-        if (diffDays <= 14) {
-          last14DaysMinutes += mins;
-        }
-      });
-    }
-  });
-  
-  const totalLoggedH = Math.floor(totalMinutes / 60);
-  const dailyAvg14d = (last14DaysMinutes / 60 / 14).toFixed(1);
-  const streak = DYNAMIC_DATA.consistency ? (DYNAMIC_DATA.consistency.currentStreak || 0) : 0;
-  
-  let mocksHtml = '';
-  const scores = getMockScores();
-  const sortedMockIds = Object.keys(scores).sort((a,b) => new Date(scores[a].date) - new Date(scores[b].date));
-  
-  const subjPrevScores = {};
-  
-  if (sortedMockIds.length === 0) {
-    mocksHtml = '<tr><td colspan="4" style="text-align:center; color:#666; padding: 15px;">No mock scores recorded yet.</td></tr>';
-  } else {
-    const rows = [];
-    sortedMockIds.forEach(mockId => {
-      const s = scores[mockId];
-      let subjName = "Unknown";
-      let testName = "Test";
-      
-      const allSeries = DYNAMIC_DATA.testSeries || (window.APP_DATA ? window.APP_DATA.group1.testSeries : []);
-      const allSeriesG2 = window.APP_DATA_GROUP2 ? window.APP_DATA_GROUP2.testSeries : [];
-      [...allSeries, ...allSeriesG2].forEach(series => {
-        const t = series.tests.find(x => x.id === mockId);
-        if (t) {
-          subjName = t.subject || "Subject";
-          testName = series.name;
-        }
-      });
-      
-      let trendHtml = '-';
-      if (subjPrevScores[subjName] !== undefined) {
-        const diff = s.score - subjPrevScores[subjName];
-        if (diff > 0) trendHtml = `<span class="trend-up">↑ +${diff}</span>`;
-        else if (diff < 0) trendHtml = `<span class="trend-down">↓ ${Math.abs(diff)}</span>`;
+  if (DYNAMIC_DATA && DYNAMIC_DATA.syllabusSubjects) {
+    DYNAMIC_DATA.syllabusSubjects.forEach(s => {
+      if (s.type === 'folder' && s.children) {
+        s.children.forEach(child => {
+          const pct = calculateSubjectProgress(child.id, child.type);
+          subjectsHtml += `<div class="print-row"><span>${child.name}</span> <strong>${pct}%</strong></div>
+          <div class="print-bar" style="margin-bottom:15px"><div class="print-bar-fill" style="width:${pct}%"></div></div>`;
+        });
+      } else {
+        const pct = calculateSubjectProgress(s.id, s.type);
+        subjectsHtml += `<div class="print-row"><span>${s.name}</span> <strong>${pct}%</strong></div>
+        <div class="print-bar" style="margin-bottom:15px"><div class="print-bar-fill" style="width:${pct}%"></div></div>`;
       }
-      subjPrevScores[subjName] = s.score;
-      
-      rows.unshift(`
-        <tr>
-          <td>${testName}</td>
-          <td>${subjName}</td>
-          <td class="num" style="text-align:right;">${s.score}/100</td>
-          <td class="num" style="text-align:right;">${trendHtml}</td>
-        </tr>
-      `);
     });
-    mocksHtml = rows.join('');
+  }
+
+  const scores = getMockScores();
+  let mocksHtml = '';
+  let sortedMocks = [];
+  if (DYNAMIC_DATA && DYNAMIC_DATA.mocks) {
+    DYNAMIC_DATA.mocks.forEach(series => {
+      series.tests.forEach(test => {
+         const scoreEntry = scores[test.id];
+         if (scoreEntry) {
+           sortedMocks.push({
+             name: test.name + ' (' + series.name + ')',
+             score: scoreEntry.score,
+             date: scoreEntry.date ? new Date(scoreEntry.date) : new Date(0)
+           });
+         }
+      });
+    });
   }
   
-  const uName = typeof window.getDisplayUsername === 'function' ? window.getDisplayUsername(window.loggedUserEmail) : (window.loggedUserEmail ? window.loggedUserEmail.split('@')[0].toUpperCase() : 'USER');
-  const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-  let diffDays = 0;
-  if (state.targetAttempt) {
-     diffDays = Math.ceil((new Date(state.targetAttempt) - new Date()) / (1000 * 60 * 60 * 24));
+  sortedMocks.sort((a,b) => a.date - b.date);
+  
+  if (sortedMocks.length > 0) {
+    mocksHtml += `<table style="width:100%; border-collapse:collapse; margin-bottom:15px; font-size:14px;">
+      <tr style="border-bottom:1px solid #ddd; text-align:left;">
+        <th style="padding:8px; font-weight:600;">Mock Name</th>
+        <th style="padding:8px; font-weight:600; text-align:right;">Score</th>
+        <th style="padding:8px; font-weight:600; text-align:center;">Trend</th>
+      </tr>`;
+    
+    for (let i = 0; i < sortedMocks.length; i++) {
+      let trendStr = '-';
+      let trendColor = '#666';
+      if (i > 0) {
+        const diff = sortedMocks[i].score - sortedMocks[i-1].score;
+        if (diff > 0) { trendStr = '↑ +' + diff; trendColor = '#30d158'; }
+        else if (diff < 0) { trendStr = '↓ ' + diff; trendColor = '#ff453a'; }
+      }
+      mocksHtml += `<tr style="border-bottom:1px solid #eee;">
+        <td style="padding:8px;">${sortedMocks[i].name}</td>
+        <td style="padding:8px; text-align:right; font-weight:bold;">${sortedMocks[i].score}/100</td>
+        <td style="padding:8px; text-align:center; color:${trendColor}; font-weight:600;">${trendStr}</td>
+      </tr>`;
+    }
+    mocksHtml += '</table>';
+  } else {
+    mocksHtml = '<p style="color:#666">No mock scores recorded yet.</p>';
   }
   
+  // Stats Calculation
+  let totalMins = 0;
+  let streak = 0;
+  
+  // Calculate total hours
+  let allJournalEntries = [];
+  if (DYNAMIC_DATA && DYNAMIC_DATA.journalEntries) {
+    Object.keys(DYNAMIC_DATA.journalEntries).forEach(dateKey => {
+      const dayData = DYNAMIC_DATA.journalEntries[dateKey];
+      if (dayData && dayData.rows) {
+        dayData.rows.forEach(e => allJournalEntries.push({ ...e, date: dateKey }));
+      }
+    });
+  }
+  
+  allJournalEntries.forEach(e => totalMins += (e.durHH * 60 + e.durMM));
+  let totalHours = (totalMins / 60).toFixed(1);
+  
+  // Calculate streak
+  const trackerStr = localStorage.getItem(getStorageKey());
+  const parsedTracker = JSON.parse(trackerStr || '{}');
+  if (parsedTracker.consistency) streak = parsedTracker.consistency.currentStreak || 0;
+  
+  // 14 day avg
+  const today = new Date();
+  let minsIn14 = 0;
+  let daysWithData = 0;
+  for(let i = 0; i < 14; i++) {
+     let d = new Date(today);
+     d.setDate(d.getDate() - i);
+     // Format to YYYY-MM-DD
+     let year = d.getFullYear();
+     let month = String(d.getMonth() + 1).padStart(2, '0');
+     let day = String(d.getDate()).padStart(2, '0');
+     let dStr = `${year}-${month}-${day}`;
+     
+     let dayMins = 0;
+     allJournalEntries.filter(e => e.date === dStr).forEach(e => dayMins += (e.durHH * 60 + e.durMM));
+     minsIn14 += dayMins;
+     if (dayMins > 0) daysWithData++;
+  }
+  let avgStr = daysWithData > 0 ? (minsIn14 / 60 / 14).toFixed(1) : "0.0";
+  
+  // Exam countdown
+  let examCountdownHtml = '';
+  try {
+    const examDate = new Date(DYNAMIC_DATA.exam ? DYNAMIC_DATA.exam.date : null);
+    if (!isNaN(examDate)) {
+      const diffDays = Math.ceil((examDate - new Date()) / (1000 * 60 * 60 * 24));
+      examCountdownHtml = `<div style="display:flex; justify-content:space-between; align-items:center; background:#faf3e7; border:1px solid #e6d3ae; border-radius:8px; padding:10px 16px; margin-bottom:18px; font-family:-apple-system,sans-serif;">
+        <span style="font-size:11px; color:#b8863f; font-weight:700; text-transform:uppercase;">Exam Countdown</span>
+        <span style="font-size:16px; font-weight:800; color:#1a1a1a;">${diffDays > 0 ? diffDays + ' days remaining' : 'Exam day!'}</span>
+      </div>`;
+    }
+  } catch(e) {}
+  
+  // Consistency section
+  let consistencyHtml = '';
+  try {
+    const cons = DYNAMIC_DATA.consistency || {};
+    const currentStreak = cons.currentStreak || streak;
+    const longestStreak = cons.longestStreak || 0;
+    const paceLabel = avgStr >= 8 ? 'Excellent Pace 🔥' : avgStr >= 5 ? 'Good Pace ✅' : avgStr >= 2 ? 'Moderate Pace' : 'Needs Improvement';
+    consistencyHtml = `<div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
+      <div style="flex:1; min-width:80px; border:1px solid #e2e2e2; border-radius:8px; padding:10px; text-align:center;">
+        <div style="font-size:20px; font-weight:800;">${currentStreak}</div>
+        <div style="font-size:9px; color:#888; text-transform:uppercase; margin-top:2px;">Current Streak</div>
+      </div>
+      <div style="flex:1; min-width:80px; border:1px solid #e2e2e2; border-radius:8px; padding:10px; text-align:center;">
+        <div style="font-size:20px; font-weight:800;">${longestStreak}</div>
+        <div style="font-size:9px; color:#888; text-transform:uppercase; margin-top:2px;">Longest Run</div>
+      </div>
+      <div style="flex:1; min-width:80px; border:1px solid #e2e2e2; border-radius:8px; padding:10px; text-align:center;">
+        <div style="font-size:11px; font-weight:800; color:#333;">${paceLabel}</div>
+        <div style="font-size:9px; color:#888; text-transform:uppercase; margin-top:2px;">Current Pace</div>
+      </div>
+    </div>`;
+  } catch(e) {}
+  
+  const uName = typeof window.getDisplayUsername === 'function' ? window.getDisplayUsername(window.loggedUserEmail) : (window.loggedUserEmail ? window.loggedUserEmail.split('@')[0] : 'User');
+  const today2 = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
   const html = `
-    <div class="pdf-page">
-      <div class="pdf-header">
-        <div>
-          <h2>CA Final Progress Report</h2>
-          <div class="sub">Group 2 — Direct Tax · Indirect Tax · IBS</div>
-        </div>
-        <div class="meta">
-          <b style="display:block; font-size:13px; color:#1a1a1a; margin-bottom:3px;">${uName}</b>
-          Generated ${dateStr}
-        </div>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom: 2px solid #1a1a1a; padding-bottom:12px; margin-bottom:16px; font-family:-apple-system,sans-serif;">
+      <div>
+        <div style="font-size:18px; font-weight:900; font-family:Georgia,serif;">CA Final Progress Report</div>
+        <div style="font-size:11px; color:#666; margin-top:3px;">Generated ${today2}</div>
       </div>
-      <div class="pdf-countdown">
-        <span class="label">Exam Countdown</span>
-        <span class="days">${diffDays > 0 ? diffDays + ' days remaining' : 'Exam Time!'}</span>
-      </div>
-
-      <div class="pdf-section">
-        <div class="pdf-section-title">Overall Syllabus Completion</div>
-        <div style="display:flex; align-items:center; gap:15px; margin-bottom:15px;">
-          <div style="font-size:32px; font-weight:800; color:#1a1a1a;">${overallPct}% <span style="font-size:14px; font-weight:500; color:#666;">Complete</span></div>
-        </div>
-        <p style="font-size:13px; color:#555; margin:0; line-height:1.4;">Weighted across all subjects. At current pace, projected completion is on track.</p>
-      </div>
-
-      <div class="pdf-section">
-        <div class="pdf-section-title">Subject-wise Breakdown</div>
-        ${subjectsHtml}
-      </div>
-
-      <div class="pdf-section">
-        <div class="pdf-section-title">Study Activity</div>
-        <div class="pdf-stat-grid">
-          <div class="pdf-stat-box"><div class="num">${totalLoggedH}h</div><div class="lbl">Total Logged</div></div>
-          <div class="pdf-stat-box"><div class="num">${dailyAvg14d}h</div><div class="lbl">Daily Avg (14d)</div></div>
-          <div class="pdf-stat-box"><div class="num">${streak}</div><div class="lbl">Day Streak</div></div>
-        </div>
-      </div>
-
-      <div class="pdf-section">
-        <div class="pdf-section-title">Mock Test Scores</div>
-        <table class="pdf-table">
-          <tr><th>Test</th><th>Subject</th><th style="text-align:right;">Score</th><th style="text-align:right;">Trend</th></tr>
-          ${mocksHtml}
-        </table>
+      <div style="text-align:right;">
+        <div style="font-size:14px; font-weight:800; color:#1a1a1a;">${uName}</div>
+        <div style="font-size:10px; color:#888;">Exam: Nov 2026</div>
       </div>
     </div>
+    
+    ${examCountdownHtml}
+    
+    <div class="print-card">
+      <h3 style="margin-bottom:10px; font-family:Georgia,serif;">Overall Syllabus Completion</h3>
+      <div style="font-size:32px; font-weight:900; text-align:center">${overallPct}%</div>
+      <div class="print-bar"><div class="print-bar-fill" style="width:${overallPct}%"></div></div>
+    </div>
+    
+    <div class="print-card">
+      <h3 style="margin-bottom:10px; font-family:Georgia,serif;">Subject-wise Breakdown</h3>
+      ${subjectsHtml}
+    </div>
+
+    <div class="print-card">
+      <h3 style="margin-bottom:10px; font-family:Georgia,serif;">Study Activity</h3>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
+        <div style="border:1px solid #e2e2e2; border-radius:8px; padding:10px; text-align:center;">
+          <div style="font-size:18px; font-weight:800;">${totalHours}h</div>
+          <div style="font-size:9px; color:#888; text-transform:uppercase; margin-top:2px;">Total Logged</div>
+        </div>
+        <div style="border:1px solid #e2e2e2; border-radius:8px; padding:10px; text-align:center;">
+          <div style="font-size:18px; font-weight:800;">${avgStr}h</div>
+          <div style="font-size:9px; color:#888; text-transform:uppercase; margin-top:2px;">Daily Avg (14d)</div>
+        </div>
+        <div style="border:1px solid #e2e2e2; border-radius:8px; padding:10px; text-align:center;">
+          <div style="font-size:18px; font-weight:800;">${streak}</div>
+          <div style="font-size:9px; color:#888; text-transform:uppercase; margin-top:2px;">Day Streak</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="print-card">
+      <h3 style="margin-bottom:10px; font-family:Georgia,serif;">Consistency</h3>
+      ${consistencyHtml}
+    </div>
+    
+    <div class="print-card">
+      <h3 style="margin-bottom:10px; font-family:Georgia,serif;">Mock Test Performance</h3>
+      ${mocksHtml}
+    </div>
+    
+    <p style="text-align:center; color:#888; margin-top:20px; font-size:10px; font-family:-apple-system,sans-serif;">Generated via CA Final Study Companion PWA</p>
   `;
   
   document.getElementById('print-section').innerHTML = html;
   closeModal();
   setTimeout(() => window.print(), 500);
 }
-window.printReport = window.shareProgressPDF;
 
 // ─── Test Series Managers ─────────────────────
 function addMockSeries() {
@@ -4400,41 +4469,3 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-
-window.openConfirmModal = function(title, body, confirmText, onConfirm) {
-  openModal('', `
-    <div class="confirm-icon-wrap">
-      <span class="material-symbols-rounded">warning</span>
-    </div>
-    <div class="confirm-title">${title}</div>
-    <div class="confirm-body">${body}</div>
-    <div class="confirm-row">
-      <button class="confirm-btn cb-cancel" onclick="closeModal()">Cancel</button>
-      <button class="confirm-btn cb-confirm" id="confirm-action-btn">${confirmText}</button>
-    </div>
-  `);
-  setTimeout(() => {
-    document.getElementById('confirm-action-btn').onclick = () => {
-      closeModal();
-      if(onConfirm) onConfirm();
-    };
-  }, 100);
-};
-window.setAppTheme = function(hex) {
-  localStorage.setItem('ca_theme_hex', hex);
-  document.documentElement.style.setProperty('--primary-color', hex);
-  document.documentElement.style.setProperty('--primary', hex);
-  document.documentElement.style.setProperty('--purple', hex);
-  openThemeModal();
-};
-const origInitTheme = initTheme;
-window.initTheme = function() {
-  origInitTheme();
-  const hex = localStorage.getItem('ca_theme_hex');
-  if (hex) {
-    document.documentElement.style.setProperty('--primary-color', hex);
-    document.documentElement.style.setProperty('--primary', hex);
-    document.documentElement.style.setProperty('--purple', hex);
-  }
-};
-initTheme = window.initTheme;
