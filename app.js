@@ -2577,6 +2577,28 @@ async function exportData() {
     const data = localStorage.getItem(getStorageKey()) || '{}';
     const exportPayload = { trackerData: JSON.parse(data), dynamicData: DYNAMIC_DATA };
     const jsonString = JSON.stringify(exportPayload, null, 2);
+    
+    const isNativeApp = window.Capacitor && window.Capacitor.isNativePlatform();
+    
+    if (isNativeApp) {
+      window._tempExportData = jsonString;
+      openModal('Backup Options', `
+        <div style="font-size:14px; color:var(--text-secondary); margin-bottom:15px; text-align:center;">
+          Native Android apps block direct file downloads. Please choose a fallback method to save your JSON backup:
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <button class="menu-btn" style="background:var(--primary); color:var(--on-primary); border:none;" onclick="shareExportText()">
+            <span class="material-symbols-rounded" style="vertical-align:middle;">share</span> Share / Save to Drive
+          </button>
+          <button class="menu-btn btn-neutral" onclick="copyExportToClipboard()">
+            <span class="material-symbols-rounded" style="vertical-align:middle;">content_copy</span> Copy to Clipboard (Safe)
+          </button>
+        </div>
+      `);
+      return;
+    }
+
+    // Direct download for PWA / Web Browser
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     
@@ -2596,19 +2618,71 @@ async function exportData() {
   }
 }
 
+window.copyExportToClipboard = function() {
+    const jsonString = window._tempExportData;
+    if (!jsonString) return;
+    navigator.clipboard.writeText(jsonString).then(() => {
+        closeModal();
+        showToast("Copied to clipboard! Paste it safely somewhere.");
+    }).catch(err => {
+        showToast("Failed to copy", "error");
+    });
+};
+
+window.shareExportText = async function() {
+  const jsonString = window._tempExportData;
+  if (navigator.share && jsonString) {
+    try {
+      await navigator.share({
+        title: 'CA Progress Backup',
+        text: jsonString
+      });
+      closeModal();
+      showToast("Data shared!");
+    } catch (err) {
+      console.log('Share API cancelled', err);
+    }
+  } else {
+    showToast("Sharing not supported on this device", "warning");
+  }
+};
+
 function triggerImport() {
-  document.getElementById('import-file').click();
+  const isNativeApp = window.Capacitor && window.Capacitor.isNativePlatform();
+  if (isNativeApp) {
+    openModal('Restore Backup', `
+      <div style="font-size:14px; color:var(--text-secondary); margin-bottom:15px; text-align:center;">
+        How would you like to restore your data?
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button class="menu-btn" style="background:var(--primary); color:var(--on-primary); border:none;" onclick="document.getElementById('import-file').click(); closeModal();">
+          <span class="material-symbols-rounded" style="vertical-align:middle;">upload_file</span> Select .json File
+        </button>
+        <button class="menu-btn btn-neutral" onclick="importFromClipboard()">
+          <span class="material-symbols-rounded" style="vertical-align:middle;">content_paste</span> Paste from Clipboard
+        </button>
+      </div>
+    `);
+  } else {
+    document.getElementById('import-file').click();
+  }
 }
 
-function handleImportFile(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (data && typeof data === 'object') {
+window.importFromClipboard = async function() {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (!text) throw new Error('Clipboard is empty');
+    const data = JSON.parse(text);
+    processImportData(data);
+    closeModal();
+  } catch (err) {
+    console.error(err);
+    showToast("Failed to read valid JSON backup from clipboard", "error");
+  }
+};
+
+window.processImportData = function(data) {
+    if (data && typeof data === 'object') {
         if (data.trackerData) {
             localStorage.setItem(getStorageKey(), JSON.stringify(data.trackerData));
         } else {
@@ -2620,7 +2694,20 @@ function handleImportFile(event) {
         }
         if (typeof showToast === 'function') showToast('Data restored successfully! Refreshing...');
         setTimeout(() => window.location.reload(), 1500);
-      }
+    } else {
+        throw new Error('Invalid data format');
+    }
+};
+
+function handleImportFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      window.processImportData(data);
     } catch (err) {
       console.error(err);
       alert('Invalid backup file! Make sure you selected the correct .json file.');
