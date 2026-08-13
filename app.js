@@ -2578,21 +2578,38 @@ async function exportData() {
     const exportPayload = { trackerData: JSON.parse(data), dynamicData: DYNAMIC_DATA };
     const jsonString = JSON.stringify(exportPayload, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
+    const fileName = `ca-progress-${state.activeGroup}.json`;
     
+    if (navigator.canShare) {
+      const file = new File([blob], fileName, { type: 'application/json' });
+      if (navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: 'CA Progress Backup',
+            text: 'Backup data from CA Final Study Companion'
+          });
+          showToast("Data exported successfully!");
+          return;
+        } catch (err) {
+          console.log('Share API cancelled or failed', err);
+        }
+      }
+    }
+    
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `ca-progress-${state.activeGroup}.json`;
+    a.download = fileName;
     document.body.appendChild(a);
     a.click();
     setTimeout(() => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }, 100);
-    showToast('Backup downloaded! <span class="material-symbols-rounded icon-sm">download</span>');
-  } catch (err) {
-    console.error("Export error:", err);
-    showToast('Export failed!');
+    showToast("Data exported successfully!");
+  } catch (e) {
+    showToast("Failed to export data");
   }
 }
 
@@ -4424,43 +4441,57 @@ async function checkForUpdates() {
     }
 
     // Check current version (we can store it in localStorage after an update)
-    const currentVersion = localStorage.getItem('app_ota_version') || (typeof BUILD_VERSION !== 'undefined' ? BUILD_VERSION : 'v0');
-    if (!localStorage.getItem('app_ota_version') && typeof BUILD_VERSION !== 'undefined') localStorage.setItem('app_ota_version', BUILD_VERSION);
+    const buildVer = typeof BUILD_VERSION !== 'undefined' ? BUILD_VERSION : 'v0';
+    const currentVersion = localStorage.getItem('app_ota_version') || buildVer;
     
-    if (latestVersion === currentVersion) {
+    if (latestVersion === currentVersion || latestVersion === buildVer) {
+      localStorage.setItem('app_ota_version', latestVersion);
       showToast('App is already up to date!', 'success');
       return;
     }
 
     // New version available! Prompt user.
-    const confirmUpdate = confirm(`Update available (${latestVersion}). Install now? This will restart the app.`);
-    if (!confirmUpdate) return;
+    openModal('', `
+      <div style="text-align:center; padding: 8px 0;">
+        <div style="width:48px; height:48px; border-radius:50%; background:rgba(48,209,88,0.15); border:1px solid rgba(48,209,88,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 14px;">
+          <span class="material-symbols-rounded" style="color:#30d158; font-size:22px;">system_update</span>
+        </div>
+        <div style="font-size:16px; font-weight:800; margin-bottom:7px;">Update Available</div>
+        <div style="font-size:13px; color:var(--text-muted); line-height:1.55; margin-bottom:20px;">Version <b style="color:var(--text-primary);">${latestVersion}</b> is ready to install. This will restart the app.</div>
+        <div style="display:flex; gap:10px;">
+          <button class="menu-btn btn-neutral" style="flex:1; margin:0; text-align:center;" onclick="closeModal()">Later</button>
+          <button class="menu-btn" style="flex:1; margin:0; text-align:center; background:var(--primary); color:var(--on-primary); border:none;" onclick="applyOTAUpdate('${latestVersion}', '${zipAsset.browser_download_url}')">Install Now</button>
+        </div>
+      </div>
+    `);
 
-    showToast('Downloading update...', 'info');
-    
-    // 2. Download the bundle
+  } catch (error) {
+    console.error('Update Error:', error);
+    showToast('Failed to check for updates', 'error');
+  }
+}
+
+window.applyOTAUpdate = async function(latestVersion, downloadUrl) {
+  closeModal();
+  showToast('Downloading update...', 'info');
+  try {
+    const { CapacitorUpdater } = window.Capacitor.Plugins;
     const bundle = await CapacitorUpdater.download({
-      url: zipAsset.browser_download_url,
+      url: downloadUrl,
       version: latestVersion
     });
-
-    // 3. Set the bundle
     await CapacitorUpdater.set({ id: bundle.id });
-    
-    // Update local version tracking
     localStorage.setItem('app_ota_version', latestVersion);
-
-    // 4. Reload app to apply
     showToast('Update installed. Restarting...', 'success');
     setTimeout(async () => {
       await CapacitorUpdater.reload();
     }, 1000);
-
-  } catch (error) {
-    console.error('Update Error:', error);
-    showToast('Failed to update: ' + error.message, 'error');
+  } catch(e) {
+    console.error(e);
+    showToast('Update failed to install', 'error');
   }
-}
+};
+
 
 // Notify Capgo that the app is ready (required on startup)
 document.addEventListener('DOMContentLoaded', () => {
