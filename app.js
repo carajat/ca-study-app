@@ -2923,9 +2923,81 @@ function shareProgressPDF() {
     <p style="text-align:center; color:#888; margin-top:20px; font-size:10px; font-family:-apple-system,sans-serif;">Generated via CA Final Study Companion PWA</p>
   `;
   
+  const isNativeApp = window.Capacitor && window.Capacitor.isNativePlatform();
+  if (isNativeApp) {
+    let textSummary = `CA Final Progress Report (${state.activeGroup === 'group1' ? 'Group 1' : 'Group 2'})\n`;
+    textSummary += `Overall Progress: ${overallPct}%\n`;
+    textSummary += `Total Logged: ${totalHours}h | Pace: ${avgStr}h/day | Streak: ${streak}\n\n`;
+    textSummary += `--- SYLLABUS ---\n`;
+    
+    if (DYNAMIC_DATA && DYNAMIC_DATA.syllabusSubjects) {
+      DYNAMIC_DATA.syllabusSubjects.forEach(s => {
+        if (s.type === 'folder' && s.children) {
+          s.children.forEach(child => {
+            textSummary += `- ${child.name}: ${calculateSubjectProgress(child.id, child.type)}%\n`;
+          });
+        } else {
+          textSummary += `- ${s.name}: ${calculateSubjectProgress(s.id, s.type)}%\n`;
+        }
+      });
+    }
+
+    if (sortedMocks.length > 0) {
+      textSummary += `\n--- RECENT MOCKS ---\n`;
+      sortedMocks.slice(-5).forEach(m => {
+         textSummary += `- ${m.name}: ${m.score}/100\n`;
+      });
+    }
+    
+    window._tempShareProgressText = textSummary;
+
+    openModal('Share Progress', `
+      <div style="font-size:14px; color:var(--text-secondary); margin-bottom:15px; text-align:center;">
+        Native Android apps don't support direct PDF printing. Choose how to share your progress:
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button class="menu-btn" style="background:var(--primary); color:var(--on-primary); border:none;" onclick="shareProgressTextNative()">
+          <span class="material-symbols-rounded" style="vertical-align:middle;">share</span> Share Text Report
+        </button>
+        <button class="menu-btn btn-neutral" onclick="copyProgressTextToClipboard()">
+          <span class="material-symbols-rounded" style="vertical-align:middle;">content_copy</span> Copy to Clipboard
+        </button>
+      </div>
+    `);
+    return;
+  }
+  
   document.getElementById('print-section').innerHTML = html;
   closeModal();
   setTimeout(() => window.print(), 500);
+}
+
+window.shareProgressTextNative = async function() {
+  const text = window._tempShareProgressText;
+  if (navigator.share && text) {
+    try {
+      await navigator.share({
+        title: 'CA Progress Report',
+        text: text
+      });
+      closeModal();
+    } catch (err) {
+      console.log('Share API cancelled', err);
+    }
+  } else {
+    showToast("Sharing not supported on this device", "warning");
+  }
+};
+
+window.copyProgressTextToClipboard = function() {
+  const text = window._tempShareProgressText;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+      closeModal();
+      showToast("Copied to clipboard!");
+  }).catch(err => {
+      showToast("Failed to copy", "error");
+  });
 }
 
 // ─── Test Series Managers ─────────────────────
