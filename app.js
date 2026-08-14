@@ -2972,16 +2972,17 @@ async function shareProgressPDF(exportType = 'pdf') {
     if (typeof html2pdf !== 'undefined') {
       showToast('Generating PDF... please wait.', 'info');
       
-      const container = document.createElement('div');
-      container.style.position = 'absolute';
-      container.style.left = '-9999px';
-      container.style.top = '0';
-      container.style.width = '800px';
-      container.style.background = '#fff';
-      container.style.color = '#1a1a1a';
-      container.style.padding = '20px';
-      container.innerHTML = html;
-      document.body.appendChild(container);
+      const pdfContent = `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px;background:#fff;color:#1a1a1a;width:800px;margin:0 auto;">
+          <style>
+            .print-card{border:1px solid #e2e2e2;border-radius:12px;padding:16px;margin-bottom:16px;}
+            .print-row{display:flex;justify-content:space-between;padding:6px 0;}
+            .print-bar{height:8px;background:#eee;border-radius:4px;overflow:hidden;}
+            .print-bar-fill{height:100%;background:linear-gradient(90deg,#6C3CE1,#3B82F6);border-radius:4px;}
+          </style>
+          ${html}
+        </div>
+      `;
       
       const opt = {
         margin: 0.5,
@@ -2992,8 +2993,7 @@ async function shareProgressPDF(exportType = 'pdf') {
       };
 
       if (isNativeApp && window.Capacitor.Plugins.Filesystem && window.Capacitor.Plugins.Share) {
-        html2pdf().set(opt).from(container).outputPdf('datauristring').then(async (pdfString) => {
-          document.body.removeChild(container);
+        html2pdf().set(opt).from(pdfContent).outputPdf('datauristring').then(async (pdfString) => {
           try {
             const base64data = pdfString.split(',')[1];
             const result = await window.Capacitor.Plugins.Filesystem.writeFile({
@@ -3014,20 +3014,21 @@ async function shareProgressPDF(exportType = 'pdf') {
           }
         });
       } else {
-        html2pdf().set(opt).from(container).save().then(() => {
-          document.body.removeChild(container);
+        html2pdf().set(opt).from(pdfContent).save().then(() => {
           closeModal();
           showToast('PDF downloaded.');
         });
       }
       return;
+    } else {
+      // Fallback (Print dialog) if library didn't load
+      document.getElementById('print-section').innerHTML = html;
+      closeModal();
+      setTimeout(() => window.print(), 500);
+      return;
     }
   }
 
-  // Fallback (Print dialog)
-  document.getElementById('print-section').innerHTML = html;
-  closeModal();
-  setTimeout(() => window.print(), 500);
 }
 
 // ─── Test Series Managers ─────────────────────
