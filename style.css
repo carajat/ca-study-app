@@ -1792,7 +1792,7 @@ body.edit-mode-active {
 }
 
 .premium-gradient-text {
-  background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary) 100%) !important;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary), white 40%) 0%, var(--primary) 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
