@@ -2973,7 +2973,7 @@ async function shareProgressPDF(exportType = 'pdf') {
       showToast('Generating PDF... please wait.', 'info');
       
       const pdfContent = `
-        <div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px;background:#fff;color:#1a1a1a;width:800px;margin:0 auto;">
+        <div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px;background:#fff;color:#1a1a1a;width:100%;max-width:750px;margin:0 auto;box-sizing:border-box;">
           <style>
             .print-card{border:1px solid #e2e2e2;border-radius:12px;padding:16px;margin-bottom:16px;}
             .print-row{display:flex;justify-content:space-between;padding:6px 0;}
