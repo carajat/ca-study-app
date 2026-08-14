@@ -2581,36 +2581,62 @@ async function exportData() {
     const isNativeApp = window.Capacitor && window.Capacitor.isNativePlatform();
     
     if (isNativeApp) {
+      const fileName = `ca-progress-${state.activeGroup}.json`;
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      
+      // Try 1: Native Capacitor Filesystem + Share plugins (new APK)
+      if (window.Capacitor.Plugins.Filesystem && window.Capacitor.Plugins.Share) {
+        try {
+          const Filesystem = window.Capacitor.Plugins.Filesystem;
+          const SharePlugin = window.Capacitor.Plugins.Share;
+          
+          const result = await Filesystem.writeFile({
+            path: fileName,
+            data: jsonString,
+            directory: 'CACHE',
+            encoding: 'utf8'
+          });
+          
+          await SharePlugin.share({
+            title: 'CA Progress Backup',
+            text: 'Backup data from CA Final Study Companion',
+            url: result.uri,
+            dialogTitle: 'Save or Share Backup'
+          });
+          
+          showToast('Backup shared! <span class="material-symbols-rounded icon-sm">check_circle</span>');
+          return;
+        } catch (nativeErr) {
+          console.warn('Native plugin failed, trying Web Share API:', nativeErr);
+        }
+      }
+      
+      // Try 2: Web Share API with File (works on most Android WebViews)
       try {
-        const { Filesystem, Directory, Encoding } = window.Capacitor.Plugins.Filesystem 
-          ? { Filesystem: window.Capacitor.Plugins.Filesystem, Directory: { Cache: 'CACHE' }, Encoding: { UTF8: 'utf8' } }
-          : await import('@capacitor/filesystem');
-        const SharePlugin = window.Capacitor.Plugins.Share 
-          ? window.Capacitor.Plugins.Share 
-          : (await import('@capacitor/share')).Share;
-        
-        const fileName = `ca-progress-${state.activeGroup}.json`;
-        
-        // Write file to cache directory
-        const result = await Filesystem.writeFile({
-          path: fileName,
-          data: jsonString,
-          directory: Directory.Cache || 'CACHE',
-          encoding: Encoding.UTF8 || 'utf8'
-        });
-        
-        // Share the file via native share sheet
-        await SharePlugin.share({
+        const file = new File([blob], fileName, { type: 'application/json' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: 'CA Progress Backup',
+            text: 'Backup data from CA Final Study Companion'
+          });
+          showToast('Backup shared!');
+          return;
+        }
+      } catch (shareErr) {
+        console.warn('File share failed, trying text share:', shareErr);
+      }
+      
+      // Try 3: Share as text (last resort)
+      try {
+        await navigator.share({
           title: 'CA Progress Backup',
-          text: 'Backup data from CA Final Study Companion',
-          url: result.uri,
-          dialogTitle: 'Save or Share Backup'
+          text: jsonString
         });
-        
-        showToast('Backup shared! <span class="material-symbols-rounded icon-sm">check_circle</span>');
-      } catch (nativeErr) {
-        console.error('Native export error:', nativeErr);
-        showToast('Export failed: ' + nativeErr.message, 'error');
+        showToast('Data shared as text!');
+      } catch (textErr) {
+        console.error('All share methods failed:', textErr);
+        showToast('Share cancelled or failed', 'error');
       }
       return;
     }
@@ -2877,37 +2903,71 @@ async function shareProgressPDF() {
   
   const isNativeApp = window.Capacitor && window.Capacitor.isNativePlatform();
   if (isNativeApp) {
+    const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>CA Progress Report</title><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px;background:#fff;color:#1a1a1a;max-width:600px;margin:0 auto;}.print-card{border:1px solid #e2e2e2;border-radius:12px;padding:16px;margin-bottom:16px;}.print-row{display:flex;justify-content:space-between;padding:6px 0;}.print-bar{height:8px;background:#eee;border-radius:4px;overflow:hidden;}.print-bar-fill{height:100%;background:linear-gradient(90deg,#6C3CE1,#3B82F6);border-radius:4px;}</style></head><body>${html}</body></html>`;
+    const fileName = `ca-progress-report-${new Date().toISOString().slice(0,10)}.html`;
+    
+    // Try 1: Native Capacitor Filesystem + Share plugins (new APK)
+    if (window.Capacitor.Plugins.Filesystem && window.Capacitor.Plugins.Share) {
+      try {
+        const Filesystem = window.Capacitor.Plugins.Filesystem;
+        const SharePlugin = window.Capacitor.Plugins.Share;
+        
+        const result = await Filesystem.writeFile({
+          path: fileName,
+          data: fullHtml,
+          directory: 'CACHE',
+          encoding: 'utf8'
+        });
+        
+        await SharePlugin.share({
+          title: 'CA Progress Report',
+          text: 'My CA Final study progress report',
+          url: result.uri,
+          dialogTitle: 'Share Progress Report'
+        });
+        
+        closeModal();
+        showToast('Report shared!');
+        return;
+      } catch (nativeErr) {
+        console.warn('Native plugin failed, trying Web Share:', nativeErr);
+      }
+    }
+    
+    // Try 2: Web Share API with HTML file
     try {
-      const { Filesystem, Directory, Encoding } = window.Capacitor.Plugins.Filesystem 
-        ? { Filesystem: window.Capacitor.Plugins.Filesystem, Directory: { Cache: 'CACHE' }, Encoding: { UTF8: 'utf8' } }
-        : await import('@capacitor/filesystem');
-      const SharePlugin = window.Capacitor.Plugins.Share 
-        ? window.Capacitor.Plugins.Share 
-        : (await import('@capacitor/share')).Share;
-      
-      // Write the HTML to a file as .html so it renders properly when opened
-      const fileName = `ca-progress-report-${new Date().toISOString().slice(0,10)}.html`;
-      const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>CA Progress Report</title><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px;background:#fff;color:#1a1a1a;max-width:600px;margin:0 auto;}.print-card{border:1px solid #e2e2e2;border-radius:12px;padding:16px;margin-bottom:16px;}.print-row{display:flex;justify-content:space-between;padding:6px 0;}.print-bar{height:8px;background:#eee;border-radius:4px;overflow:hidden;}.print-bar-fill{height:100%;background:linear-gradient(90deg,#6C3CE1,#3B82F6);border-radius:4px;}</style></head><body>${html}</body></html>`;
-      
-      const result = await Filesystem.writeFile({
-        path: fileName,
-        data: fullHtml,
-        directory: Directory.Cache || 'CACHE',
-        encoding: Encoding.UTF8 || 'utf8'
-      });
-      
-      await SharePlugin.share({
-        title: 'CA Progress Report',
-        text: 'My CA Final study progress report',
-        url: result.uri,
-        dialogTitle: 'Share Progress Report'
-      });
-      
+      const blob = new Blob([fullHtml], { type: 'text/html' });
+      const file = new File([blob], fileName, { type: 'text/html' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'CA Progress Report'
+        });
+        closeModal();
+        showToast('Report shared!');
+        return;
+      }
+    } catch (shareErr) {
+      console.warn('File share failed, trying text:', shareErr);
+    }
+    
+    // Try 3: Share as plain text summary
+    try {
+      let textSummary = `CA Final Progress Report\nOverall: ${overallPct}%\nLogged: ${totalHours}h | Avg: ${avgStr}h/day | Streak: ${streak}\n`;
+      if (DYNAMIC_DATA && DYNAMIC_DATA.syllabusSubjects) {
+        DYNAMIC_DATA.syllabusSubjects.forEach(s => {
+          if (s.type === 'folder' && s.children) {
+            s.children.forEach(c => { textSummary += `- ${c.name}: ${calculateSubjectProgress(c.id, c.type)}%\n`; });
+          } else {
+            textSummary += `- ${s.name}: ${calculateSubjectProgress(s.id, s.type)}%\n`;
+          }
+        });
+      }
+      await navigator.share({ title: 'CA Progress', text: textSummary });
       closeModal();
-      showToast('Report shared!');
-    } catch (nativeErr) {
-      console.error('Native PDF share error:', nativeErr);
-      showToast('Share failed: ' + nativeErr.message, 'error');
+    } catch (textErr) {
+      console.error('All share methods failed:', textErr);
+      showToast('Share cancelled or failed', 'error');
     }
     return;
   }
