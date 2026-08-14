@@ -2165,13 +2165,19 @@ window.openBackupModal = function() {
   openModal('<div style="display:flex; align-items:center; gap:10px;"><button class="back-arrow-btn" onclick="openMenuModal()" title="Back to Menu"><span class="material-symbols-rounded" style="font-size:18px;">arrow_back</span></button><span>Data &amp; Backups</span></div>', `
     <div style="display:flex; flex-direction:column; gap:12px;">
       
-      <div class="menu-section-tag" style="margin-top:4px;">Export / Share</div>
-      <div style="display:flex; gap:10px;">
-        <button class="menu-btn btn-neutral" style="flex:1; margin:0;" onclick="exportData()">
+      <div class="menu-section-tag" style="margin-top:4px;">Export / Share Progress</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <button class="menu-btn btn-neutral" style="margin:0;" onclick="exportData()">
           <span class="material-symbols-rounded menu-btn-icon">data_object</span> JSON
         </button>
-        <button class="menu-btn btn-neutral" style="flex:1; margin:0;" onclick="shareProgressPDF()">
-          <span class="material-symbols-rounded menu-btn-icon">picture_as_pdf</span> PDF/HTML
+        <button class="menu-btn btn-neutral" style="margin:0;" onclick="shareProgressPDF('text')">
+          <span class="material-symbols-rounded menu-btn-icon">content_copy</span> Clipboard
+        </button>
+        <button class="menu-btn btn-neutral" style="margin:0;" onclick="shareProgressPDF('html')">
+          <span class="material-symbols-rounded menu-btn-icon">html</span> HTML File
+        </button>
+        <button class="menu-btn btn-neutral" style="margin:0;" onclick="shareProgressPDF('pdf')">
+          <span class="material-symbols-rounded menu-btn-icon">picture_as_pdf</span> Print / PDF
         </button>
       </div>
 
@@ -2248,7 +2254,7 @@ function openMenuModal() {
         <span class="material-symbols-rounded icon-sm">edit</span> Edit Mode
       </div>
       <label class="switch">
-        <input type="checkbox" id="editModeToggle" onchange="toggleEditMode(); closeModal();" ${isEditMode ? 'checked' : ''}>
+        <input type="checkbox" id="editModeToggle" onchange="toggleEditMode();" ${isEditMode ? 'checked' : ''}>
         <span class="slider round"></span>
       </label>
     </div>
@@ -2701,7 +2707,7 @@ function handleImportFile(event) {
 }
 
 // ─── PDF Generation ───
-async function shareProgressPDF() {
+async function shareProgressPDF(exportType = 'pdf') {
   const overallPct = calculateOverallProgress();
   
   let subjectsHtml = '';
@@ -2905,39 +2911,10 @@ async function shareProgressPDF() {
     
     <p style="text-align:center; color:#888; margin-top:20px; font-size:10px; font-family:-apple-system,sans-serif;">Generated via CA Final Study Companion PWA</p>
   `;
-  
   const isNativeApp = window.Capacitor && window.Capacitor.isNativePlatform();
-  if (isNativeApp) {
-    const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>CA Progress Report</title><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px;background:#fff;color:#1a1a1a;max-width:600px;margin:0 auto;}.print-card{border:1px solid #e2e2e2;border-radius:12px;padding:16px;margin-bottom:16px;}.print-row{display:flex;justify-content:space-between;padding:6px 0;}.print-bar{height:8px;background:#eee;border-radius:4px;overflow:hidden;}.print-bar-fill{height:100%;background:linear-gradient(90deg,#6C3CE1,#3B82F6);border-radius:4px;}</style></head><body>${html}</body></html>`;
-    const fileName = `ca-progress-report-${new Date().toISOString().slice(0,10)}.html`;
-    
-    const FS = window.Capacitor.Plugins.Filesystem;
-    const SH = window.Capacitor.Plugins.Share;
-    
-    // Method 1: Native Filesystem + Share
-    if (FS && SH) {
-      try {
-        const result = await FS.writeFile({
-          path: fileName,
-          data: btoa(unescape(encodeURIComponent(fullHtml))),
-          directory: 'CACHE'
-        });
-        
-        await SH.share({
-          title: 'CA Progress Report',
-          url: result.uri,
-          dialogTitle: 'Share Progress Report'
-        });
-        
-        closeModal();
-        showToast('Report shared!');
-        return;
-      } catch (e) {
-        console.error('Native share error:', e);
-      }
-    }
-    
-    // Method 2: Copy text summary to clipboard
+  const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>CA Progress Report</title><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px;background:#fff;color:#1a1a1a;max-width:600px;margin:0 auto;}.print-card{border:1px solid #e2e2e2;border-radius:12px;padding:16px;margin-bottom:16px;}.print-row{display:flex;justify-content:space-between;padding:6px 0;}.print-bar{height:8px;background:#eee;border-radius:4px;overflow:hidden;}.print-bar-fill{height:100%;background:linear-gradient(90deg,#6C3CE1,#3B82F6);border-radius:4px;}</style></head><body>${html}</body></html>`;
+
+  if (exportType === 'text') {
     try {
       let textSummary = `CA Final Progress Report (${state.activeGroup === 'group1' ? 'Group 1' : 'Group 2'})\nOverall: ${overallPct}%\nLogged: ${totalHours}h | Avg: ${avgStr}h/day | Streak: ${streak}\n\n`;
       if (DYNAMIC_DATA && DYNAMIC_DATA.syllabusSubjects) {
@@ -2952,18 +2929,46 @@ async function shareProgressPDF() {
       await navigator.clipboard.writeText(textSummary);
       closeModal();
       showToast('Progress report copied to clipboard! Paste it anywhere to share.');
-      return;
     } catch (e) {
       console.error('Clipboard error:', e);
+      showToast('Failed to copy. ' + e.message, 'error');
     }
-    
-    // Method 3: Show in-app (render the report inside the app)
-    closeModal();
-    document.getElementById('print-section').innerHTML = html;
-    showToast('Report displayed below. Take a screenshot to share.');
     return;
   }
-  
+
+  if (exportType === 'html') {
+    const fileName = `ca-progress-report-${new Date().toISOString().slice(0,10)}.html`;
+    if (isNativeApp && window.Capacitor.Plugins.Filesystem && window.Capacitor.Plugins.Share) {
+      try {
+        const result = await window.Capacitor.Plugins.Filesystem.writeFile({
+          path: fileName,
+          data: btoa(unescape(encodeURIComponent(fullHtml))),
+          directory: 'CACHE'
+        });
+        await window.Capacitor.Plugins.Share.share({
+          title: 'CA Progress Report',
+          url: result.uri,
+          dialogTitle: 'Share HTML Report'
+        });
+        closeModal();
+        showToast('HTML Report shared!');
+      } catch (e) {
+        console.error('Native share error:', e);
+        showToast('Native share failed: ' + e.message, 'error');
+      }
+    } else {
+      const blob = new Blob([fullHtml], { type: 'text/html' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = fileName;
+      a.click();
+      closeModal();
+      showToast('HTML Report downloaded.');
+    }
+    return;
+  }
+
+  // Fallback / PDF (Print dialog)
   document.getElementById('print-section').innerHTML = html;
   closeModal();
   setTimeout(() => window.print(), 500);
