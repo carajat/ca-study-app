@@ -538,9 +538,9 @@ function renderTrendGraph() {
   }
   
   const effectiveMax = maxMins > 0 ? maxMins * 1.2 : 60; // 20% headroom
-  let hrsMax = Math.floor(effectiveMax / 60);
-  let mnsMax = Math.floor(effectiveMax % 60);
-  document.getElementById('trend-max-label').textContent = `Max: ${hrsMax}h ${mnsMax}m`;
+  let hrsMax = Math.floor(maxMins / 60);
+  let mnsMax = Math.floor(maxMins % 60);
+  document.getElementById('trend-max-label').textContent = `Peak: ${String(hrsMax).padStart(2, '0')}:${String(mnsMax).padStart(2, '0')}`;
   
   document.getElementById('trend-start-date').textContent = data[0].label;
 
