@@ -506,6 +506,69 @@ function renderDashboard() {
   updateDashboardPlanner();
   updateQuote();
   updateConsistencyWidget();
+  renderTrendGraph();
+}
+
+function renderTrendGraph() {
+  const container = document.getElementById('trend-graph-container');
+  if (!container) return;
+
+  const days = 14;
+  const today = new Date(typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now());
+  
+  let data = [];
+  let maxMins = 0;
+  
+  for (let i = days - 1; i >= 0; i--) {
+    let d = new Date(today);
+    d.setDate(d.getDate() - i);
+    let dStr = dateKey(d);
+    
+    let dayMins = 0;
+    if (DYNAMIC_DATA && DYNAMIC_DATA.journalEntries && DYNAMIC_DATA.journalEntries[dStr]) {
+      const rows = DYNAMIC_DATA.journalEntries[dStr].rows || [];
+      rows.forEach(r => {
+        dayMins += ((parseInt(r.durHH)||0) * 60 + (parseInt(r.durMM)||0));
+      });
+    }
+    if (dayMins > maxMins) maxMins = dayMins;
+    
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    data.push({ date: dStr, mins: dayMins, label: `${d.getDate()} ${months[d.getMonth()]}` });
+  }
+  
+  const effectiveMax = maxMins > 0 ? maxMins * 1.2 : 60; // 20% headroom
+  let hrsMax = Math.floor(effectiveMax / 60);
+  let mnsMax = Math.floor(effectiveMax % 60);
+  document.getElementById('trend-max-label').textContent = `Max: ${hrsMax}h ${mnsMax}m`;
+  
+  document.getElementById('trend-start-date').textContent = data[0].label;
+
+  let svgHtml = `<svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" style="overflow:visible; filter: drop-shadow(0 4px 6px rgba(108,60,225,0.2));">
+    <defs>
+      <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.6" />
+        <stop offset="100%" stop-color="var(--primary)" stop-opacity="0.0" />
+      </linearGradient>
+    </defs>`;
+  
+  let points = [];
+  data.forEach((d, index) => {
+    let x = (index / (days - 1)) * 100;
+    let y = 100 - ((d.mins / effectiveMax) * 100);
+    points.push(`${x},${y}`);
+  });
+  
+  let pointsStr = points.join(' ');
+  
+  // Filled Area
+  svgHtml += `<polygon points="0,100 ${pointsStr} 100,100" fill="url(#areaGradient)" />`;
+  
+  // Line
+  svgHtml += `<polyline points="${pointsStr}" fill="none" stroke="var(--primary)" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" />`;
+  
+  svgHtml += `</svg>`;
+  container.innerHTML = svgHtml;
 }
 
 function updateCountdown() {

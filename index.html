@@ -217,9 +217,22 @@
         </div>
         <button class="btn-secondary" style="width: 100%; margin-top: 12px; padding: 10px; border-radius: 10px; font-size: 13px;" onclick="openManualLogModal()">
           <span class="material-symbols-rounded icon-sm">add</span> Add Manual Log
-        </button>
       </div>
 
+      <!-- Trend Graph -->
+      <div class="glass-card" style="margin-bottom: 20px;" id="dashboard-trend-card">
+        <div class="ca-header" style="margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;">
+          <span><span class="material-symbols-rounded icon-sm">trending_up</span> 14-Day Trend</span>
+          <span id="trend-max-label" style="font-size:11px; color:var(--text-secondary); font-weight:600;"></span>
+        </div>
+        <div id="trend-graph-container" style="height: 100px; width: 100%; position: relative;">
+          <!-- SVG injected here -->
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-secondary); margin-top:8px; font-weight:600;">
+          <span id="trend-start-date"></span>
+          <span id="trend-end-date">Today</span>
+        </div>
+      </div>
 
       <!-- Current Activity -->
       <div class="current-activity glass-card" onclick="switchTab('schedule')">
