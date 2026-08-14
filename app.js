@@ -624,7 +624,6 @@ window.showTrendTooltip = function(el, timeStr, dateLabel) {
     setTimeout(() => tooltip.style.display = 'none', 200);
   }, 2500);
 };
-}
 
 function updateCountdown() {
   let examDate = new Date(DYNAMIC_DATA.exam.date);
