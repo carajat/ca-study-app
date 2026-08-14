@@ -2790,7 +2790,7 @@ async function shareProgressPDF(exportType = 'pdf') {
   }
   
   allJournalEntries.forEach(e => totalMins += ((parseInt(e.durHH)||0) * 60 + (parseInt(e.durMM)||0)));
-  let totalHours = (totalMins / 60).toFixed(1);
+  let totalHoursStr = `${Math.floor(totalMins / 60)}:${String(totalMins % 60).padStart(2, '0')}`;
   
   // Calculate streak
   const trackerStr = localStorage.getItem(getStorageKey());
@@ -2815,7 +2815,9 @@ async function shareProgressPDF(exportType = 'pdf') {
      minsIn14 += dayMins;
      if (dayMins > 0) daysWithData++;
   }
-  let avgStr = daysWithData > 0 ? (minsIn14 / 60 / 14).toFixed(1) : "0.0";
+  let avgMins = daysWithData > 0 ? Math.floor(minsIn14 / 14) : 0;
+  let avgStr = `${Math.floor(avgMins / 60)}:${String(avgMins % 60).padStart(2, '0')}`;
+  let avgHoursFloat = avgMins / 60;
   
   // Exam countdown
   let examCountdownHtml = '';
@@ -2836,7 +2838,7 @@ async function shareProgressPDF(exportType = 'pdf') {
     const cons = DYNAMIC_DATA.consistency || {};
     const currentStreak = cons.currentStreak || streak;
     const longestStreak = cons.longestStreak || 0;
-    const paceLabel = avgStr >= 8 ? 'Excellent Pace 🔥' : avgStr >= 5 ? 'Good Pace ✅' : avgStr >= 2 ? 'Moderate Pace' : 'Needs Improvement';
+    const paceLabel = avgHoursFloat >= 8 ? 'Excellent Pace 🔥' : avgHoursFloat >= 5 ? 'Good Pace ✅' : avgHoursFloat >= 2 ? 'Moderate Pace' : 'Needs Improvement';
     consistencyHtml = `<div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
       <div style="flex:1; min-width:80px; border:1px solid #e2e2e2; border-radius:8px; padding:10px; text-align:center;">
         <div style="font-size:20px; font-weight:800;">${currentStreak}</div>
@@ -2885,11 +2887,11 @@ async function shareProgressPDF(exportType = 'pdf') {
       <h3 style="margin-bottom:10px; font-family:Georgia,serif;">Study Activity</h3>
       <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
         <div style="border:1px solid #e2e2e2; border-radius:8px; padding:10px; text-align:center;">
-          <div style="font-size:18px; font-weight:800;">${totalHours}h</div>
+          <div style="font-size:18px; font-weight:800;">${totalHoursStr}</div>
           <div style="font-size:9px; color:#888; text-transform:uppercase; margin-top:2px;">Total Logged</div>
         </div>
         <div style="border:1px solid #e2e2e2; border-radius:8px; padding:10px; text-align:center;">
-          <div style="font-size:18px; font-weight:800;">${avgStr}h</div>
+          <div style="font-size:18px; font-weight:800;">${avgStr}</div>
           <div style="font-size:9px; color:#888; text-transform:uppercase; margin-top:2px;">Daily Avg (14d)</div>
         </div>
         <div style="border:1px solid #e2e2e2; border-radius:8px; padding:10px; text-align:center;">
@@ -2916,7 +2918,7 @@ async function shareProgressPDF(exportType = 'pdf') {
 
   if (exportType === 'text') {
     try {
-      let textSummary = `CA Final Progress Report (${state.activeGroup === 'group1' ? 'Group 1' : 'Group 2'})\nOverall: ${overallPct}%\nLogged: ${totalHours}h | Avg: ${avgStr}h/day | Streak: ${streak}\n\n`;
+      let textSummary = `CA Final Progress Report (${state.activeGroup === 'group1' ? 'Group 1' : 'Group 2'})\nOverall: ${overallPct}%\nLogged: ${totalHoursStr} | Avg: ${avgStr}/day | Streak: ${streak}\n\n`;
       if (DYNAMIC_DATA && DYNAMIC_DATA.syllabusSubjects) {
         DYNAMIC_DATA.syllabusSubjects.forEach(s => {
           if (s.type === 'folder' && s.children) {
