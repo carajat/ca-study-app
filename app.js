@@ -446,7 +446,7 @@ function switchTab(tabName) {
     const gt = document.getElementById('group-title');
     if(gt) gt.textContent = state.activeGroup === 'group1' ? 'CA Final Group 1' : 'CA Final Group 2';
     const hs = document.getElementById('header-subtitle');
-    if(hs) hs.textContent = `${state.targetAttempt || 'Nov 2026'} · New Scheme`;
+    if(hs) hs.textContent = `${state.targetAttempt || 'Nov 2026'}`;
     renderDashboard();
     if(window.updateOngoingJournalTask) window.updateOngoingJournalTask();
   populateTrackerSubjects();
@@ -2239,7 +2239,7 @@ function openMenuModal() {
            <button style="background:linear-gradient(135deg, #ff453a, #d63630); color:#fff; border:none; padding:7px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;" onclick="confirmLogout()">Logout</button>
          </div>` 
       : `<button class="menu-btn" style="background: rgba(10,132,255,0.15); border-color: var(--primary); color: var(--primary);" onclick="closeModal(); document.getElementById('welcome-overlay').style.display='flex';">
-          <span class="material-symbols-rounded menu-btn-icon">login</span> Login to Cloud Sync
+          <span class="material-symbols-rounded menu-btn-icon">login</span> Login
          </button>`
     }
     
@@ -2260,7 +2260,7 @@ function openMenuModal() {
     </div>
     
     <button class="menu-btn" onclick="openBackupModal()">
-      <span class="material-symbols-rounded menu-btn-icon">folder_managed</span> Manage Data & Backups
+      <span class="material-symbols-rounded menu-btn-icon">folder_managed</span> Data & Backups
     </button>
 
     <div class="menu-section-tag">System</div>
@@ -2493,7 +2493,7 @@ function updateTargetAttempt(attempt) {
   saveState({ targetAttempt: attempt });
   
   const hs = document.getElementById('header-subtitle');
-  if(hs) hs.textContent = `${attempt} · New Scheme`;
+  if(hs) hs.textContent = `${attempt}`;
   
   // Generate tentative schedule for the selected attempt
   const isMay = attempt.startsWith('May');
