@@ -2164,14 +2164,18 @@ window.openBackupModal = function() {
   
   openModal('<div style="display:flex; align-items:center; gap:10px;"><button class="back-arrow-btn" onclick="openMenuModal()" title="Back to Menu"><span class="material-symbols-rounded" style="font-size:18px;">arrow_back</span></button><span>Data &amp; Backups</span></div>', `
     <div style="display:flex; flex-direction:column; gap:12px;">
-      <p style="font-size:13px; color:var(--text-secondary); text-align:center; margin-bottom:8px;">Manage your local backups and export/import data.</p>
       
-      <div class="menu-section-tag" style="margin-top:4px;">Safe — no data overwritten</div>
-      <button class="menu-btn btn-neutral" onclick="exportData()">
-        <span class="material-symbols-rounded menu-btn-icon">upload</span> Export JSON (Save to Device)
-      </button>
+      <div class="menu-section-tag" style="margin-top:4px;">Export / Share</div>
+      <div style="display:flex; gap:10px;">
+        <button class="menu-btn btn-neutral" style="flex:1; margin:0;" onclick="exportData()">
+          <span class="material-symbols-rounded menu-btn-icon">data_object</span> JSON
+        </button>
+        <button class="menu-btn btn-neutral" style="flex:1; margin:0;" onclick="shareProgressPDF()">
+          <span class="material-symbols-rounded menu-btn-icon">picture_as_pdf</span> PDF/HTML
+        </button>
+      </div>
 
-      <div class="menu-section-tag">Overwrites current data</div>
+      <div class="menu-section-tag">Restore Backup</div>
       <div style="display:flex; gap:8px;">
         <select id="backup-date-select" class="inline-input" style="flex:1;">
           ${backupOptions}
@@ -2180,9 +2184,10 @@ window.openBackupModal = function() {
           <span class="material-symbols-rounded menu-btn-icon">history</span> Restore
         </button>
       </div>
+      
+      <div class="menu-section-tag">Import Custom Backup</div>
       <button class="menu-btn btn-warning" onclick="triggerImport()">
-        <span class="material-symbols-rounded menu-btn-icon">download</span> Import JSON (Load from Device)
-        <div style="font-size:10px; margin-top:2px; opacity:0.75;">Replaces all current data with the selected file</div>
+        <span class="material-symbols-rounded menu-btn-icon">download</span> Import JSON
       </button>
     </div>
   `);
@@ -2234,20 +2239,22 @@ function openMenuModal() {
     
     <div class="menu-section-tag">Appearance</div>
     <button class="menu-btn" onclick="openThemeModal()">
-      <span class="material-symbols-rounded menu-btn-icon">palette</span> Customize Theme & Colors
+      <span class="material-symbols-rounded menu-btn-icon">palette</span> Display
     </button>
     
     <div class="menu-section-tag">Data Safety</div>
-    <button id="editModeBtn" class="menu-btn" onclick="toggleEditMode(); closeModal()">
-      <span class="menu-btn-icon">${isEditMode ? '<span class="material-symbols-rounded icon-sm">check_circle</span>' : '<span class="material-symbols-rounded icon-sm">edit</span>'}</span> Edit Mode: <strong style="color: ${isEditMode ? 'var(--color-primary)' : 'inherit'}">${isEditMode ? 'ON' : 'OFF'}</strong>
-    </button>
+    <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-light); padding:12px; border-radius:12px; margin-bottom:10px; border:1px solid var(--border);">
+      <div style="display:flex; align-items:center; gap:10px; font-weight:600; color:var(--text-primary); font-size:14px;">
+        <span class="material-symbols-rounded icon-sm">edit</span> Edit Mode
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="editModeToggle" onchange="toggleEditMode(); closeModal();" ${isEditMode ? 'checked' : ''}>
+        <span class="slider round"></span>
+      </label>
+    </div>
+    
     <button class="menu-btn" onclick="openBackupModal()">
       <span class="material-symbols-rounded menu-btn-icon">folder_managed</span> Manage Data & Backups
-    </button>
-
-    <div class="menu-section-tag">Sharing</div>
-    <button class="menu-btn" onclick="shareProgressPDF()">
-      <span class="material-symbols-rounded menu-btn-icon">picture_as_pdf</span> Share Progress (PDF)
     </button>
 
     <div class="menu-section-tag">System</div>
