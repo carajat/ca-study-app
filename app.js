@@ -562,13 +562,13 @@ function renderTrendGraph() {
     
     let hrs = Math.floor(d.mins / 60);
     let mns = d.mins % 60;
-    let timeStr = d.mins === 0 ? '0h' : mns === 0 ? `${hrs}h` : hrs === 0 ? `${mns}m` : `${hrs}h ${mns}m`;
+    let timeStr = `${String(hrs).padStart(2, '0')}:${String(mns).padStart(2, '0')}`;
     
     // Create invisible touch targets for each column
     let leftPct = index === 0 ? 0 : index === days - 1 ? 100 - (50/(days-1)) : (index - 0.5) / (days - 1) * 100;
     let widthPct = index === 0 || index === days - 1 ? 50/(days-1) : 100/(days-1);
     
-    htmlDots += `<div style="position:absolute; left:${leftPct}%; top:0; width:${widthPct}%; height:100%; cursor:pointer; z-index:10;" onclick="showTrendTooltip(this, '${timeStr}', '${d.label}')"></div>`;
+    htmlDots += `<div style="position:absolute; left:${leftPct}%; top:0; width:${widthPct}%; height:100%; cursor:pointer; z-index:10;" onclick="showTrendTooltip(event, this, '${timeStr}', '${d.label}')"></div>`;
   });
   
   let pointsStr = points.join(' ');
@@ -583,27 +583,36 @@ function renderTrendGraph() {
   container.innerHTML = svgHtml + htmlDots;
 }
 
-window.showTrendTooltip = function(el, timeStr, dateLabel) {
+window.showTrendTooltip = function(event, el, timeStr, dateLabel) {
+  if (event) event.stopPropagation();
   let tooltip = document.getElementById('trend-tooltip');
   if (!tooltip) {
     tooltip = document.createElement('div');
     tooltip.id = 'trend-tooltip';
     tooltip.style.position = 'absolute';
-    tooltip.style.background = 'var(--text-primary)';
-    tooltip.style.color = 'var(--bg-base)';
-    tooltip.style.padding = '6px 10px';
-    tooltip.style.borderRadius = '8px';
+    tooltip.style.background = 'transparent';
+    tooltip.style.color = 'var(--text-primary)';
+    tooltip.style.padding = '0';
+    tooltip.style.borderRadius = '0';
     tooltip.style.fontSize = '12px';
     tooltip.style.fontWeight = 'bold';
     tooltip.style.zIndex = '9999';
     tooltip.style.pointerEvents = 'none';
-    tooltip.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    tooltip.style.boxShadow = 'none';
+    tooltip.style.textShadow = '0 0 4px var(--bg-base), 0 0 2px var(--bg-base)';
     tooltip.style.textAlign = 'center';
     tooltip.style.transition = 'opacity 0.2s ease-in-out';
     document.body.appendChild(tooltip);
+    
+    document.addEventListener('click', function(e) {
+      if (tooltip.style.display === 'block' && e.target.id !== 'trend-tooltip') {
+        tooltip.style.opacity = '0';
+        setTimeout(() => tooltip.style.display = 'none', 200);
+      }
+    });
   }
   
-  tooltip.innerHTML = `<div style="font-size:10px; opacity:0.8; margin-bottom:2px; font-weight:600;">${dateLabel}</div><div>${timeStr}</div>`;
+  tooltip.innerHTML = `<div style="font-size:10px; opacity:0.9; margin-bottom:0px; font-weight:700;">${dateLabel}</div><div style="color:var(--primary); font-size:13px;">${timeStr}</div>`;
   
   const rect = el.getBoundingClientRect();
   const centerX = rect.left + window.scrollX + rect.width / 2;
@@ -614,7 +623,7 @@ window.showTrendTooltip = function(el, timeStr, dateLabel) {
   
   // Position above the graph container
   tooltip.style.left = centerX + 'px';
-  tooltip.style.top = (topY - 10) + 'px';
+  tooltip.style.top = (topY - 5) + 'px';
   tooltip.style.transform = 'translate(-50%, -100%)';
   
   // Auto-hide after 2.5s
