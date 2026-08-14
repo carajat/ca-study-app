@@ -2177,7 +2177,7 @@ window.openBackupModal = function() {
           <span class="material-symbols-rounded menu-btn-icon">html</span> HTML File
         </button>
         <button class="menu-btn btn-neutral" style="margin:0;" onclick="shareProgressPDF('pdf')">
-          <span class="material-symbols-rounded menu-btn-icon">picture_as_pdf</span> Print / PDF
+          <span class="material-symbols-rounded menu-btn-icon">picture_as_pdf</span> PDF
         </button>
       </div>
 
@@ -2968,7 +2968,63 @@ async function shareProgressPDF(exportType = 'pdf') {
     return;
   }
 
-  // Fallback / PDF (Print dialog)
+  if (exportType === 'pdf') {
+    if (typeof html2pdf !== 'undefined') {
+      showToast('Generating PDF... please wait.', 'info');
+      
+      const container = document.createElement('div');
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.top = '0';
+      container.style.width = '800px';
+      container.style.background = '#fff';
+      container.style.color = '#1a1a1a';
+      container.style.padding = '20px';
+      container.innerHTML = html;
+      document.body.appendChild(container);
+      
+      const opt = {
+        margin: 0.5,
+        filename: `ca-progress-report-${new Date().toISOString().slice(0,10)}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+
+      if (isNativeApp && window.Capacitor.Plugins.Filesystem && window.Capacitor.Plugins.Share) {
+        html2pdf().set(opt).from(container).outputPdf('datauristring').then(async (pdfString) => {
+          document.body.removeChild(container);
+          try {
+            const base64data = pdfString.split(',')[1];
+            const result = await window.Capacitor.Plugins.Filesystem.writeFile({
+              path: opt.filename,
+              data: base64data,
+              directory: 'CACHE'
+            });
+            await window.Capacitor.Plugins.Share.share({
+              title: 'CA Progress Report',
+              url: result.uri,
+              dialogTitle: 'Share PDF Report'
+            });
+            closeModal();
+            showToast('PDF Report shared!');
+          } catch(e) {
+            console.error('PDF share error:', e);
+            showToast('PDF share failed: ' + e.message, 'error');
+          }
+        });
+      } else {
+        html2pdf().set(opt).from(container).save().then(() => {
+          document.body.removeChild(container);
+          closeModal();
+          showToast('PDF downloaded.');
+        });
+      }
+      return;
+    }
+  }
+
+  // Fallback (Print dialog)
   document.getElementById('print-section').innerHTML = html;
   closeModal();
   setTimeout(() => window.print(), 500);
