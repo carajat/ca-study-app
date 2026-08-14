@@ -540,7 +540,8 @@ function renderTrendGraph() {
   const effectiveMax = maxMins > 0 ? maxMins * 1.2 : 60; // 20% headroom
   let hrsMax = Math.floor(maxMins / 60);
   let mnsMax = Math.floor(maxMins % 60);
-  document.getElementById('trend-max-label').textContent = `Peak: ${String(hrsMax).padStart(2, '0')}:${String(mnsMax).padStart(2, '0')}`;
+  let peakStr = maxMins === 0 ? '0h' : mnsMax === 0 ? `${hrsMax}h` : hrsMax === 0 ? `${mnsMax}m` : `${hrsMax}h ${mnsMax}m`;
+  document.getElementById('trend-max-label').textContent = `Peak: ${peakStr}`;
   
   document.getElementById('trend-start-date').textContent = data[0].label;
 
@@ -562,7 +563,7 @@ function renderTrendGraph() {
     
     let hrs = Math.floor(d.mins / 60);
     let mns = d.mins % 60;
-    let timeStr = `${String(hrs).padStart(2, '0')}:${String(mns).padStart(2, '0')}`;
+    let timeStr = d.mins === 0 ? '0h' : mns === 0 ? `${hrs}h` : hrs === 0 ? `${mns}m` : `${hrs}h ${mns}m`;
     
     // Create invisible touch targets for each column
     let leftPct = index === 0 ? 0 : index === days - 1 ? 100 - (50/(days-1)) : (index - 0.5) / (days - 1) * 100;
