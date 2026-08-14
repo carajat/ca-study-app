@@ -553,10 +553,22 @@ function renderTrendGraph() {
     </defs>`;
   
   let points = [];
+  let htmlDots = '';
+  
   data.forEach((d, index) => {
     let x = (index / (days - 1)) * 100;
     let y = 100 - ((d.mins / effectiveMax) * 100);
     points.push(`${x},${y}`);
+    
+    let hrs = Math.floor(d.mins / 60);
+    let mns = d.mins % 60;
+    let timeStr = d.mins === 0 ? '0h' : mns === 0 ? `${hrs}h` : hrs === 0 ? `${mns}m` : `${hrs}h ${mns}m`;
+    
+    // Create invisible touch targets for each column
+    let leftPct = index === 0 ? 0 : index === days - 1 ? 100 - (50/(days-1)) : (index - 0.5) / (days - 1) * 100;
+    let widthPct = index === 0 || index === days - 1 ? 50/(days-1) : 100/(days-1);
+    
+    htmlDots += `<div style="position:absolute; left:${leftPct}%; top:0; width:${widthPct}%; height:100%; cursor:pointer; z-index:10;" onclick="showTrendTooltip(this, '${timeStr}', '${d.label}')"></div>`;
   });
   
   let pointsStr = points.join(' ');
@@ -568,7 +580,50 @@ function renderTrendGraph() {
   svgHtml += `<polyline points="${pointsStr}" fill="none" stroke="var(--primary)" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" />`;
   
   svgHtml += `</svg>`;
-  container.innerHTML = svgHtml;
+  container.innerHTML = svgHtml + htmlDots;
+}
+
+window.showTrendTooltip = function(el, timeStr, dateLabel) {
+  let tooltip = document.getElementById('trend-tooltip');
+  if (!tooltip) {
+    tooltip = document.createElement('div');
+    tooltip.id = 'trend-tooltip';
+    tooltip.style.position = 'absolute';
+    tooltip.style.background = 'var(--text-primary)';
+    tooltip.style.color = 'var(--bg-base)';
+    tooltip.style.padding = '6px 10px';
+    tooltip.style.borderRadius = '8px';
+    tooltip.style.fontSize = '12px';
+    tooltip.style.fontWeight = 'bold';
+    tooltip.style.zIndex = '9999';
+    tooltip.style.pointerEvents = 'none';
+    tooltip.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    tooltip.style.textAlign = 'center';
+    tooltip.style.transition = 'opacity 0.2s ease-in-out';
+    document.body.appendChild(tooltip);
+  }
+  
+  tooltip.innerHTML = `<div style="font-size:10px; opacity:0.8; margin-bottom:2px; font-weight:600;">${dateLabel}</div><div>${timeStr}</div>`;
+  
+  const rect = el.getBoundingClientRect();
+  const centerX = rect.left + window.scrollX + rect.width / 2;
+  const topY = rect.top + window.scrollY; // The top of the graph container
+  
+  tooltip.style.display = 'block';
+  tooltip.style.opacity = '1';
+  
+  // Position above the graph container
+  tooltip.style.left = centerX + 'px';
+  tooltip.style.top = (topY - 10) + 'px';
+  tooltip.style.transform = 'translate(-50%, -100%)';
+  
+  // Auto-hide after 2.5s
+  if (window.trendTooltipTimeout) clearTimeout(window.trendTooltipTimeout);
+  window.trendTooltipTimeout = setTimeout(() => {
+    tooltip.style.opacity = '0';
+    setTimeout(() => tooltip.style.display = 'none', 200);
+  }, 2500);
+};
 }
 
 function updateCountdown() {
