@@ -210,8 +210,17 @@ function toggleEditMode() {
     if (!document.getElementById('edit-mode-indicator')) {
       const indicator = document.createElement('div');
       indicator.id = 'edit-mode-indicator';
-      indicator.innerHTML = '<span class="material-symbols-rounded" style="font-size:16px;">edit</span> Editing Mode';
-      indicator.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--warning-color, #f59e0b); color:#fff; padding:6px 16px; border-radius:20px; font-weight:700; font-size:12px; z-index:9999; display:flex; align-items:center; gap:6px; box-shadow:0 4px 12px rgba(245, 158, 11, 0.4); pointer-events:none;';
+      indicator.innerHTML = '<span class="material-symbols-rounded" style="font-size:16px;">edit</span> Editing Mode &nbsp;<span class="material-symbols-rounded" style="font-size:14px; opacity:0.8;">close</span>';
+      indicator.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--warning-color, #f59e0b); color:#fff; padding:6px 12px 6px 16px; border-radius:20px; font-weight:700; font-size:12px; z-index:9999; display:flex; align-items:center; gap:4px; box-shadow:0 4px 12px rgba(245, 158, 11, 0.4); cursor:pointer; user-select:none; transition:transform 0.2s;';
+      indicator.onclick = () => {
+        toggleEditMode();
+        showToast('Edit mode turned OFF', 'info');
+      };
+      // Add active state for touch/click feedback
+      indicator.onmousedown = () => indicator.style.transform = 'translateX(-50%) scale(0.95)';
+      indicator.onmouseup = () => indicator.style.transform = 'translateX(-50%) scale(1)';
+      indicator.ontouchstart = () => indicator.style.transform = 'translateX(-50%) scale(0.95)';
+      indicator.ontouchend = () => indicator.style.transform = 'translateX(-50%) scale(1)';
       document.body.appendChild(indicator);
     }
   } else {
