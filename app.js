@@ -4499,13 +4499,16 @@ async function checkForUpdates() {
       return;
     }
 
-    // Check current version (we can store it in localStorage after an update)
-    const buildVer = typeof BUILD_VERSION !== 'undefined' ? BUILD_VERSION : 'v0';
-    const currentVersion = localStorage.getItem('app_ota_version') || buildVer;
+    // Check current version — use localStorage as the single source of truth
+    // BUILD_VERSION is set at build time in version.js, but after OTA it won't change
+    // So we always trust localStorage over BUILD_VERSION
+    const installedOtaVersion = localStorage.getItem('app_ota_version');
+    const buildVer = typeof BUILD_VERSION !== 'undefined' && BUILD_VERSION !== 'unknown' ? BUILD_VERSION : null;
+    const currentVersion = installedOtaVersion || buildVer || null;
     
-    if (latestVersion === currentVersion || latestVersion === buildVer) {
-      localStorage.setItem('app_ota_version', latestVersion);
-      showToast('App is already up to date!', 'success');
+    // If we already have this version, we're up to date
+    if (currentVersion && currentVersion === latestVersion) {
+      showToast('App is already up to date! ✓', 'success');
       return;
     }
 
@@ -4539,23 +4542,31 @@ window.applyOTAUpdate = async function(latestVersion, downloadUrl) {
       url: downloadUrl,
       version: latestVersion
     });
-    await CapacitorUpdater.set({ id: bundle.id });
+    
+    // Save version BEFORE applying so it persists across reload
     localStorage.setItem('app_ota_version', latestVersion);
+    
+    await CapacitorUpdater.set({ id: bundle.id });
     showToast('Update installed. Restarting...', 'success');
     setTimeout(async () => {
       await CapacitorUpdater.reload();
     }, 1000);
   } catch(e) {
     console.error(e);
-    showToast('Update failed to install', 'error');
+    // Rollback the version if install failed
+    localStorage.removeItem('app_ota_version');
+    showToast('Update failed to install: ' + e.message, 'error');
   }
 };
 
 
-// Notify Capgo that the app is ready (required on startup)
+// Notify Capgo that the app loaded successfully (prevents auto-rollback)
 document.addEventListener('DOMContentLoaded', () => {
   if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorUpdater) {
-    window.Capacitor.Plugins.CapacitorUpdater.notifyAppReady();
+    // Small delay to ensure app is truly loaded and stable
+    setTimeout(() => {
+      window.Capacitor.Plugins.CapacitorUpdater.notifyAppReady();
+    }, 3000);
   }
 });
 
