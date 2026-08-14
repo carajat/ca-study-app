@@ -2581,20 +2581,37 @@ async function exportData() {
     const isNativeApp = window.Capacitor && window.Capacitor.isNativePlatform();
     
     if (isNativeApp) {
-      window._tempExportData = jsonString;
-      openModal('Backup Options', `
-        <div style="font-size:14px; color:var(--text-secondary); margin-bottom:15px; text-align:center;">
-          Native Android apps block direct file downloads. Please choose a fallback method to save your JSON backup:
-        </div>
-        <div style="display:flex; flex-direction:column; gap:10px;">
-          <button class="menu-btn" style="background:var(--primary); color:var(--on-primary); border:none;" onclick="shareExportText()">
-            <span class="material-symbols-rounded" style="vertical-align:middle;">share</span> Share / Save to Drive
-          </button>
-          <button class="menu-btn btn-neutral" onclick="copyExportToClipboard()">
-            <span class="material-symbols-rounded" style="vertical-align:middle;">content_copy</span> Copy to Clipboard (Safe)
-          </button>
-        </div>
-      `);
+      try {
+        const { Filesystem, Directory, Encoding } = window.Capacitor.Plugins.Filesystem 
+          ? { Filesystem: window.Capacitor.Plugins.Filesystem, Directory: { Cache: 'CACHE' }, Encoding: { UTF8: 'utf8' } }
+          : await import('@capacitor/filesystem');
+        const SharePlugin = window.Capacitor.Plugins.Share 
+          ? window.Capacitor.Plugins.Share 
+          : (await import('@capacitor/share')).Share;
+        
+        const fileName = `ca-progress-${state.activeGroup}.json`;
+        
+        // Write file to cache directory
+        const result = await Filesystem.writeFile({
+          path: fileName,
+          data: jsonString,
+          directory: Directory.Cache || 'CACHE',
+          encoding: Encoding.UTF8 || 'utf8'
+        });
+        
+        // Share the file via native share sheet
+        await SharePlugin.share({
+          title: 'CA Progress Backup',
+          text: 'Backup data from CA Final Study Companion',
+          url: result.uri,
+          dialogTitle: 'Save or Share Backup'
+        });
+        
+        showToast('Backup shared! <span class="material-symbols-rounded icon-sm">check_circle</span>');
+      } catch (nativeErr) {
+        console.error('Native export error:', nativeErr);
+        showToast('Export failed: ' + nativeErr.message, 'error');
+      }
       return;
     }
 
@@ -2618,71 +2635,19 @@ async function exportData() {
   }
 }
 
-window.copyExportToClipboard = function() {
-    const jsonString = window._tempExportData;
-    if (!jsonString) return;
-    navigator.clipboard.writeText(jsonString).then(() => {
-        closeModal();
-        showToast("Copied to clipboard! Paste it safely somewhere.");
-    }).catch(err => {
-        showToast("Failed to copy", "error");
-    });
-};
-
-window.shareExportText = async function() {
-  const jsonString = window._tempExportData;
-  if (navigator.share && jsonString) {
-    try {
-      await navigator.share({
-        title: 'CA Progress Backup',
-        text: jsonString
-      });
-      closeModal();
-      showToast("Data shared!");
-    } catch (err) {
-      console.log('Share API cancelled', err);
-    }
-  } else {
-    showToast("Sharing not supported on this device", "warning");
-  }
-};
-
 function triggerImport() {
-  const isNativeApp = window.Capacitor && window.Capacitor.isNativePlatform();
-  if (isNativeApp) {
-    openModal('Restore Backup', `
-      <div style="font-size:14px; color:var(--text-secondary); margin-bottom:15px; text-align:center;">
-        How would you like to restore your data?
-      </div>
-      <div style="display:flex; flex-direction:column; gap:10px;">
-        <button class="menu-btn" style="background:var(--primary); color:var(--on-primary); border:none;" onclick="document.getElementById('import-file').click(); closeModal();">
-          <span class="material-symbols-rounded" style="vertical-align:middle;">upload_file</span> Select .json File
-        </button>
-        <button class="menu-btn btn-neutral" onclick="importFromClipboard()">
-          <span class="material-symbols-rounded" style="vertical-align:middle;">content_paste</span> Paste from Clipboard
-        </button>
-      </div>
-    `);
-  } else {
-    document.getElementById('import-file').click();
-  }
+  document.getElementById('import-file').click();
 }
 
-window.importFromClipboard = async function() {
-  try {
-    const text = await navigator.clipboard.readText();
-    if (!text) throw new Error('Clipboard is empty');
-    const data = JSON.parse(text);
-    processImportData(data);
-    closeModal();
-  } catch (err) {
-    console.error(err);
-    showToast("Failed to read valid JSON backup from clipboard", "error");
-  }
-};
-
-window.processImportData = function(data) {
-    if (data && typeof data === 'object') {
+function handleImportFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data && typeof data === 'object') {
         if (data.trackerData) {
             localStorage.setItem(getStorageKey(), JSON.stringify(data.trackerData));
         } else {
@@ -2694,20 +2659,7 @@ window.processImportData = function(data) {
         }
         if (typeof showToast === 'function') showToast('Data restored successfully! Refreshing...');
         setTimeout(() => window.location.reload(), 1500);
-    } else {
-        throw new Error('Invalid data format');
-    }
-};
-
-function handleImportFile(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = JSON.parse(e.target.result);
-      window.processImportData(data);
+      }
     } catch (err) {
       console.error(err);
       alert('Invalid backup file! Make sure you selected the correct .json file.');
@@ -2718,7 +2670,7 @@ function handleImportFile(event) {
 }
 
 // ─── PDF Generation ───
-function shareProgressPDF() {
+async function shareProgressPDF() {
   const overallPct = calculateOverallProgress();
   
   let subjectsHtml = '';
@@ -2925,86 +2877,44 @@ function shareProgressPDF() {
   
   const isNativeApp = window.Capacitor && window.Capacitor.isNativePlatform();
   if (isNativeApp) {
-    const decodeHtml = (htmlStr) => {
-      if (!htmlStr) return '';
-      const txt = document.createElement("textarea");
-      txt.innerHTML = htmlStr;
-      return txt.value;
-    };
-  
-    let textSummary = `CA Final Progress Report (${state.activeGroup === 'group1' ? 'Group 1' : 'Group 2'})\n`;
-    textSummary += `Overall Progress: ${overallPct}%\n`;
-    textSummary += `Total Logged: ${totalHours}h | Pace: ${avgStr}h/day | Streak: ${streak}\n\n`;
-    textSummary += `--- SYLLABUS ---\n`;
-    
-    if (DYNAMIC_DATA && DYNAMIC_DATA.syllabusSubjects) {
-      DYNAMIC_DATA.syllabusSubjects.forEach(s => {
-        if (s.type === 'folder' && s.children) {
-          s.children.forEach(child => {
-            textSummary += `- ${decodeHtml(child.name)}: ${calculateSubjectProgress(child.id, child.type)}%\n`;
-          });
-        } else {
-          textSummary += `- ${decodeHtml(s.name)}: ${calculateSubjectProgress(s.id, s.type)}%\n`;
-        }
+    try {
+      const { Filesystem, Directory, Encoding } = window.Capacitor.Plugins.Filesystem 
+        ? { Filesystem: window.Capacitor.Plugins.Filesystem, Directory: { Cache: 'CACHE' }, Encoding: { UTF8: 'utf8' } }
+        : await import('@capacitor/filesystem');
+      const SharePlugin = window.Capacitor.Plugins.Share 
+        ? window.Capacitor.Plugins.Share 
+        : (await import('@capacitor/share')).Share;
+      
+      // Write the HTML to a file as .html so it renders properly when opened
+      const fileName = `ca-progress-report-${new Date().toISOString().slice(0,10)}.html`;
+      const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>CA Progress Report</title><style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:20px;background:#fff;color:#1a1a1a;max-width:600px;margin:0 auto;}.print-card{border:1px solid #e2e2e2;border-radius:12px;padding:16px;margin-bottom:16px;}.print-row{display:flex;justify-content:space-between;padding:6px 0;}.print-bar{height:8px;background:#eee;border-radius:4px;overflow:hidden;}.print-bar-fill{height:100%;background:linear-gradient(90deg,#6C3CE1,#3B82F6);border-radius:4px;}</style></head><body>${html}</body></html>`;
+      
+      const result = await Filesystem.writeFile({
+        path: fileName,
+        data: fullHtml,
+        directory: Directory.Cache || 'CACHE',
+        encoding: Encoding.UTF8 || 'utf8'
       });
-    }
-
-    if (sortedMocks.length > 0) {
-      textSummary += `\n--- RECENT MOCKS ---\n`;
-      sortedMocks.slice(-5).forEach(m => {
-         textSummary += `- ${decodeHtml(m.name)}: ${m.score}/100\n`;
+      
+      await SharePlugin.share({
+        title: 'CA Progress Report',
+        text: 'My CA Final study progress report',
+        url: result.uri,
+        dialogTitle: 'Share Progress Report'
       });
+      
+      closeModal();
+      showToast('Report shared!');
+    } catch (nativeErr) {
+      console.error('Native PDF share error:', nativeErr);
+      showToast('Share failed: ' + nativeErr.message, 'error');
     }
-    
-    window._tempShareProgressText = textSummary;
-
-    openModal('Share Progress', `
-      <div style="font-size:14px; color:var(--text-secondary); margin-bottom:15px; text-align:center;">
-        Native Android apps don't support direct PDF printing. Choose how to share your progress:
-      </div>
-      <div style="display:flex; flex-direction:column; gap:10px;">
-        <button class="menu-btn" style="background:var(--primary); color:var(--on-primary); border:none;" onclick="shareProgressTextNative()">
-          <span class="material-symbols-rounded" style="vertical-align:middle;">share</span> Share Text Report
-        </button>
-        <button class="menu-btn btn-neutral" onclick="copyProgressTextToClipboard()">
-          <span class="material-symbols-rounded" style="vertical-align:middle;">content_copy</span> Copy to Clipboard
-        </button>
-      </div>
-    `);
     return;
   }
   
   document.getElementById('print-section').innerHTML = html;
   closeModal();
   setTimeout(() => window.print(), 500);
-}
-
-window.shareProgressTextNative = async function() {
-  const text = window._tempShareProgressText;
-  if (navigator.share && text) {
-    try {
-      await navigator.share({
-        title: 'CA Progress Report',
-        text: text
-      });
-      closeModal();
-    } catch (err) {
-      console.log('Share API cancelled', err);
-    }
-  } else {
-    showToast("Sharing not supported on this device", "warning");
-  }
-};
-
-window.copyProgressTextToClipboard = function() {
-  const text = window._tempShareProgressText;
-  if (!text) return;
-  navigator.clipboard.writeText(text).then(() => {
-      closeModal();
-      showToast("Copied to clipboard!");
-  }).catch(err => {
-      showToast("Failed to copy", "error");
-  });
 }
 
 // ─── Test Series Managers ─────────────────────
