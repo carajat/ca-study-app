@@ -13,7 +13,9 @@ let state = {
   plannerDate: new Date(),
   calendarMonth: new Date(),
   syllabusView: 'list', // 'list' or 'detail'
-  activeSubject: null
+  activeSubject: null,
+  paceWindow: 14,
+  paceSubjectId: null
 };
 window.state = state;
 
@@ -1406,13 +1408,23 @@ function updateConsistencyWidget() {
   const c = DYNAMIC_DATA.consistency;
   const todayStr = getTodayStr();
   const todayResult = computeDayAdherence(todayStr);
-  const proj = computeProjection();
+  const pw = state.paceWindow || 14;
+  const pSubj = state.paceSubjectId || null;
+  const proj = computeProjection(pSubj, pw);
   const schedName = state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night';
   const adherePct = Math.min(todayResult.adherencePct, 100);
   const isGood = adherePct >= 80;
 
+  // Resolve subject label for insight text
+  let paceLabel = 'syllabus';
+  if (pSubj) {
+    const s = (DYNAMIC_DATA.syllabusSubjects || []).find(x => x.id === pSubj);
+    if (s) paceLabel = s.name;
+  }
+  const windowLabel = `${pw}d avg`;
+
   const logDatesCount = Object.keys(c.dailyLog || {}).length;
-  const currentPct = calculateOverallProgress();
+  const currentPct = pSubj ? (proj ? proj.currentPct : 0) : calculateOverallProgress();
   const showPace = (logDatesCount >= 7 && currentPct >= 10 && proj);
 
   // Pace pill
@@ -1433,10 +1445,10 @@ function updateConsistencyWidget() {
     insightHtml = `<div class="cons-insight" style="background:transparent; border:1px dashed var(--glass-border); align-items:center;"><span class="material-symbols-rounded" style="color:var(--text-muted); font-size:18px;">hourglass_empty</span><p style="color:var(--text-muted); font-size:11.5px;">Building your pace profile &mdash; check back after a bit more progress.</p></div>`;
   } else {
     if (proj.onTrack) {
-      insightHtml = `<div class="cons-insight cons-insight-good" onclick="showPaceCalculation()" style="cursor:pointer; margin-top:12px;">${_svgTrendUp}<p>At this pace, your <b>syllabus</b> completes <b>${proj.daysVsExam} days before</b> your exam date.</p></div>`;
+      insightHtml = `<div class="cons-insight cons-insight-good" onclick="showPaceCalculation(${pSubj ? "'" + pSubj + "'" : 'null'})" style="cursor:pointer; margin-top:12px;">${_svgTrendUp}<p>At this pace <span style="opacity:0.7; font-size:11px;">(${windowLabel})</span>, <b>${paceLabel}</b> completes <b>${proj.daysVsExam} days before</b> your exam.</p></div>`;
     } else {
       const nudgeStr = proj.nudgeHours !== null ? `<span class="cons-nudge">Increase daily average by ~${proj.nudgeHours} hrs to get back on track.</span>` : '';
-      insightHtml = `<div class="cons-insight cons-insight-warn" onclick="showPaceCalculation()" style="cursor:pointer; margin-top:12px;">${_svgWarn}<p>At this pace, syllabus completes <b>${proj.daysVsExam} days after</b> your exam date.${nudgeStr}</p></div>`;
+      insightHtml = `<div class="cons-insight cons-insight-warn" onclick="showPaceCalculation(${pSubj ? "'" + pSubj + "'" : 'null'})" style="cursor:pointer; margin-top:12px;">${_svgWarn}<p>At this pace <span style="opacity:0.7; font-size:11px;">(${windowLabel})</span>, <b>${paceLabel}</b> completes <b>${proj.daysVsExam} days after</b> your exam.${nudgeStr}</p></div>`;
     }
   }
 
@@ -1461,9 +1473,14 @@ function updateConsistencyWidget() {
   `;
 }
 
-window.showPaceCalculation = function(subjectId = null, paceWindow = 14) {
+window.showPaceCalculation = function(subjectId = null, paceWindow = null) {
   if (subjectId === 'ALL') subjectId = null;
+  if (paceWindow === null) paceWindow = state.paceWindow || 14;
   if (typeof paceWindow === 'string') paceWindow = parseInt(paceWindow) || 14;
+  
+  // Remember selection so home card reflects the same
+  state.paceWindow = paceWindow;
+  state.paceSubjectId = subjectId;
   
   let selectHtml = `<select id="pace-subject-select" onchange="showPaceCalculation(this.value, ${paceWindow})" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-primary); color:var(--text-primary); margin-bottom:12px; font-weight:600; outline:none;">
     <option value="ALL" ${subjectId === null ? 'selected' : ''}>Overall Syllabus</option>`;
@@ -1592,6 +1609,7 @@ window.showPaceCalculation = function(subjectId = null, paceWindow = 14) {
     `;
   }
   
+  updateConsistencyWidget();
   openModal('Calculation Breakdown', `<div id="pace-calc-wrapper">${selectHtml + contentHtml}</div>`);
 };
 
