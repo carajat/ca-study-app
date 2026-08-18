@@ -2004,6 +2004,8 @@ function showSubjectsList() {
   const excludeText = state.excludeIBS ? ' <span style="font-size:12px; font-weight:normal; opacity:0.6;">(Excl. IBS)</span>' : '';
   document.getElementById('overall-pct').innerHTML = pct + '%' + excludeText;
   document.getElementById('overall-bar').style.width = pct + '%';
+  const toggleEl = document.getElementById('exclude-ibs-toggle');
+  if (toggleEl) toggleEl.checked = state.excludeIBS;
   
   const container = document.getElementById('syllabus-subjects-list');
   clearSortables();
@@ -2483,16 +2485,6 @@ function openMenuModal() {
       <span class="material-symbols-rounded menu-btn-icon">folder_managed</span> Data & Backups
     </button>
 
-    <div class="menu-section-tag">Preferences</div>
-    <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-light); padding:12px; border-radius:12px; margin-bottom:10px; border:1px solid var(--border);">
-      <div style="display:flex; align-items:center; gap:10px; font-weight:600; color:var(--text-primary); font-size:14px;">
-        <span class="material-symbols-rounded icon-sm">filter_alt_off</span> Exclude IBS (Pace & Syllabus)
-      </div>
-      <label class="switch">
-        <input type="checkbox" onchange="toggleExcludeIBS(this)" ${state.excludeIBS ? 'checked' : ''}>
-        <span class="slider round"></span>
-      </label>
-    </div>
 
     <div class="menu-section-tag">System</div>
     <button class="menu-btn btn-neutral" onclick="checkForUpdates()">

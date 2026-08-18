@@ -395,7 +395,14 @@
       </header>
 
       <!-- Overall Progress -->
-      <div class="overall-progress glass-card">
+      <div class="overall-progress glass-card" style="position:relative;">
+        <div style="position:absolute; right:16px; top:16px; display:flex; align-items:center; gap:4px;">
+          <span style="font-size:10px; color:var(--text-muted); font-weight:700;">EXCL. IBS</span>
+          <label class="switch" style="transform: scale(0.65); transform-origin: right center; margin:0;">
+            <input type="checkbox" id="exclude-ibs-toggle" onchange="toggleExcludeIBS(this)">
+            <span class="slider round"></span>
+          </label>
+        </div>
         <div class="op-label">Overall Progress</div>
         <div class="op-value" id="overall-pct">0%</div>
         <div class="stat-bar stat-bar-lg"><div class="stat-bar-fill" id="overall-bar"></div></div>
