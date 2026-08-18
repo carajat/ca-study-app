@@ -1466,49 +1466,85 @@ window.showPaceCalculation = function() {
     if (dates.length > 0) examDate = new Date(Math.min(...dates));
   }
   const fmtDate = (d) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const exam = new Date(examDate);
+  exam.setHours(0,0,0,0);
+  const daysUntilExam = Math.round((exam - today) / (1000 * 60 * 60 * 24));
   
   const html = `
-    <div style="font-size:12px; line-height:1.6; color:var(--text-primary);">
-      <div style="margin-bottom:12px;">
-        Here is the exact math the system uses to project your syllabus completion date:
-      </div>
+    <div style="display:flex; flex-direction:column; gap:12px; font-size:13px;">
+      <p style="color:var(--text-muted); font-size:12px; margin-bottom:4px; text-align:center;">Mathematical breakdown of your syllabus projection</p>
       
-      <div style="background:rgba(128,128,128,0.05); padding:12px; border-radius:8px; margin-bottom:12px; border:1px solid var(--glass-border);">
-        <div style="font-weight:800; margin-bottom:6px; color:var(--primary);">1. Effort Ratio</div>
-        <div style="margin-bottom:4px;">Total study time: <b>${totalLoggedHours.toFixed(1)} hrs</b></div>
-        <div style="margin-bottom:4px;">Current progress: <b>${currentPct.toFixed(1)}%</b></div>
-        <div style="padding:6px; background:var(--bg-primary); border-radius:6px; font-family:monospace; font-size:11px; margin-top:6px;">
-          ${totalLoggedHours.toFixed(1)} ÷ ${currentPct.toFixed(1)}% = <b style="color:var(--text-primary);">${hoursPerPercent.toFixed(1)} hrs per 1%</b>
+      <!-- Step 1 -->
+      <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:var(--primary);"></div>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+          <span class="material-symbols-rounded" style="color:var(--primary); font-size:18px;">analytics</span>
+          <span style="font-weight:700; color:var(--text-primary); font-size:14px;">1. Effort Ratio</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:6px;">
+          <span>Total Study Time</span><span style="color:var(--text-primary); font-weight:600;">${totalLoggedHours.toFixed(1)} hrs</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
+          <span>Current Progress</span><span style="color:var(--text-primary); font-weight:600;">${currentPct.toFixed(1)}%</span>
+        </div>
+        <div style="background:var(--bg-primary); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-family:monospace; color:var(--text-muted); font-size:11px;">${totalLoggedHours.toFixed(1)} ÷ ${currentPct.toFixed(1)}%</span>
+          <span style="font-weight:700; color:var(--primary);">= ${hoursPerPercent.toFixed(1)} hrs / 1%</span>
         </div>
       </div>
-      
-      <div style="background:rgba(128,128,128,0.05); padding:12px; border-radius:8px; margin-bottom:12px; border:1px solid var(--glass-border);">
-        <div style="font-weight:800; margin-bottom:6px; color:var(--primary);">2. Remaining Work</div>
-        <div style="margin-bottom:4px;">Syllabus left: <b>${(100 - currentPct).toFixed(1)}%</b></div>
-        <div style="padding:6px; background:var(--bg-primary); border-radius:6px; font-family:monospace; font-size:11px; margin-top:6px;">
-          ${(100 - currentPct).toFixed(1)}% × ${hoursPerPercent.toFixed(1)} hrs = <b style="color:var(--text-primary);">${remainingHours.toFixed(0)} total hrs left</b>
+    
+      <!-- Step 2 -->
+      <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:#e8a33d;"></div>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+          <span class="material-symbols-rounded" style="color:#e8a33d; font-size:18px;">target</span>
+          <span style="font-weight:700; color:var(--text-primary); font-size:14px;">2. Remaining Work</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
+          <span>Syllabus Left</span><span style="color:var(--text-primary); font-weight:600;">${(100 - currentPct).toFixed(1)}%</span>
+        </div>
+        <div style="background:var(--bg-primary); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-family:monospace; color:var(--text-muted); font-size:11px;">${(100 - currentPct).toFixed(1)}% × ${hoursPerPercent.toFixed(1)}</span>
+          <span style="font-weight:700; color:#e8a33d;">= ${remainingHours.toFixed(0)} hrs left</span>
         </div>
       </div>
-      
-      <div style="background:rgba(128,128,128,0.05); padding:12px; border-radius:8px; margin-bottom:12px; border:1px solid var(--glass-border);">
-        <div style="font-weight:800; margin-bottom:6px; color:var(--primary);">3. Pacing & ETA</div>
-        <div style="margin-bottom:4px;">Average pace (Last 14 days): <b>${proj.avgDailyHours} hrs/day</b></div>
-        <div style="padding:6px; background:var(--bg-primary); border-radius:6px; font-family:monospace; font-size:11px; margin-top:6px;">
-          ${remainingHours.toFixed(0)} hrs ÷ ${proj.avgDailyHours} hrs/day = <b style="color:var(--text-primary);">${Math.ceil(daysNeeded)} days needed</b>
+    
+      <!-- Step 3 -->
+      <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:#10b981;"></div>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+          <span class="material-symbols-rounded" style="color:#10b981; font-size:18px;">speed</span>
+          <span style="font-weight:700; color:var(--text-primary); font-size:14px;">3. Pacing & ETA</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
+          <span>Avg Pace (Last 14 Days)</span><span style="color:var(--text-primary); font-weight:600;">${proj.avgDailyHours} hrs/day</span>
+        </div>
+        <div style="background:var(--bg-primary); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-family:monospace; color:var(--text-muted); font-size:11px;">${remainingHours.toFixed(0)} ÷ ${proj.avgDailyHours}</span>
+          <span style="font-weight:700; color:#10b981;">= ${Math.ceil(daysNeeded)} days needed</span>
         </div>
       </div>
-      
-      <div style="background:rgba(128,128,128,0.05); padding:12px; border-radius:8px; margin-bottom:16px; border:1px solid var(--glass-border);">
-        <div style="font-weight:800; margin-bottom:6px; color:var(--primary);">4. Exam Projection</div>
-        <div style="margin-bottom:4px;">Projected completion: <b>${fmtDate(proj.projectedDate)}</b></div>
-        <div style="margin-bottom:4px;">Your Exam date: <b>${fmtDate(examDate)}</b></div>
-        <div style="padding:6px; background:var(--bg-primary); border-radius:6px; font-family:monospace; font-size:11px; margin-top:6px;">
-          <b style="color:var(--text-primary);">${proj.daysVsExam} days ${proj.onTrack ? 'buffer remaining' : 'shortfall'}</b>
+    
+      <!-- Step 4 -->
+      <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:${proj.onTrack ? '#10b981' : '#ef4444'};"></div>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+          <span class="material-symbols-rounded" style="color:${proj.onTrack ? '#10b981' : '#ef4444'}; font-size:18px;">event_available</span>
+          <span style="font-weight:700; color:var(--text-primary); font-size:14px;">4. Exam Projection</span>
         </div>
-      </div>
-      
-      <div style="text-align:center; padding:12px; background: ${proj.onTrack ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; color: ${proj.onTrack ? 'var(--success)' : 'var(--warning)'}; border-radius:8px; font-weight:600;">
-        ${proj.onTrack ? `Projected to finish ${proj.daysVsExam} days before exam!` : `At this pace, you will finish ${proj.daysVsExam} days after the exam.`}
+        <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:6px;">
+          <span>Days Left for Exam</span><span style="color:var(--text-primary); font-weight:600;">${daysUntilExam} days</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
+          <span>Days Needed to Finish</span><span style="color:var(--text-primary); font-weight:600;">${Math.ceil(daysNeeded)} days</span>
+        </div>
+        <div style="background:${proj.onTrack ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:700; color:${proj.onTrack ? '#10b981' : '#ef4444'}; font-size:13px; width:100%; text-align:center;">
+            ${proj.daysVsExam} days ${proj.onTrack ? 'buffer remaining' : 'shortfall'}
+          </span>
+        </div>
       </div>
     </div>
   `;
