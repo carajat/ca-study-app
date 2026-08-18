@@ -1202,6 +1202,8 @@ function refreshConsistencyData() {
   const c = DYNAMIC_DATA.consistency;
   const journal = DYNAMIC_DATA.journalEntries || {};
 
+  c.dailyLog = {}; // Clear old data to fix calendar highlights when logs are deleted
+
   const allDates = Object.keys(journal).filter(d => {
     const entry = journal[d];
     return entry && entry.rows && entry.rows.length > 0;
@@ -1226,27 +1228,37 @@ function refreshConsistencyData() {
     };
   }
 
-  // Current streak: consecutive days ending yesterday/today with adherencePct >= 80
-  let streak = 0;
-  const base = new Date();
-  for (let i = 0; i < 365; i++) {
-    const d = new Date(base);
-    d.setDate(d.getDate() - i);
-    const dStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  // Calculate current and true longest streak
+  let earliestStr = todayStr;
+  if (allDates.length > 0 && allDates[0] < earliestStr) earliestStr = allDates[0];
+  
+  let iterDate = new Date(earliestStr);
+  iterDate.setHours(0,0,0,0);
+  const todayDate = new Date();
+  todayDate.setHours(0,0,0,0);
+  
+  let tempStreak = 0;
+  let maxStreak = 0;
+  
+  while (iterDate <= todayDate) {
+    const dStr = iterDate.getFullYear() + '-' + String(iterDate.getMonth()+1).padStart(2,'0') + '-' + String(iterDate.getDate()).padStart(2,'0');
     const log = c.dailyLog[dStr];
+    
     if (dStr === todayStr) {
-      // Today: count if done, else skip (in-progress — don't break streak)
-      if (log && log.adherencePct >= 80) streak++;
-      continue;
-    }
-    if (log && log.adherencePct >= 80) {
-      streak++;
+      if (log && log.adherencePct >= 80) tempStreak++;
     } else {
-      break;
+      if (log && log.adherencePct >= 80) {
+        tempStreak++;
+      } else {
+        tempStreak = 0;
+      }
     }
+    if (tempStreak > maxStreak) maxStreak = tempStreak;
+    iterDate.setDate(iterDate.getDate() + 1);
   }
-  c.currentStreak = streak;
-  if (streak > (c.longestStreak || 0)) c.longestStreak = streak;
+  
+  c.currentStreak = tempStreak;
+  c.longestStreak = maxStreak;
   c.lastCountedDate = todayStr;
 }
 
@@ -1386,31 +1398,94 @@ function updateConsistencyWidget() {
     insightHtml = `<div class="cons-insight" style="background:transparent; border:1px dashed var(--glass-border); align-items:center;"><span class="material-symbols-rounded" style="color:var(--text-muted); font-size:18px;">hourglass_empty</span><p style="color:var(--text-muted); font-size:11.5px;">Building your pace profile &mdash; check back after a bit more progress.</p></div>`;
   } else {
     if (proj.onTrack) {
-      insightHtml = `<div class="cons-insight cons-insight-good">${_svgTrendUp}<p>At this pace, your <b>syllabus</b> completes <b>${proj.daysVsExam} days before</b> your exam date.</p></div>`;
+      insightHtml = `<div class="cons-insight cons-insight-good" onclick="showPaceCalculation()" style="cursor:pointer; margin-top:12px;">${_svgTrendUp}<p>At this pace, your <b>syllabus</b> completes <b>${proj.daysVsExam} days before</b> your exam date.</p></div>`;
     } else {
       const nudgeStr = proj.nudgeHours !== null ? `<span class="cons-nudge">Increase daily average by ~${proj.nudgeHours} hrs to get back on track.</span>` : '';
-      insightHtml = `<div class="cons-insight cons-insight-warn">${_svgWarn}<p>At this pace, syllabus completes <b>${proj.daysVsExam} days after</b> your exam date.${nudgeStr}</p></div>`;
+      insightHtml = `<div class="cons-insight cons-insight-warn" onclick="showPaceCalculation()" style="cursor:pointer; margin-top:12px;">${_svgWarn}<p>At this pace, syllabus completes <b>${proj.daysVsExam} days after</b> your exam date.${nudgeStr}</p></div>`;
     }
   }
 
   el.innerHTML = `
-    <div class="cons-hw-top">
-      <div>
-        <div class="cons-pill ${pillClass}">${pillIcon}${pillLabel}</div>
-        <div class="cons-streak-num">${c.currentStreak}<span>days consistent</span></div>
+    <div onclick="switchTab('schedule')" style="cursor:pointer;">
+      <div class="cons-hw-top">
+        <div>
+          <div class="cons-pill ${pillClass}">${pillIcon}${pillLabel}</div>
+          <div class="cons-streak-num">${c.currentStreak}<span>days consistent</span></div>
+        </div>
+        <div class="cons-best">Longest run<b>${c.longestStreak}</b></div>
       </div>
-      <div class="cons-best">Longest run<b>${c.longestStreak}</b></div>
+      <div class="cons-divider"></div>
+      <div class="cons-adhere-row">
+        <span class="cons-adhere-label">Today's Adherence</span>
+        <span class="cons-adhere-val ${isGood ? 'cons-val-good' : 'cons-val-warn'}">${adherePct}%</span>
+      </div>
+      <div class="cons-bar-track"><div class="cons-bar-fill ${isGood ? 'cons-fill-primary' : 'cons-fill-warn'}" style="width:${adherePct}%"></div></div>
+      <div class="cons-sub">${_fmtMins(todayResult.actualMinutes)} of ${_fmtMins(todayResult.targetMinutes)} · ${schedName} routine</div>
     </div>
-    <div class="cons-divider"></div>
-    <div class="cons-adhere-row">
-      <span class="cons-adhere-label">Today's Adherence</span>
-      <span class="cons-adhere-val ${isGood ? 'cons-val-good' : 'cons-val-warn'}">${adherePct}%</span>
-    </div>
-    <div class="cons-bar-track"><div class="cons-bar-fill ${isGood ? 'cons-fill-primary' : 'cons-fill-warn'}" style="width:${adherePct}%"></div></div>
-    <div class="cons-sub">${_fmtMins(todayResult.actualMinutes)} of ${_fmtMins(todayResult.targetMinutes)} · ${schedName} routine</div>
     ${insightHtml}
   `;
 }
+
+window.showPaceCalculation = function() {
+  const proj = computeProjection();
+  if (!proj) return;
+  
+  const currentPct = calculateOverallProgress();
+  let totalLoggedMinutes = 0;
+  Object.values(DYNAMIC_DATA.journalEntries || {}).forEach(entry => {
+    if (entry && entry.rows) {
+      entry.rows.forEach(r => {
+        totalLoggedMinutes += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
+      });
+    }
+  });
+  
+  const totalLoggedHours = totalLoggedMinutes / 60;
+  const hoursPerPercent = totalLoggedHours / currentPct;
+  const remainingHours = (100 - currentPct) * hoursPerPercent;
+  const daysNeeded = remainingHours / proj.avgDailyHours;
+  
+  const html = `
+    <div style="font-size:13px; line-height:1.5; color:var(--text-primary);">
+      <div style="margin-bottom:16px;">
+        This estimation calculates your past effort-to-progress ratio, and applies your recent studying pace to project the completion date.
+      </div>
+      <div style="background:rgba(128,128,128,0.05); padding:12px; border-radius:8px; margin-bottom:16px; border:1px solid var(--glass-border);">
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+          <span>Current Progress:</span>
+          <b>${currentPct.toFixed(1)}%</b>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+          <span>Total Logged Study:</span>
+          <b>${totalLoggedHours.toFixed(1)} hrs</b>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+          <span>Time per 1% Progress:</span>
+          <b>${hoursPerPercent.toFixed(1)} hrs</b>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-top:1px dashed var(--glass-border); padding-top:8px;">
+          <span>Est. Remaining Effort:</span>
+          <b>${remainingHours.toFixed(0)} hrs</b>
+        </div>
+      </div>
+      <div style="background:rgba(128,128,128,0.05); padding:12px; border-radius:8px; margin-bottom:16px; border:1px solid var(--glass-border);">
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+          <span>Avg. Pace (Last 14 Days):</span>
+          <b>${proj.avgDailyHours} hrs/day</b>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span>Estimated Days Needed:</span>
+          <b>${Math.ceil(daysNeeded)} days</b>
+        </div>
+      </div>
+      <div style="text-align:center; padding:12px; background: ${proj.onTrack ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; color: ${proj.onTrack ? 'var(--success)' : 'var(--warning)'}; border-radius:8px; font-weight:600;">
+        ${proj.onTrack ? `On track to finish ${proj.daysVsExam} days early!` : `Falling behind by ${proj.daysVsExam} days.`}
+      </div>
+    </div>
+  `;
+  
+  openModal('Pace Calculation', html);
+};
 
 
 
