@@ -10,6 +10,7 @@ let state = {
   activeNotificationSchedule: null,
   targetAttempt: 'Nov 2026',
   excludeIBS: false,
+  paceExcludeIBS: false,
   plannerDate: new Date(),
   calendarMonth: new Date(),
   syllabusView: 'list', // 'list' or 'detail'
@@ -1288,7 +1289,7 @@ function computeProjection(subjectId = null, paceWindow = 14) {
   Object.values(journal).forEach(entry => {
     if (entry && entry.rows) {
       entry.rows.forEach(r => {
-        if (state.excludeIBS && r.subject && r.subject.toLowerCase().includes('ibs')) return;
+        if (state.paceExcludeIBS && r.subject && r.subject.toLowerCase().includes('ibs')) return;
         if (subjName && (!r.subject || r.subject.toLowerCase() !== subjName)) return;
         totalLoggedMinutes += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
       });
@@ -1317,11 +1318,11 @@ function computeProjection(subjectId = null, paceWindow = 14) {
     d.setDate(d.getDate() - i);
     const dStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
     
-    if (subjectId || state.excludeIBS) {
+    if (subjectId || state.paceExcludeIBS) {
       const entry = journal[dStr];
       if (entry && entry.rows) {
         entry.rows.forEach(r => {
-          if (state.excludeIBS && r.subject && r.subject.toLowerCase().includes('ibs')) return;
+          if (state.paceExcludeIBS && r.subject && r.subject.toLowerCase().includes('ibs')) return;
           if (subjName && (!r.subject || r.subject.toLowerCase() !== subjName)) return;
           lastNMin += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
         });
@@ -1486,7 +1487,7 @@ window.showPaceCalculation = function(subjectId = null, paceWindow = null) {
   let selectHtml = `<select id="pace-subject-select" onchange="showPaceCalculation(this.value, ${paceWindow})" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-primary); color:var(--text-primary); margin-bottom:12px; font-weight:600; outline:none;">
     <option value="ALL" ${subjectId === null ? 'selected' : ''}>Overall Syllabus</option>`;
   (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
-    if (s.type === 'folder' || (state.excludeIBS && s.name.toLowerCase().includes('ibs'))) return;
+    if (s.type === 'folder' || (state.paceExcludeIBS && s.name.toLowerCase().includes('ibs'))) return;
     selectHtml += `<option value="${s.id}" ${subjectId === s.id ? 'selected' : ''}>${s.name}</option>`;
   });
   selectHtml += `</select>`;
@@ -1500,6 +1501,11 @@ window.showPaceCalculation = function(subjectId = null, paceWindow = null) {
     <button onclick="showPaceCalculation(${subjArg}, 14)" style="${btnStyle(14)}">14 Days</button>
   </div>`;
 
+  // IBS exclude toggle for pace
+  selectHtml += `<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; padding:8px 12px; background:var(--bg-card); border-radius:8px; border:1px solid var(--glass-border);">
+    <span style="font-size:12px; color:var(--text-secondary); font-weight:600;">Exclude IBS from Pace</span>
+    <label class="switch" style="transform:scale(0.7); margin:0;" onclick="event.stopPropagation()"><input type="checkbox" onchange="togglePaceIBS(this)" ${state.paceExcludeIBS ? 'checked' : ''}><span class="slider round"></span></label>
+  </div>`;
   const proj = computeProjection(subjectId, paceWindow);
   
   let contentHtml = '';
@@ -2143,9 +2149,6 @@ function showSubjectsList() {
       '</div>' +
       (!isEditMode ? 
       '<div class="subj-progress" style="display:flex; align-items:center; justify-content:flex-end;">' +
-        (subj.name.toLowerCase().includes('ibs') ? 
-          '<label class="switch" style="transform: scale(0.65); margin: 0 8px 0 0;" onclick="event.stopPropagation()"><input type="checkbox" onchange="toggleIncludeIBS(this)" ' + (!state.excludeIBS ? 'checked' : '') + '><span class="slider round"></span></label>' 
-        : '') +
         '<div><span class="subj-pct">' + p + '%</span><div class="stat-bar"><div class="stat-bar-fill" style="width:' + p + '%"></div></div></div>' +
       '</div>' +
       '<span class="subj-arrow">▶</span>'
@@ -2376,6 +2379,7 @@ function init() {
   if (saved.excludeIBS !== undefined) state.excludeIBS = saved.excludeIBS;
   if (saved.paceWindow) state.paceWindow = saved.paceWindow;
   if (saved.paceSubjectId !== undefined) state.paceSubjectId = saved.paceSubjectId;
+  if (saved.paceExcludeIBS !== undefined) state.paceExcludeIBS = saved.paceExcludeIBS;
   
   // Render initial tab (updates UI state properly)
   switchTab(state.activeTab);
@@ -2593,6 +2597,12 @@ window.toggleIncludeIBS = function(checkbox) {
   if (state.activeTab === 'dashboard') {
     renderDashboard();
   }
+};
+
+window.togglePaceIBS = function(checkbox) {
+  state.paceExcludeIBS = checkbox.checked;
+  saveState({ paceExcludeIBS: state.paceExcludeIBS });
+  showPaceCalculation(state.paceSubjectId, state.paceWindow);
 };
 
 window.confirmLogout = function() {
