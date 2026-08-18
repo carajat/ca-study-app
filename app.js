@@ -1219,7 +1219,7 @@ function refreshConsistencyData() {
     };
   });
 
-  const todayStr = getTodayStr();
+    const todayStr = getTodayStr();
   if (!c.dailyLog[todayStr]) {
     const result = computeDayAdherence(todayStr);
     c.dailyLog[todayStr] = {
@@ -1267,7 +1267,7 @@ function refreshConsistencyData() {
  * Compute syllabus completion projection.
  * Returns null if < 7 days of dailyLog data exist.
  */
-function computeProjection() {
+function computeProjection(subjectId = null) {
   ensureConsistencyInit();
   const c = DYNAMIC_DATA.consistency;
   const dailyLog = c.dailyLog || {};
@@ -1276,16 +1276,30 @@ function computeProjection() {
 
   const journal = DYNAMIC_DATA.journalEntries || {};
   let totalLoggedMinutes = 0;
+  
+  let subjName = null;
+  if (subjectId) {
+    const s = DYNAMIC_DATA.syllabusSubjects.find(x => x.id === subjectId);
+    if (s) subjName = s.name.toLowerCase();
+  }
+
   Object.values(journal).forEach(entry => {
     if (entry && entry.rows) {
       entry.rows.forEach(r => {
         if (state.excludeIBS && r.subject && r.subject.toLowerCase().includes('ibs')) return;
+        if (subjName && (!r.subject || r.subject.toLowerCase() !== subjName)) return;
         totalLoggedMinutes += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
       });
     }
   });
   const totalLoggedHours = totalLoggedMinutes / 60;
-  const currentPct = calculateOverallProgress();
+  let currentPct = 0;
+  if (subjectId) {
+    const subj = DYNAMIC_DATA.syllabusSubjects.find(x => x.id === subjectId);
+    if (subj) currentPct = calculateSubjectProgress(subj.id, subj.type);
+  } else {
+    currentPct = calculateOverallProgress();
+  }
   
   if (currentPct <= 0 || totalLoggedHours <= 0) return null;
 
@@ -1301,13 +1315,13 @@ function computeProjection() {
     d.setDate(d.getDate() - i);
     const dStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
     
-    if (state.excludeIBS) {
+    if (subjectId || state.excludeIBS) {
       const entry = journal[dStr];
       if (entry && entry.rows) {
         entry.rows.forEach(r => {
-          if (r.subject && !r.subject.toLowerCase().includes('ibs')) {
-            last14Min += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
-          }
+          if (state.excludeIBS && r.subject && r.subject.toLowerCase().includes('ibs')) return;
+          if (subjName && (!r.subject || r.subject.toLowerCase() !== subjName)) return;
+          last14Min += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
         });
       }
     } else {
@@ -1349,7 +1363,8 @@ function computeProjection() {
     exactDaysNeeded: daysNeeded,
     exactRemainingHours: remainingHours,
     exactTotalLoggedHours: totalLoggedHours,
-    exactHoursPerPercent: hoursPerPercent
+    exactHoursPerPercent: hoursPerPercent,
+    currentPct: currentPct
   };
 }
 
@@ -1445,106 +1460,130 @@ function updateConsistencyWidget() {
   `;
 }
 
-window.showPaceCalculation = function() {
-  const proj = computeProjection();
-  if (!proj) return;
+window.showPaceCalculation = function(subjectId = null) {
+  if (subjectId === 'ALL') subjectId = null;
   
-  const currentPct = calculateOverallProgress();
-  const totalLoggedHours = proj.exactTotalLoggedHours;
-  const hoursPerPercent = proj.exactHoursPerPercent;
-  const remainingHours = proj.exactRemainingHours;
-  const daysNeeded = proj.exactDaysNeeded;
+  let selectHtml = `<select id="pace-subject-select" onchange="showPaceCalculation(this.value)" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-primary); color:var(--text-primary); margin-bottom:16px; font-weight:600; outline:none;">
+    <option value="ALL" ${subjectId === null ? 'selected' : ''}>Overall Syllabus</option>`;
+  (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
+    if (s.type === 'folder' || (state.excludeIBS && s.name.toLowerCase().includes('ibs'))) return;
+    selectHtml += `<option value="${s.id}" ${subjectId === s.id ? 'selected' : ''}>${s.name}</option>`;
+  });
+  selectHtml += `</select>`;
+
+  const proj = computeProjection(subjectId);
   
-  let examDate = new Date(DYNAMIC_DATA.exam.date);
-  if (DYNAMIC_DATA.finalExams && DYNAMIC_DATA.finalExams.length > 0) {
-    const dates = DYNAMIC_DATA.finalExams.map(x => new Date(x.date)).filter(d => !isNaN(d.valueOf()));
-    if (dates.length > 0) examDate = new Date(Math.min(...dates));
-  }
-  const fmtDate = (d) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  const exam = new Date(examDate);
-  exam.setHours(0,0,0,0);
-  const daysUntilExam = Math.round((exam - today) / (1000 * 60 * 60 * 24));
+  let contentHtml = '';
   
-  const html = `
-    <div style="display:flex; flex-direction:column; gap:12px; font-size:13px;">
-      <p style="color:var(--text-muted); font-size:12px; margin-bottom:4px; text-align:center;">Mathematical breakdown of your syllabus projection</p>
+  if (!proj) {
+    contentHtml = `<div style="text-align:center; padding:30px 20px; color:var(--text-muted); background:var(--bg-card); border-radius:12px; border:1px solid var(--glass-border);">
+      <span class="material-symbols-rounded" style="font-size:40px; opacity:0.3; margin-bottom:10px; display:block;">hourglass_empty</span>
+      Not enough study data logged for this ${subjectId ? 'subject' : 'syllabus'} yet.<br><br>
+      Study and log progress for at least 7 days to see projections.
+    </div>`;
+  } else {
+    const currentPct = proj.currentPct;
+    const totalLoggedHours = proj.exactTotalLoggedHours;
+    const hoursPerPercent = proj.exactHoursPerPercent;
+    const remainingHours = proj.exactRemainingHours;
+    const daysNeeded = proj.exactDaysNeeded;
+    
+    let examDate = new Date(DYNAMIC_DATA.exam.date);
+    if (DYNAMIC_DATA.finalExams && DYNAMIC_DATA.finalExams.length > 0) {
+      const dates = DYNAMIC_DATA.finalExams.map(x => new Date(x.date)).filter(d => !isNaN(d.valueOf()));
+      if (dates.length > 0) examDate = new Date(Math.min(...dates));
+    }
+    const fmtDate = (d) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const exam = new Date(examDate);
+    exam.setHours(0,0,0,0);
+    const daysUntilExam = Math.round((exam - today) / (1000 * 60 * 60 * 24));
+    
+    contentHtml = `
+      <div style="display:flex; flex-direction:column; gap:12px; font-size:13px;">
+        <p style="color:var(--text-muted); font-size:12px; margin-bottom:4px; text-align:center;">Mathematical breakdown of your ${subjectId ? 'subject' : 'syllabus'} projection</p>
+        
+        <!-- Step 1 -->
+        <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:var(--primary);"></div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <span class="material-symbols-rounded" style="color:var(--primary); font-size:18px;">analytics</span>
+            <span style="font-weight:700; color:var(--text-primary); font-size:14px;">1. Effort Ratio</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:6px;">
+            <span>Total Study Time</span><span style="color:var(--text-primary); font-weight:600;">${totalLoggedHours.toFixed(1)} hrs</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
+            <span>Current Progress</span><span style="color:var(--text-primary); font-weight:600;">${currentPct.toFixed(1)}%</span>
+          </div>
+          <div style="background:var(--bg-primary); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-family:monospace; color:var(--text-muted); font-size:11px;">${totalLoggedHours.toFixed(1)} ÷ ${currentPct.toFixed(1)}%</span>
+            <span style="font-weight:700; color:var(--primary);">= ${hoursPerPercent.toFixed(1)} hrs / 1%</span>
+          </div>
+        </div>
       
-      <!-- Step 1 -->
-      <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
-        <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:var(--primary);"></div>
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-          <span class="material-symbols-rounded" style="color:var(--primary); font-size:18px;">analytics</span>
-          <span style="font-weight:700; color:var(--text-primary); font-size:14px;">1. Effort Ratio</span>
+        <!-- Step 2 -->
+        <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:#e8a33d;"></div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <span class="material-symbols-rounded" style="color:#e8a33d; font-size:18px;">target</span>
+            <span style="font-weight:700; color:var(--text-primary); font-size:14px;">2. Remaining Work</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
+            <span>Syllabus Left</span><span style="color:var(--text-primary); font-weight:600;">${(100 - currentPct).toFixed(1)}%</span>
+          </div>
+          <div style="background:var(--bg-primary); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-family:monospace; color:var(--text-muted); font-size:11px;">${(100 - currentPct).toFixed(1)}% × ${hoursPerPercent.toFixed(1)}</span>
+            <span style="font-weight:700; color:#e8a33d;">= ${remainingHours.toFixed(0)} hrs left</span>
+          </div>
         </div>
-        <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:6px;">
-          <span>Total Study Time</span><span style="color:var(--text-primary); font-weight:600;">${totalLoggedHours.toFixed(1)} hrs</span>
+      
+        <!-- Step 3 -->
+        <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:#10b981;"></div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <span class="material-symbols-rounded" style="color:#10b981; font-size:18px;">speed</span>
+            <span style="font-weight:700; color:var(--text-primary); font-size:14px;">3. Pacing & ETA</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
+            <span>Avg Pace (Last 14 Days)</span><span style="color:var(--text-primary); font-weight:600;">${proj.exactAvgDailyHours.toFixed(2)} hrs/day</span>
+          </div>
+          <div style="background:var(--bg-primary); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-family:monospace; color:var(--text-muted); font-size:11px;">${remainingHours.toFixed(0)} ÷ ${proj.exactAvgDailyHours.toFixed(2)}</span>
+            <span style="font-weight:700; color:#10b981;">= ${Math.round(daysNeeded)} days needed</span>
+          </div>
         </div>
-        <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
-          <span>Current Progress</span><span style="color:var(--text-primary); font-weight:600;">${currentPct.toFixed(1)}%</span>
-        </div>
-        <div style="background:var(--bg-primary); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-family:monospace; color:var(--text-muted); font-size:11px;">${totalLoggedHours.toFixed(1)} ÷ ${currentPct.toFixed(1)}%</span>
-          <span style="font-weight:700; color:var(--primary);">= ${hoursPerPercent.toFixed(1)} hrs / 1%</span>
-        </div>
-      </div>
-    
-      <!-- Step 2 -->
-      <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
-        <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:#e8a33d;"></div>
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-          <span class="material-symbols-rounded" style="color:#e8a33d; font-size:18px;">target</span>
-          <span style="font-weight:700; color:var(--text-primary); font-size:14px;">2. Remaining Work</span>
-        </div>
-        <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
-          <span>Syllabus Left</span><span style="color:var(--text-primary); font-weight:600;">${(100 - currentPct).toFixed(1)}%</span>
-        </div>
-        <div style="background:var(--bg-primary); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-family:monospace; color:var(--text-muted); font-size:11px;">${(100 - currentPct).toFixed(1)}% × ${hoursPerPercent.toFixed(1)}</span>
-          <span style="font-weight:700; color:#e8a33d;">= ${remainingHours.toFixed(0)} hrs left</span>
-        </div>
-      </div>
-    
-      <!-- Step 3 -->
-      <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
-        <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:#10b981;"></div>
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-          <span class="material-symbols-rounded" style="color:#10b981; font-size:18px;">speed</span>
-          <span style="font-weight:700; color:var(--text-primary); font-size:14px;">3. Pacing & ETA</span>
-        </div>
-        <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
-          <span>Avg Pace (Last 14 Days)</span><span style="color:var(--text-primary); font-weight:600;">${proj.exactAvgDailyHours.toFixed(2)} hrs/day</span>
-        </div>
-        <div style="background:var(--bg-primary); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-family:monospace; color:var(--text-muted); font-size:11px;">${remainingHours.toFixed(0)} ÷ ${proj.exactAvgDailyHours.toFixed(2)}</span>
-          <span style="font-weight:700; color:#10b981;">= ${Math.round(daysNeeded)} days needed</span>
-        </div>
-      </div>
-    
-      <!-- Step 4 -->
-      <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
-        <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:${proj.onTrack ? '#10b981' : '#ef4444'};"></div>
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-          <span class="material-symbols-rounded" style="color:${proj.onTrack ? '#10b981' : '#ef4444'}; font-size:18px;">event_available</span>
-          <span style="font-weight:700; color:var(--text-primary); font-size:14px;">4. Exam Projection</span>
-        </div>
-        <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:6px;">
-          <span>Days Left for Exam</span><span style="color:var(--text-primary); font-weight:600;">${daysUntilExam} days</span>
-        </div>
-        <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
-          <span>Days Needed to Finish</span><span style="color:var(--text-primary); font-weight:600;">${Math.round(daysNeeded)} days</span>
-        </div>
-        <div style="background:${proj.onTrack ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-weight:700; color:${proj.onTrack ? '#10b981' : '#ef4444'}; font-size:13px; width:100%; text-align:center;">
-            ${proj.daysVsExam} days ${proj.onTrack ? 'buffer remaining' : 'shortfall'}
-          </span>
+      
+        <!-- Step 4 -->
+        <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:${proj.onTrack ? '#10b981' : '#ef4444'};"></div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <span class="material-symbols-rounded" style="color:${proj.onTrack ? '#10b981' : '#ef4444'}; font-size:18px;">event_available</span>
+            <span style="font-weight:700; color:var(--text-primary); font-size:14px;">4. Exam Projection</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:6px;">
+            <span>Days Left for Exam</span><span style="color:var(--text-primary); font-weight:600;">${daysUntilExam} days</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
+            <span>Days Needed to Finish</span><span style="color:var(--text-primary); font-weight:600;">${Math.round(daysNeeded)} days</span>
+          </div>
+          <div style="background:${proj.onTrack ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:700; color:${proj.onTrack ? '#10b981' : '#ef4444'}; font-size:13px; width:100%; text-align:center;">
+              ${proj.daysVsExam} days ${proj.onTrack ? 'buffer remaining' : 'shortfall'}
+            </span>
+          </div>
         </div>
       </div>
-    </div>
-  `;
+    `;
+  }
   
-  openModal('Calculation Breakdown', html);
+  const wrapper = document.getElementById('pace-calc-wrapper');
+  if (wrapper) {
+    wrapper.innerHTML = selectHtml + contentHtml;
+  } else {
+    openModal('Calculation Breakdown', `<div id="pace-calc-wrapper">${selectHtml + contentHtml}</div>`);
+  }
 };
 
 
