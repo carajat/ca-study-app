@@ -1266,6 +1266,17 @@ function refreshConsistencyData() {
   c.lastCountedDate = todayStr;
 }
 
+function isIBSSubject(subjName) {
+  if (!subjName) return false;
+  const lowerName = subjName.toLowerCase();
+  if (lowerName.includes('ibs')) return true;
+  const folder = (DYNAMIC_DATA.syllabusSubjects || []).find(s => s.type === 'folder' && (s.id === 'ibs-folder' || s.name.toLowerCase().includes('ibs')));
+  if (folder && folder.children) {
+    return !!folder.children.find(c => c.name.toLowerCase() === lowerName);
+  }
+  return false;
+}
+
 /**
  * Compute syllabus completion projection.
  * Returns null if < 7 days of dailyLog data exist.
@@ -1289,7 +1300,7 @@ function computeProjection(subjectId = null, paceWindow = 14) {
   Object.values(journal).forEach(entry => {
     if (entry && entry.rows) {
       entry.rows.forEach(r => {
-        if (state.paceExcludeIBS && r.subject && r.subject.toLowerCase().includes('ibs')) return;
+        if (state.paceExcludeIBS && isIBSSubject(r.subject)) return;
         if (subjName && (!r.subject || r.subject.toLowerCase() !== subjName)) return;
         totalLoggedMinutes += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
       });
@@ -1322,7 +1333,7 @@ function computeProjection(subjectId = null, paceWindow = 14) {
       const entry = journal[dStr];
       if (entry && entry.rows) {
         entry.rows.forEach(r => {
-          if (state.paceExcludeIBS && r.subject && r.subject.toLowerCase().includes('ibs')) return;
+          if (state.paceExcludeIBS && isIBSSubject(r.subject)) return;
           if (subjName && (!r.subject || r.subject.toLowerCase() !== subjName)) return;
           lastNMin += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
         });
@@ -1487,7 +1498,7 @@ window.showPaceCalculation = function(subjectId = null, paceWindow = null) {
   let selectHtml = `<select id="pace-subject-select" onchange="showPaceCalculation(this.value, ${paceWindow})" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-primary); color:var(--text-primary); margin-bottom:12px; font-weight:600; outline:none;">
     <option value="ALL" ${subjectId === null ? 'selected' : ''}>Overall Syllabus</option>`;
   (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
-    if (s.type === 'folder' || (state.paceExcludeIBS && s.name.toLowerCase().includes('ibs'))) return;
+    if (s.type === 'folder' || (state.paceExcludeIBS && isIBSSubject(s.name))) return;
     selectHtml += `<option value="${s.id}" ${subjectId === s.id ? 'selected' : ''}>${s.name}</option>`;
   });
   selectHtml += `</select>`;
@@ -2351,7 +2362,7 @@ function calculateOverallProgress(excludeIBSFlag = state.excludeIBS) {
   
   let totalWeight = 0, weightedSum = 0;
   DYNAMIC_DATA.syllabusSubjects.forEach(s => {
-    if (excludeIBSFlag && s.name.toLowerCase().includes('ibs')) return;
+    if (excludeIBSFlag && isIBSSubject(s.name)) return;
     const pct = calculateSubjectProgress(s.id, s.type);
     const weight = s.type === 'main' ? 3 : 1;
     weightedSum += pct * weight;
