@@ -1563,6 +1563,9 @@ window.showPaceCalculation = function(subjectId = null) {
             <span style="font-weight:700; color:var(--text-primary); font-size:14px;">4. Exam Projection</span>
           </div>
           <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:6px;">
+            <span>Est. Completion Date</span><span style="color:var(--text-primary); font-weight:600;">${fmtDate(proj.projectedDate)}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:6px;">
             <span>Days Left for Exam</span><span style="color:var(--text-primary); font-weight:600;">${daysUntilExam} days</span>
           </div>
           <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
@@ -1578,12 +1581,7 @@ window.showPaceCalculation = function(subjectId = null) {
     `;
   }
   
-  const wrapper = document.getElementById('pace-calc-wrapper');
-  if (wrapper) {
-    wrapper.innerHTML = selectHtml + contentHtml;
-  } else {
-    openModal('Calculation Breakdown', `<div id="pace-calc-wrapper">${selectHtml + contentHtml}</div>`);
-  }
+  openModal('Calculation Breakdown', `<div id="pace-calc-wrapper">${selectHtml + contentHtml}</div>`);
 };
 
 
