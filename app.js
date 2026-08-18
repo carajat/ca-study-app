@@ -1267,7 +1267,7 @@ function refreshConsistencyData() {
  * Compute syllabus completion projection.
  * Returns null if < 7 days of dailyLog data exist.
  */
-function computeProjection(subjectId = null) {
+function computeProjection(subjectId = null, paceWindow = 14) {
   ensureConsistencyInit();
   const c = DYNAMIC_DATA.consistency;
   const dailyLog = c.dailyLog || {};
@@ -1307,10 +1307,10 @@ function computeProjection(subjectId = null) {
   
   const remainingHours = (100 - currentPct) * hoursPerPercent;
 
-  // Calculate average daily minutes over the last 14 CALENDAR days
-  let last14Min = 0;
+  // Calculate average daily minutes over the last N CALENDAR days
+  let lastNMin = 0;
   const now = new Date();
-  for (let i = 0; i < 14; i++) {
+  for (let i = 0; i < paceWindow; i++) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const dStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
@@ -1321,15 +1321,15 @@ function computeProjection(subjectId = null) {
         entry.rows.forEach(r => {
           if (state.excludeIBS && r.subject && r.subject.toLowerCase().includes('ibs')) return;
           if (subjName && (!r.subject || r.subject.toLowerCase() !== subjName)) return;
-          last14Min += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
+          lastNMin += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
         });
       }
     } else {
-      last14Min += (dailyLog[dStr]?.actualMinutes || 0);
+      lastNMin += (dailyLog[dStr]?.actualMinutes || 0);
     }
   }
-  const avgDailyHours = (last14Min / 14) / 60;
-  if (avgDailyHours <= 0.1) return null; // Avoid divide by zero, need at least minimal activity
+  const avgDailyHours = (lastNMin / paceWindow) / 60;
+  if (avgDailyHours <= 0.1) return null;
 
   const daysNeeded = remainingHours / avgDailyHours;
   const projectedDate = new Date();
@@ -1364,7 +1364,8 @@ function computeProjection(subjectId = null) {
     exactRemainingHours: remainingHours,
     exactTotalLoggedHours: totalLoggedHours,
     exactHoursPerPercent: hoursPerPercent,
-    currentPct: currentPct
+    currentPct: currentPct,
+    paceWindow: paceWindow
   };
 }
 
@@ -1460,10 +1461,11 @@ function updateConsistencyWidget() {
   `;
 }
 
-window.showPaceCalculation = function(subjectId = null) {
+window.showPaceCalculation = function(subjectId = null, paceWindow = 14) {
   if (subjectId === 'ALL') subjectId = null;
+  if (typeof paceWindow === 'string') paceWindow = parseInt(paceWindow) || 14;
   
-  let selectHtml = `<select id="pace-subject-select" onchange="showPaceCalculation(this.value)" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-primary); color:var(--text-primary); margin-bottom:16px; font-weight:600; outline:none;">
+  let selectHtml = `<select id="pace-subject-select" onchange="showPaceCalculation(this.value, ${paceWindow})" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-primary); color:var(--text-primary); margin-bottom:12px; font-weight:600; outline:none;">
     <option value="ALL" ${subjectId === null ? 'selected' : ''}>Overall Syllabus</option>`;
   (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
     if (s.type === 'folder' || (state.excludeIBS && s.name.toLowerCase().includes('ibs'))) return;
@@ -1471,7 +1473,16 @@ window.showPaceCalculation = function(subjectId = null) {
   });
   selectHtml += `</select>`;
 
-  const proj = computeProjection(subjectId);
+  // Pace window toggle buttons
+  const subjArg = subjectId ? `'${subjectId}'` : 'null';
+  const btnStyle = (w) => `padding:7px 0; flex:1; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s; border:1px solid ${paceWindow === w ? 'var(--primary)' : 'var(--border)'}; background:${paceWindow === w ? 'var(--primary)' : 'transparent'}; color:${paceWindow === w ? '#fff' : 'var(--text-secondary)'}; text-align:center;`;
+  selectHtml += `<div style="display:flex; gap:8px; margin-bottom:16px;">
+    <button onclick="showPaceCalculation(${subjArg}, 3)" style="${btnStyle(3)}">3 Days</button>
+    <button onclick="showPaceCalculation(${subjArg}, 7)" style="${btnStyle(7)}">7 Days</button>
+    <button onclick="showPaceCalculation(${subjArg}, 14)" style="${btnStyle(14)}">14 Days</button>
+  </div>`;
+
+  const proj = computeProjection(subjectId, paceWindow);
   
   let contentHtml = '';
   
@@ -1547,7 +1558,7 @@ window.showPaceCalculation = function(subjectId = null) {
             <span style="font-weight:700; color:var(--text-primary); font-size:14px;">3. Pacing & ETA</span>
           </div>
           <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
-            <span>Avg Pace (Last 14 Days)</span><span style="color:var(--text-primary); font-weight:600;">${proj.exactAvgDailyHours.toFixed(2)} hrs/day</span>
+            <span>Avg Pace (Last ${paceWindow} Days)</span><span style="color:var(--text-primary); font-weight:600;">${proj.exactAvgDailyHours.toFixed(2)} hrs/day</span>
           </div>
           <div style="background:var(--bg-primary); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
             <span style="font-family:monospace; color:var(--text-muted); font-size:11px;">${remainingHours.toFixed(0)} ÷ ${proj.exactAvgDailyHours.toFixed(2)}</span>
