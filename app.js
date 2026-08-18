@@ -1496,6 +1496,7 @@ window.showPaceCalculation = function(subjectId = null, paceWindow = null) {
   state.paceWindow = paceWindow;
   state.paceSubjectId = subjectId;
   saveState({ paceWindow: paceWindow, paceSubjectId: subjectId });
+  if (state.activeTab === 'dashboard') updateConsistencyWidget();
   
   let selectHtml = `<select id="pace-subject-select" onchange="showPaceCalculation(this.value, ${paceWindow})" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-primary); color:var(--text-primary); margin-bottom:12px; font-weight:600; outline:none;">
     <option value="ALL" ${subjectId === null ? 'selected' : ''}>Overall Syllabus</option>`;
