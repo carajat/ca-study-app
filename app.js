@@ -1,4 +1,3 @@
-
 // ========================================
 // CA Final Study Companion — App Logic
 // ========================================
@@ -10,6 +9,7 @@ let state = {
   activeSchedule: 'earlyMorning',
   activeNotificationSchedule: null,
   targetAttempt: 'Nov 2026',
+  excludeIBS: false,
   plannerDate: new Date(),
   calendarMonth: new Date(),
   syllabusView: 'list', // 'list' or 'detail'
@@ -665,7 +665,8 @@ function updateCountdown() {
 function updateDashboardStats() {
   // Syllabus progress
   const pct = calculateOverallProgress();
-  document.getElementById('dash-syllabus-pct').textContent = pct + '%';
+  const excludeText = state.excludeIBS ? ' <span style="font-size:11px; font-weight:normal; opacity:0.6;">(Excl. IBS)</span>' : '';
+  document.getElementById('dash-syllabus-pct').innerHTML = pct + '%' + excludeText;
   document.getElementById('dash-syllabus-bar').style.width = pct + '%';
   
   // Next mock
@@ -1278,6 +1279,7 @@ function computeProjection() {
   Object.values(journal).forEach(entry => {
     if (entry && entry.rows) {
       entry.rows.forEach(r => {
+        if (state.excludeIBS && r.subject && r.subject.toLowerCase().includes('ibs')) return;
         totalLoggedMinutes += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
       });
     }
@@ -1298,7 +1300,19 @@ function computeProjection() {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const dStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-    last14Min += (dailyLog[dStr]?.actualMinutes || 0);
+    
+    if (state.excludeIBS) {
+      const entry = journal[dStr];
+      if (entry && entry.rows) {
+        entry.rows.forEach(r => {
+          if (r.subject && !r.subject.toLowerCase().includes('ibs')) {
+            last14Min += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
+          }
+        });
+      }
+    } else {
+      last14Min += (dailyLog[dStr]?.actualMinutes || 0);
+    }
   }
   const avgDailyHours = (last14Min / 14) / 60;
   if (avgDailyHours <= 0.1) return null; // Avoid divide by zero, need at least minimal activity
@@ -1435,6 +1449,7 @@ window.showPaceCalculation = function() {
   Object.values(DYNAMIC_DATA.journalEntries || {}).forEach(entry => {
     if (entry && entry.rows) {
       entry.rows.forEach(r => {
+        if (state.excludeIBS && r.subject && r.subject.toLowerCase().includes('ibs')) return;
         totalLoggedMinutes += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
       });
     }
@@ -1986,7 +2001,8 @@ function showSubjectsList() {
   document.getElementById('syllabus-detail').style.display = 'none';
   
   const pct = calculateOverallProgress();
-  document.getElementById('overall-pct').textContent = pct + '%';
+  const excludeText = state.excludeIBS ? ' <span style="font-size:12px; font-weight:normal; opacity:0.6;">(Excl. IBS)</span>' : '';
+  document.getElementById('overall-pct').innerHTML = pct + '%' + excludeText;
   document.getElementById('overall-bar').style.width = pct + '%';
   
   const container = document.getElementById('syllabus-subjects-list');
@@ -2240,6 +2256,7 @@ function calculateOverallProgress() {
   
   let totalWeight = 0, weightedSum = 0;
   DYNAMIC_DATA.syllabusSubjects.forEach(s => {
+    if (state.excludeIBS && s.name.toLowerCase().includes('ibs')) return;
     const pct = calculateSubjectProgress(s.id, s.type);
     const weight = s.type === 'main' ? 3 : 1;
     weightedSum += pct * weight;
@@ -2264,6 +2281,7 @@ function init() {
   const saved = loadState();
   if (saved.activeSchedule) state.activeSchedule = saved.activeSchedule;
   if (saved.activeNotificationSchedule !== undefined) state.activeNotificationSchedule = saved.activeNotificationSchedule;
+  if (saved.excludeIBS !== undefined) state.excludeIBS = saved.excludeIBS;
   
   // Render initial tab (updates UI state properly)
   switchTab(state.activeTab);
@@ -2465,6 +2483,17 @@ function openMenuModal() {
       <span class="material-symbols-rounded menu-btn-icon">folder_managed</span> Data & Backups
     </button>
 
+    <div class="menu-section-tag">Preferences</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-light); padding:12px; border-radius:12px; margin-bottom:10px; border:1px solid var(--border);">
+      <div style="display:flex; align-items:center; gap:10px; font-weight:600; color:var(--text-primary); font-size:14px;">
+        <span class="material-symbols-rounded icon-sm">filter_alt_off</span> Exclude IBS (Pace & Syllabus)
+      </div>
+      <label class="switch">
+        <input type="checkbox" onchange="toggleExcludeIBS(this)" ${state.excludeIBS ? 'checked' : ''}>
+        <span class="slider round"></span>
+      </label>
+    </div>
+
     <div class="menu-section-tag">System</div>
     <button class="menu-btn btn-neutral" onclick="checkForUpdates()">
       <span class="material-symbols-rounded menu-btn-icon">system_update</span> 
@@ -2472,6 +2501,15 @@ function openMenuModal() {
     </button>
   `);
 }
+
+window.toggleExcludeIBS = function(checkbox) {
+  state.excludeIBS = checkbox.checked;
+  saveState({ excludeIBS: state.excludeIBS });
+  switchTab(state.activeTab);
+  if (state.activeTab === 'dashboard') {
+    renderDashboard();
+  }
+};
 
 window.confirmLogout = function() {
   openModal('', `
