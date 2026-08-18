@@ -1481,6 +1481,7 @@ window.showPaceCalculation = function(subjectId = null, paceWindow = null) {
   // Remember selection so home card reflects the same
   state.paceWindow = paceWindow;
   state.paceSubjectId = subjectId;
+  saveState({ paceWindow: paceWindow, paceSubjectId: subjectId });
   
   let selectHtml = `<select id="pace-subject-select" onchange="showPaceCalculation(this.value, ${paceWindow})" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-primary); color:var(--text-primary); margin-bottom:12px; font-weight:600; outline:none;">
     <option value="ALL" ${subjectId === null ? 'selected' : ''}>Overall Syllabus</option>`;
@@ -1528,80 +1529,50 @@ window.showPaceCalculation = function(subjectId = null, paceWindow = null) {
     exam.setHours(0,0,0,0);
     const daysUntilExam = Math.round((exam - today) / (1000 * 60 * 60 * 24));
     
-    contentHtml = `
-      <div style="display:flex; flex-direction:column; gap:12px; font-size:13px;">
-        <p style="color:var(--text-muted); font-size:12px; margin-bottom:4px; text-align:center;">Mathematical breakdown of your ${subjectId ? 'subject' : 'syllabus'} projection</p>
-        
-        <!-- Step 1 -->
-        <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
-          <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:var(--primary);"></div>
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-            <span class="material-symbols-rounded" style="color:var(--primary); font-size:18px;">analytics</span>
-            <span style="font-weight:700; color:var(--text-primary); font-size:14px;">1. Effort Ratio</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:6px;">
+   contentHtml = `
+      <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:16px; font-size:13px;">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
             <span>Total Study Time</span><span style="color:var(--text-primary); font-weight:600;">${totalLoggedHours.toFixed(1)} hrs</span>
           </div>
-          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
-            <span>Current Progress</span><span style="color:var(--text-primary); font-weight:600;">${currentPct.toFixed(1)}%</span>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
+            <span>Progress</span><span style="color:var(--text-primary); font-weight:600;">${currentPct.toFixed(1)}%</span>
           </div>
-          <div style="background:var(--bg-primary); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-family:monospace; color:var(--text-muted); font-size:11px;">${totalLoggedHours.toFixed(1)} ÷ ${currentPct.toFixed(1)}%</span>
-            <span style="font-weight:700; color:var(--primary);">= ${hoursPerPercent.toFixed(1)} hrs / 1%</span>
+          
+          <div style="height:1px; background:var(--glass-border); margin:2px 0;"></div>
+          
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
+            <span>Effort per 1%</span>
+            <span style="color:var(--primary); font-weight:700;">${hoursPerPercent.toFixed(1)} hrs</span>
           </div>
-        </div>
-      
-        <!-- Step 2 -->
-        <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
-          <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:#e8a33d;"></div>
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-            <span class="material-symbols-rounded" style="color:#e8a33d; font-size:18px;">target</span>
-            <span style="font-weight:700; color:var(--text-primary); font-size:14px;">2. Remaining Work</span>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
+            <span>Remaining (${(100 - currentPct).toFixed(1)}% × ${hoursPerPercent.toFixed(1)})</span>
+            <span style="color:#e8a33d; font-weight:700;">${remainingHours.toFixed(0)} hrs</span>
           </div>
-          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
-            <span>Syllabus Left</span><span style="color:var(--text-primary); font-weight:600;">${(100 - currentPct).toFixed(1)}%</span>
+          
+          <div style="height:1px; background:var(--glass-border); margin:2px 0;"></div>
+          
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
+            <span>Avg Pace (${paceWindow}d)</span>
+            <span style="color:var(--text-primary); font-weight:600;">${proj.exactAvgDailyHours.toFixed(2)} hrs/day</span>
           </div>
-          <div style="background:var(--bg-primary); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-family:monospace; color:var(--text-muted); font-size:11px;">${(100 - currentPct).toFixed(1)}% × ${hoursPerPercent.toFixed(1)}</span>
-            <span style="font-weight:700; color:#e8a33d;">= ${remainingHours.toFixed(0)} hrs left</span>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
+            <span>Days to Finish</span>
+            <span style="color:#10b981; font-weight:700;">${Math.round(daysNeeded)} days</span>
           </div>
-        </div>
-      
-        <!-- Step 3 -->
-        <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
-          <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:#10b981;"></div>
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-            <span class="material-symbols-rounded" style="color:#10b981; font-size:18px;">speed</span>
-            <span style="font-weight:700; color:var(--text-primary); font-size:14px;">3. Pacing & ETA</span>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
+            <span>Est. Completion</span>
+            <span style="color:var(--text-primary); font-weight:600;">${fmtDate(proj.projectedDate)}</span>
           </div>
-          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
-            <span>Avg Pace (Last ${paceWindow} Days)</span><span style="color:var(--text-primary); font-weight:600;">${proj.exactAvgDailyHours.toFixed(2)} hrs/day</span>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
+            <span>Days Left for Exam</span>
+            <span style="color:var(--text-primary); font-weight:600;">${daysUntilExam} days</span>
           </div>
-          <div style="background:var(--bg-primary); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-family:monospace; color:var(--text-muted); font-size:11px;">${remainingHours.toFixed(0)} ÷ ${proj.exactAvgDailyHours.toFixed(2)}</span>
-            <span style="font-weight:700; color:#10b981;">= ${Math.round(daysNeeded)} days needed</span>
-          </div>
-        </div>
-      
-        <!-- Step 4 -->
-        <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
-          <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:${proj.onTrack ? '#10b981' : '#ef4444'};"></div>
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-            <span class="material-symbols-rounded" style="color:${proj.onTrack ? '#10b981' : '#ef4444'}; font-size:18px;">event_available</span>
-            <span style="font-weight:700; color:var(--text-primary); font-size:14px;">4. Exam Projection</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:6px;">
-            <span>Est. Completion Date</span><span style="color:var(--text-primary); font-weight:600;">${fmtDate(proj.projectedDate)}</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:6px;">
-            <span>Days Left for Exam</span><span style="color:var(--text-primary); font-weight:600;">${daysUntilExam} days</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
-            <span>Days Needed to Finish</span><span style="color:var(--text-primary); font-weight:600;">${Math.round(daysNeeded)} days</span>
-          </div>
-          <div style="background:${proj.onTrack ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-weight:700; color:${proj.onTrack ? '#10b981' : '#ef4444'}; font-size:13px; width:100%; text-align:center;">
-              ${proj.daysVsExam} days ${proj.onTrack ? 'buffer remaining' : 'shortfall'}
+          
+          <div style="background:${proj.onTrack ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; padding:10px; border-radius:8px; text-align:center; margin-top:4px;">
+            <span style="font-weight:700; color:${proj.onTrack ? '#10b981' : '#ef4444'}; font-size:14px;">
+              ${proj.daysVsExam} days ${proj.onTrack ? 'buffer ✓' : 'shortfall ✗'}
             </span>
           </div>
         </div>
@@ -2403,6 +2374,8 @@ function init() {
   if (saved.activeSchedule) state.activeSchedule = saved.activeSchedule;
   if (saved.activeNotificationSchedule !== undefined) state.activeNotificationSchedule = saved.activeNotificationSchedule;
   if (saved.excludeIBS !== undefined) state.excludeIBS = saved.excludeIBS;
+  if (saved.paceWindow) state.paceWindow = saved.paceWindow;
+  if (saved.paceSubjectId !== undefined) state.paceSubjectId = saved.paceSubjectId;
   
   // Render initial tab (updates UI state properly)
   switchTab(state.activeTab);
