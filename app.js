@@ -1460,6 +1460,13 @@ window.showPaceCalculation = function() {
   const remainingHours = (100 - currentPct) * hoursPerPercent;
   const daysNeeded = remainingHours / proj.avgDailyHours;
   
+  let examDate = new Date(DYNAMIC_DATA.exam.date);
+  if (DYNAMIC_DATA.finalExams && DYNAMIC_DATA.finalExams.length > 0) {
+    const dates = DYNAMIC_DATA.finalExams.map(x => new Date(x.date)).filter(d => !isNaN(d.valueOf()));
+    if (dates.length > 0) examDate = new Date(Math.min(...dates));
+  }
+  const fmtDate = (d) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  
   const html = `
     <div style="font-size:12px; line-height:1.6; color:var(--text-primary);">
       <div style="margin-bottom:12px;">
@@ -1483,11 +1490,20 @@ window.showPaceCalculation = function() {
         </div>
       </div>
       
-      <div style="background:rgba(128,128,128,0.05); padding:12px; border-radius:8px; margin-bottom:16px; border:1px solid var(--glass-border);">
+      <div style="background:rgba(128,128,128,0.05); padding:12px; border-radius:8px; margin-bottom:12px; border:1px solid var(--glass-border);">
         <div style="font-weight:800; margin-bottom:6px; color:var(--primary);">3. Pacing & ETA</div>
         <div style="margin-bottom:4px;">Average pace (Last 14 days): <b>${proj.avgDailyHours} hrs/day</b></div>
         <div style="padding:6px; background:var(--bg-primary); border-radius:6px; font-family:monospace; font-size:11px; margin-top:6px;">
           ${remainingHours.toFixed(0)} hrs ÷ ${proj.avgDailyHours} hrs/day = <b style="color:var(--text-primary);">${Math.ceil(daysNeeded)} days needed</b>
+        </div>
+      </div>
+      
+      <div style="background:rgba(128,128,128,0.05); padding:12px; border-radius:8px; margin-bottom:16px; border:1px solid var(--glass-border);">
+        <div style="font-weight:800; margin-bottom:6px; color:var(--primary);">4. Exam Projection</div>
+        <div style="margin-bottom:4px;">Projected completion: <b>${fmtDate(proj.projectedDate)}</b></div>
+        <div style="margin-bottom:4px;">Your Exam date: <b>${fmtDate(examDate)}</b></div>
+        <div style="padding:6px; background:var(--bg-primary); border-radius:6px; font-family:monospace; font-size:11px; margin-top:6px;">
+          <b style="color:var(--text-primary);">${proj.daysVsExam} days ${proj.onTrack ? 'buffer remaining' : 'shortfall'}</b>
         </div>
       </div>
       
