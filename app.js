@@ -1432,6 +1432,8 @@ function updateConsistencyWidget() {
   if (pSubj) {
     const s = (DYNAMIC_DATA.syllabusSubjects || []).find(x => x.id === pSubj);
     if (s) paceLabel = s.name;
+  } else if (state.paceExcludeIBS) {
+    paceLabel = 'syllabus (excl. IBS)';
   }
   const windowLabel = `${pw}d avg`;
 
