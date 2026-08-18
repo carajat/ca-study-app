@@ -1301,7 +1301,7 @@ function computeProjection(subjectId = null, paceWindow = 14) {
     const subj = DYNAMIC_DATA.syllabusSubjects.find(x => x.id === subjectId);
     if (subj) currentPct = calculateSubjectProgress(subj.id, subj.type);
   } else {
-    currentPct = calculateOverallProgress();
+    currentPct = calculateOverallProgress(state.paceExcludeIBS);
   }
   
   if (currentPct <= 0 || totalLoggedHours <= 0) return null;
@@ -1425,7 +1425,7 @@ function updateConsistencyWidget() {
   const windowLabel = `${pw}d avg`;
 
   const logDatesCount = Object.keys(c.dailyLog || {}).length;
-  const currentPct = pSubj ? (proj ? proj.currentPct : 0) : calculateOverallProgress();
+  const currentPct = pSubj ? (proj ? proj.currentPct : 0) : calculateOverallProgress(state.paceExcludeIBS);
   const showPace = (logDatesCount >= 7 && currentPct >= 10 && proj);
 
   // Pace pill
@@ -2346,12 +2346,12 @@ function calculateSubjectProgress(key, type) {
   return total > 0 ? Math.round((done / total) * 100) : 0;
 }
 
-function calculateOverallProgress() {
+function calculateOverallProgress(excludeIBSFlag = state.excludeIBS) {
   if (!DYNAMIC_DATA.syllabusSubjects || DYNAMIC_DATA.syllabusSubjects.length === 0) return 0;
   
   let totalWeight = 0, weightedSum = 0;
   DYNAMIC_DATA.syllabusSubjects.forEach(s => {
-    if (state.excludeIBS && s.name.toLowerCase().includes('ibs')) return;
+    if (excludeIBSFlag && s.name.toLowerCase().includes('ibs')) return;
     const pct = calculateSubjectProgress(s.id, s.type);
     const weight = s.type === 'main' ? 3 : 1;
     weightedSum += pct * weight;
