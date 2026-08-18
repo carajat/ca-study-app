@@ -34,8 +34,13 @@ jobs:
           mkdir -p www
           cp index.html app.js data.js sync.js style.css sw.js Sortable.min.js datesheets.json manifest.json www/
           cp icon-192.png icon-512.png www/
+          cp capacitor.config.json www/
           cp -r .well-known www/ 2>/dev/null || true
           echo "const BUILD_VERSION = '${{ steps.tag.outputs.tag }}';" > www/version.js
+          
+          # Cache busting for manual APK installs
+          sed -i "s/\?v=[0-9]*/\?v=${{ steps.tag.outputs.tag }}/g" www/index.html
+          sed -i "s/\?v=[0-9]*/\?v=${{ steps.tag.outputs.tag }}/g" www/sw.js || true
 
       - name: Sync Capacitor
         run: npx cap sync android
