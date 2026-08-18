@@ -1461,45 +1461,43 @@ window.showPaceCalculation = function() {
   const daysNeeded = remainingHours / proj.avgDailyHours;
   
   const html = `
-    <div style="font-size:13px; line-height:1.5; color:var(--text-primary);">
-      <div style="margin-bottom:16px;">
-        This estimation calculates your past effort-to-progress ratio, and applies your recent studying pace to project the completion date.
+    <div style="font-size:12px; line-height:1.6; color:var(--text-primary);">
+      <div style="margin-bottom:12px;">
+        Here is the exact math the system uses to project your syllabus completion date:
       </div>
+      
+      <div style="background:rgba(128,128,128,0.05); padding:12px; border-radius:8px; margin-bottom:12px; border:1px solid var(--glass-border);">
+        <div style="font-weight:800; margin-bottom:6px; color:var(--primary);">1. Effort Ratio</div>
+        <div style="margin-bottom:4px;">Total study time: <b>${totalLoggedHours.toFixed(1)} hrs</b></div>
+        <div style="margin-bottom:4px;">Current progress: <b>${currentPct.toFixed(1)}%</b></div>
+        <div style="padding:6px; background:var(--bg-primary); border-radius:6px; font-family:monospace; font-size:11px; margin-top:6px;">
+          ${totalLoggedHours.toFixed(1)} ÷ ${currentPct.toFixed(1)}% = <b style="color:var(--text-primary);">${hoursPerPercent.toFixed(1)} hrs per 1%</b>
+        </div>
+      </div>
+      
+      <div style="background:rgba(128,128,128,0.05); padding:12px; border-radius:8px; margin-bottom:12px; border:1px solid var(--glass-border);">
+        <div style="font-weight:800; margin-bottom:6px; color:var(--primary);">2. Remaining Work</div>
+        <div style="margin-bottom:4px;">Syllabus left: <b>${(100 - currentPct).toFixed(1)}%</b></div>
+        <div style="padding:6px; background:var(--bg-primary); border-radius:6px; font-family:monospace; font-size:11px; margin-top:6px;">
+          ${(100 - currentPct).toFixed(1)}% × ${hoursPerPercent.toFixed(1)} hrs = <b style="color:var(--text-primary);">${remainingHours.toFixed(0)} total hrs left</b>
+        </div>
+      </div>
+      
       <div style="background:rgba(128,128,128,0.05); padding:12px; border-radius:8px; margin-bottom:16px; border:1px solid var(--glass-border);">
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-          <span>Current Progress:</span>
-          <b>${currentPct.toFixed(1)}%</b>
-        </div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-          <span>Total Logged Study:</span>
-          <b>${totalLoggedHours.toFixed(1)} hrs</b>
-        </div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-          <span>Time per 1% Progress:</span>
-          <b>${hoursPerPercent.toFixed(1)} hrs</b>
-        </div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-top:1px dashed var(--glass-border); padding-top:8px;">
-          <span>Est. Remaining Effort:</span>
-          <b>${remainingHours.toFixed(0)} hrs</b>
+        <div style="font-weight:800; margin-bottom:6px; color:var(--primary);">3. Pacing & ETA</div>
+        <div style="margin-bottom:4px;">Average pace (Last 14 days): <b>${proj.avgDailyHours} hrs/day</b></div>
+        <div style="padding:6px; background:var(--bg-primary); border-radius:6px; font-family:monospace; font-size:11px; margin-top:6px;">
+          ${remainingHours.toFixed(0)} hrs ÷ ${proj.avgDailyHours} hrs/day = <b style="color:var(--text-primary);">${Math.ceil(daysNeeded)} days needed</b>
         </div>
       </div>
-      <div style="background:rgba(128,128,128,0.05); padding:12px; border-radius:8px; margin-bottom:16px; border:1px solid var(--glass-border);">
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-          <span>Avg. Pace (Last 14 Days):</span>
-          <b>${proj.avgDailyHours} hrs/day</b>
-        </div>
-        <div style="display:flex; justify-content:space-between;">
-          <span>Estimated Days Needed:</span>
-          <b>${Math.ceil(daysNeeded)} days</b>
-        </div>
-      </div>
+      
       <div style="text-align:center; padding:12px; background: ${proj.onTrack ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; color: ${proj.onTrack ? 'var(--success)' : 'var(--warning)'}; border-radius:8px; font-weight:600;">
-        ${proj.onTrack ? `On track to finish ${proj.daysVsExam} days early!` : `Falling behind by ${proj.daysVsExam} days.`}
+        ${proj.onTrack ? `Projected to finish ${proj.daysVsExam} days before exam!` : `At this pace, you will finish ${proj.daysVsExam} days after the exam.`}
       </div>
     </div>
   `;
   
-  openModal('Pace Calculation', html);
+  openModal('Calculation Breakdown', html);
 };
 
 
