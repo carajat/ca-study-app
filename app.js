@@ -1344,7 +1344,12 @@ function computeProjection() {
     daysVsExam: Math.abs(daysVsExam),
     onTrack,
     nudgeHours,
-    avgDailyHours: Math.round(avgDailyHours * 10) / 10
+    avgDailyHours: Math.round(avgDailyHours * 10) / 10,
+    exactAvgDailyHours: avgDailyHours,
+    exactDaysNeeded: daysNeeded,
+    exactRemainingHours: remainingHours,
+    exactTotalLoggedHours: totalLoggedHours,
+    exactHoursPerPercent: hoursPerPercent
   };
 }
 
@@ -1445,20 +1450,10 @@ window.showPaceCalculation = function() {
   if (!proj) return;
   
   const currentPct = calculateOverallProgress();
-  let totalLoggedMinutes = 0;
-  Object.values(DYNAMIC_DATA.journalEntries || {}).forEach(entry => {
-    if (entry && entry.rows) {
-      entry.rows.forEach(r => {
-        if (state.excludeIBS && r.subject && r.subject.toLowerCase().includes('ibs')) return;
-        totalLoggedMinutes += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
-      });
-    }
-  });
-  
-  const totalLoggedHours = totalLoggedMinutes / 60;
-  const hoursPerPercent = totalLoggedHours / currentPct;
-  const remainingHours = (100 - currentPct) * hoursPerPercent;
-  const daysNeeded = remainingHours / proj.avgDailyHours;
+  const totalLoggedHours = proj.exactTotalLoggedHours;
+  const hoursPerPercent = proj.exactHoursPerPercent;
+  const remainingHours = proj.exactRemainingHours;
+  const daysNeeded = proj.exactDaysNeeded;
   
   let examDate = new Date(DYNAMIC_DATA.exam.date);
   if (DYNAMIC_DATA.finalExams && DYNAMIC_DATA.finalExams.length > 0) {
@@ -1519,11 +1514,11 @@ window.showPaceCalculation = function() {
           <span style="font-weight:700; color:var(--text-primary); font-size:14px;">3. Pacing & ETA</span>
         </div>
         <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
-          <span>Avg Pace (Last 14 Days)</span><span style="color:var(--text-primary); font-weight:600;">${proj.avgDailyHours} hrs/day</span>
+          <span>Avg Pace (Last 14 Days)</span><span style="color:var(--text-primary); font-weight:600;">${proj.exactAvgDailyHours.toFixed(2)} hrs/day</span>
         </div>
         <div style="background:var(--bg-primary); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-family:monospace; color:var(--text-muted); font-size:11px;">${remainingHours.toFixed(0)} ÷ ${proj.avgDailyHours}</span>
-          <span style="font-weight:700; color:#10b981;">= ${Math.ceil(daysNeeded)} days needed</span>
+          <span style="font-family:monospace; color:var(--text-muted); font-size:11px;">${remainingHours.toFixed(0)} ÷ ${proj.exactAvgDailyHours.toFixed(2)}</span>
+          <span style="font-weight:700; color:#10b981;">= ${Math.round(daysNeeded)} days needed</span>
         </div>
       </div>
     
@@ -1538,7 +1533,7 @@ window.showPaceCalculation = function() {
           <span>Days Left for Exam</span><span style="color:var(--text-primary); font-weight:600;">${daysUntilExam} days</span>
         </div>
         <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
-          <span>Days Needed to Finish</span><span style="color:var(--text-primary); font-weight:600;">${Math.ceil(daysNeeded)} days</span>
+          <span>Days Needed to Finish</span><span style="color:var(--text-primary); font-weight:600;">${Math.round(daysNeeded)} days</span>
         </div>
         <div style="background:${proj.onTrack ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
           <span style="font-weight:700; color:${proj.onTrack ? '#10b981' : '#ef4444'}; font-size:13px; width:100%; text-align:center;">
