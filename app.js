@@ -4621,7 +4621,7 @@ window.renderHistoryForDate = function(dateStr) {
   document.getElementById('log-history-total').textContent = `Total: ${th}h ${tm}m`;
 };
 
-window.updateDailyAverage = function(newDateStr, totalMins, fromUser = false) {
+window.updateDailyAverage = function(newDateStr, _ignore, fromUser = false) {
   if (fromUser && newDateStr) {
     DYNAMIC_DATA.studyStartDate = newDateStr;
     saveDynamicData();
@@ -4636,14 +4636,34 @@ window.updateDailyAverage = function(newDateStr, totalMins, fromUser = false) {
   const diffTime = nowDt.getTime() - startDt.getTime();
   const totalDays = Math.max(1, Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1);
   
-  const avgMins = Math.round(totalMins / totalDays);
+  let periodMins = 0;
+  if (DYNAMIC_DATA.journalEntries) {
+    Object.keys(DYNAMIC_DATA.journalEntries).forEach(dateKey => {
+      const entryDt = new Date(dateKey);
+      entryDt.setHours(0,0,0,0);
+      if (entryDt >= startDt) {
+        const rows = DYNAMIC_DATA.journalEntries[dateKey].rows || [];
+        rows.forEach(r => {
+          periodMins += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
+        });
+      }
+    });
+  }
+  
+  const avgMins = Math.round(periodMins / totalDays);
   const ah = Math.floor(avgMins / 60);
   const am = avgMins % 60;
   
+  const ph = Math.floor(periodMins / 60);
+  const pm = periodMins % 60;
+  
   const valEl = document.getElementById('stats-daily-avg-val');
   const daysEl = document.getElementById('stats-daily-avg-days');
-  if (valEl) valEl.textContent = `${ah}h ${am}m / day`;
-  if (daysEl) daysEl.textContent = `over ${totalDays} day${totalDays > 1 ? 's' : ''}`;
+  const totalEl = document.getElementById('stats-period-total-val');
+  
+  if (valEl) valEl.innerHTML = `${ah}h ${am}m / day`;
+  if (daysEl) daysEl.innerHTML = `over ${totalDays} days`;
+  if (totalEl) totalEl.innerHTML = `${ph}h ${pm}m`;
 };
 
 window.openLogHistoryModal = function() {
@@ -4735,13 +4755,13 @@ window.openLogHistoryModal = function() {
   statsHtml += `
     <div class="glass-card" style="margin-top:15px; padding:12px; border: 1px solid var(--border-color); border-radius:10px;">
       <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; color:var(--text-secondary); margin-bottom:12px;">
-        <span style="font-weight:600;">Study Start Date:</span>
-        <input type="date" id="stats-start-date" class="st-input" style="width:140px; padding:4px 8px; font-size:12px; margin-bottom:0; border-radius:6px;" value="${startDateIso}" onchange="updateDailyAverage(this.value, ${totalMinutes}, true)">
+        <span style="font-weight:600;">Calculate Avg. From:</span>
+        <input type="date" id="stats-start-date" class="st-input" style="width:140px; padding:4px 8px; font-size:12px; margin-bottom:0; border-radius:6px;" value="${startDateIso}" onchange="updateDailyAverage(this.value, null, true)">
       </div>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
         <div style="padding:10px; background: rgba(52,199,89,0.1); border: 1px solid var(--success-color); border-radius: 8px; text-align:center;">
-          <div style="font-size:11px; color:var(--success-color); text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;">All-Time Total</div>
-          <div style="font-size:18px; font-weight:bold; color:var(--text-primary); margin-top:5px;">${gh}h ${gm}m</div>
+          <div style="font-size:11px; color:var(--success-color); text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;">Period Total</div>
+          <div id="stats-period-total-val" style="font-size:18px; font-weight:bold; color:var(--text-primary); margin-top:5px;">${gh}h ${gm}m</div>
         </div>
         <div style="padding:10px; background: rgba(10,132,255,0.1); border: 1px solid var(--primary-color); border-radius: 8px; text-align:center;">
           <div style="font-size:11px; color:var(--primary-color); text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;">Daily Average</div>
