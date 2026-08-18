@@ -2049,8 +2049,6 @@ function showSubjectsList() {
   const excludeText = state.excludeIBS ? ' <span style="font-size:12px; font-weight:normal; opacity:0.6;">(Excl. IBS)</span>' : '';
   document.getElementById('overall-pct').innerHTML = pct + '%' + excludeText;
   document.getElementById('overall-bar').style.width = pct + '%';
-  const toggleEl = document.getElementById('exclude-ibs-toggle');
-  if (toggleEl) toggleEl.checked = state.excludeIBS;
   
   const container = document.getElementById('syllabus-subjects-list');
   clearSortables();
@@ -2075,7 +2073,12 @@ function showSubjectsList() {
             ) +
           '</div>' +
           (!isEditMode ? 
-            '<div class="subj-progress"><span class="subj-pct">' + p + '%</span><div class="stat-bar"><div class="stat-bar-fill" style="width:' + p + '%"></div></div></div>' +
+            '<div class="subj-progress" style="display:flex; align-items:center; justify-content:flex-end;">' +
+              (subj.name.toLowerCase().includes('ibs') ? 
+                '<label class="switch" style="transform: scale(0.65); margin: 0 8px 0 0;" onclick="event.stopPropagation()"><input type="checkbox" onchange="toggleIncludeIBS(this)" ' + (!state.excludeIBS ? 'checked' : '') + '><span class="slider round"></span></label>' 
+              : '') +
+              '<div><span class="subj-pct">' + p + '%</span><div class="stat-bar"><div class="stat-bar-fill" style="width:' + p + '%"></div></div></div>' +
+            '</div>' +
             '<span class="subj-arrow material-symbols-rounded" id="arrow-' + subj.id + '" style="margin-left:8px; font-size:20px;">expand_more</span>'
           : 
             '<div class="edit-mode-controls" style="display:flex; gap:4px; align-items:center;">' +
@@ -2102,7 +2105,12 @@ function showSubjectsList() {
         ) +
       '</div>' +
       (!isEditMode ? 
-      '<div class="subj-progress"><span class="subj-pct">' + p + '%</span><div class="stat-bar"><div class="stat-bar-fill" style="width:' + p + '%"></div></div></div>' +
+      '<div class="subj-progress" style="display:flex; align-items:center; justify-content:flex-end;">' +
+        (subj.name.toLowerCase().includes('ibs') ? 
+          '<label class="switch" style="transform: scale(0.65); margin: 0 8px 0 0;" onclick="event.stopPropagation()"><input type="checkbox" onchange="toggleIncludeIBS(this)" ' + (!state.excludeIBS ? 'checked' : '') + '><span class="slider round"></span></label>' 
+        : '') +
+        '<div><span class="subj-pct">' + p + '%</span><div class="stat-bar"><div class="stat-bar-fill" style="width:' + p + '%"></div></div></div>' +
+      '</div>' +
       '<span class="subj-arrow">▶</span>'
       : 
       '<div class="edit-mode-controls" style="display:flex; gap:4px; align-items:center;">' +
@@ -2539,8 +2547,8 @@ function openMenuModal() {
   `);
 }
 
-window.toggleExcludeIBS = function(checkbox) {
-  state.excludeIBS = checkbox.checked;
+window.toggleIncludeIBS = function(checkbox) {
+  state.excludeIBS = !checkbox.checked;
   saveState({ excludeIBS: state.excludeIBS });
   switchTab(state.activeTab);
   if (state.activeTab === 'dashboard') {
