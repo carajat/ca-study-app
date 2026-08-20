@@ -1012,6 +1012,11 @@ function renderScoreChart() {
 function renderSchedule() {
   const schedule = DYNAMIC_DATA.schedules[state.activeSchedule];
   
+  const btnEarly = document.getElementById('btn-early');
+  const btnLate = document.getElementById('btn-late');
+  if (btnEarly) btnEarly.classList.toggle('active', state.activeSchedule === 'earlyMorning');
+  if (btnLate) btnLate.classList.toggle('active', state.activeSchedule === 'lateNight');
+
   const container = document.getElementById('schedule-slots-container');
   container.innerHTML = '';
   
@@ -1385,8 +1390,6 @@ function computeProjection(subjectId = null, paceWindow = 14) {
 
 function switchSchedule(type) {
   state.activeSchedule = type;
-  document.getElementById('btn-early').classList.toggle('active', type === 'earlyMorning');
-  document.getElementById('btn-late').classList.toggle('active', type === 'lateNight');
   saveState({ activeSchedule: type });
   renderSchedule();
   updateNotifToggleUI();
@@ -2386,15 +2389,8 @@ function init() {
   loadDynamicData();
   smartRepairSyllabusData();
   
-  // Load saved schedule preference
-  const saved = loadState();
-  if (saved.activeSchedule) state.activeSchedule = saved.activeSchedule;
-  if (saved.activeNotificationSchedule !== undefined) state.activeNotificationSchedule = saved.activeNotificationSchedule;
-  if (saved.excludeIBS !== undefined) state.excludeIBS = saved.excludeIBS;
-  if (saved.paceWindow) state.paceWindow = saved.paceWindow;
-  if (saved.paceSubjectId !== undefined) state.paceSubjectId = saved.paceSubjectId;
-  if (saved.paceExcludeIBS !== undefined) state.paceExcludeIBS = saved.paceExcludeIBS;
-  
+  // Load saved state preferences
+  Object.assign(state, loadState());
   // Render initial tab (updates UI state properly)
   switchTab(state.activeTab);
   updateNotifToggleUI();
@@ -4457,7 +4453,7 @@ window.reloadAppFromCloud = function(cloudData) {
     
     // Soft reload to apply changes without refreshing the browser
     loadDynamicData();
-    loadState();
+    Object.assign(state, loadState());
     restoreTrackerState();
     switchTab(state.activeTab);
     
