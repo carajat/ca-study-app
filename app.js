@@ -3749,7 +3749,7 @@ function trackerPause() {
   if (!window.isReadOnlyMode) {
     if (!DYNAMIC_DATA.liveSession) DYNAMIC_DATA.liveSession = {};
     DYNAMIC_DATA.liveSession.active = false;
-    DYNAMIC_DATA.liveSession.pausedAccumSeconds = trackerState.pausedTime || 0;
+    DYNAMIC_DATA.liveSession.frozenElapsedMs = getElapsedMs();
     if (typeof saveDynamicData === 'function') saveDynamicData();
   }
 }
@@ -3818,7 +3818,7 @@ window.updateReadonlyLiveTracker = function(data) {
     if (data.active) {
       elapsedMs = (window.getGlobalTime ? window.getGlobalTime() : Date.now()) - data.startedAt - (data.pausedAccumSeconds || 0);
     } else {
-      elapsedMs = (data.pausedAccumSeconds || 0);
+      elapsedMs = data.frozenElapsedMs || 0;
     }
     if (elapsedMs < 0) elapsedMs = 0;
     
