@@ -3733,6 +3733,15 @@ function trackerStart() {
   updateTrackerUI('running');
   trackerState.intervalId = setInterval(updateTimerDisplay, 1000);
   saveTrackerState();
+  if (typeof window.syncLiveSessionToCloud === 'function') {
+    window.syncLiveSessionToCloud({
+      active: true,
+      startedAt: trackerState.startTime,
+      pausedAccumSeconds: trackerState.pausedTime || 0,
+      subject: trackerState.subject,
+      topic: trackerState.topic
+    });
+  }
 }
 
 function trackerPause() {
@@ -3740,6 +3749,15 @@ function trackerPause() {
   trackerState.pauseStart = (typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now());
   clearInterval(trackerState.intervalId);
   updateTrackerUI('paused'); saveTrackerState();
+  if (typeof window.syncLiveSessionToCloud === 'function') {
+    window.syncLiveSessionToCloud({
+      active: false,
+      startedAt: trackerState.startTime,
+      pausedAccumSeconds: trackerState.pausedTime || 0,
+      subject: trackerState.subject,
+      topic: trackerState.topic
+    });
+  }
 }
 
 function trackerResume() {
@@ -3748,7 +3766,89 @@ function trackerResume() {
   updateTrackerUI('running');
   trackerState.intervalId = setInterval(updateTimerDisplay, 1000);
   saveTrackerState();
+  if (typeof window.syncLiveSessionToCloud === 'function') {
+    window.syncLiveSessionToCloud({
+      active: true,
+      startedAt: trackerState.startTime,
+      pausedAccumSeconds: trackerState.pausedTime || 0,
+      subject: trackerState.subject,
+      topic: trackerState.topic
+    });
+  }
 }
+
+// Global state for read-only live tracker
+window.readonlyLiveTrackerState = { intervalId: null, data: null };
+
+window.updateReadonlyLiveTracker = function(data) {
+  // Clear any existing ticking interval
+  if (window.readonlyLiveTrackerState.intervalId) {
+    clearInterval(window.readonlyLiveTrackerState.intervalId);
+    window.readonlyLiveTrackerState.intervalId = null;
+  }
+  
+  window.readonlyLiveTrackerState.data = data;
+  
+  const timerValEl = document.getElementById('st-timer-value');
+  const timerDispEl = document.getElementById('st-timer-display');
+  const statusEl = document.getElementById('st-status');
+  
+  // Also hide all buttons for read-only user
+  ['st-btn-start', 'st-btn-pause', 'st-btn-resume', 'st-btn-stop'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  
+  // Disable inputs
+  ['st-subject', 'st-topic', 'st-task-desc'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = true;
+  });
+  
+  if (!data) {
+    if (timerValEl) timerValEl.textContent = '00:00:00';
+    if (statusEl) statusEl.innerHTML = '<span class="material-symbols-rounded icon-sm" style="color:var(--text-muted); vertical-align:middle; font-size:16px;">cloud_off</span> Not studying currently';
+    if (timerDispEl) timerDispEl.className = 'st-timer-display';
+    return;
+  }
+  
+  // Fill subject/topic if available
+  if (data.subject) {
+    const subSel = document.getElementById('st-subject');
+    if (subSel) subSel.innerHTML = `<option>${data.subject}</option>`;
+  }
+  if (data.topic) {
+    const topSel = document.getElementById('st-topic');
+    if (topSel) topSel.innerHTML = `<option>${data.topic}</option>`;
+  }
+  
+  const updateViewerTimer = () => {
+    let elapsedMs = 0;
+    if (data.active) {
+      elapsedMs = (window.getGlobalTime ? window.getGlobalTime() : Date.now()) - data.startedAt - (data.pausedAccumSeconds || 0);
+    } else {
+      elapsedMs = (data.pausedAccumSeconds || 0);
+    }
+    if (elapsedMs < 0) elapsedMs = 0;
+    
+    const totalSecs = Math.floor(elapsedMs / 1000);
+    const h = Math.floor(totalSecs / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    const s = totalSecs % 60;
+    if (timerValEl) timerValEl.textContent = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  };
+  
+  updateViewerTimer();
+  
+  if (data.active) {
+    if (timerDispEl) timerDispEl.className = 'st-timer-display running';
+    if (statusEl) statusEl.innerHTML = '<span class="material-symbols-rounded icon-sm" style="color:var(--success); vertical-align:middle; font-size:16px;">radio_button_checked</span> Studying...';
+    window.readonlyLiveTrackerState.intervalId = setInterval(updateViewerTimer, 1000);
+  } else {
+    if (timerDispEl) timerDispEl.className = 'st-timer-display paused';
+    if (statusEl) statusEl.textContent = '⏸️ Paused';
+  }
+};
 
 function trackerStop() {
   if (trackerState.isPaused && trackerState.pauseStart) {
@@ -3777,6 +3877,9 @@ function trackerStop() {
   updateTrackerUI('idle');
   document.getElementById('st-timer-value').textContent = '00:00:00';
   saveTrackerState();
+  if (typeof window.syncLiveSessionToCloud === 'function') {
+    window.syncLiveSessionToCloud(null);
+  }
 
   if (totalMinutes >= 1) {
     var today = new Date();

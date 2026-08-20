@@ -36,9 +36,15 @@ function getCloudPath() {
   return '/sharedData/coupleRoom/' + group + '/';
 }
 
+function getLiveSessionCloudPath() {
+  const group = (window.state && window.state.activeGroup) || localStorage.getItem('ca_app_prefs_group') || 'group1';
+  return '/liveSessions/coupleRoom/' + group + '/';
+}
+
 let isSyncing = false;
 let currentUser = null;
 let currentListenerPath = null;
+let currentLiveListenerPath = null;
 window.hasLoadedCloudData = false;
 
 // Attach cloud listener for current group
@@ -83,6 +89,41 @@ function attachCloudListener() {
 // Expose so app.js can call it on group switch
 window.attachCloudListener = attachCloudListener;
 
+// Attach live session listener (used mainly for read-only viewer)
+function attachLiveSessionListener() {
+  if (!currentUser || !db) return;
+  const newLivePath = getLiveSessionCloudPath();
+  
+  if (currentLiveListenerPath === newLivePath) return;
+  
+  if (currentLiveListenerPath) {
+    db.ref(currentLiveListenerPath).off('value');
+  }
+  
+  currentLiveListenerPath = newLivePath;
+  console.log("Attaching live session listener to:", newLivePath);
+  
+  db.ref(newLivePath).on('value', (snapshot) => {
+    const liveData = snapshot.val();
+    if (window.isReadOnlyMode && typeof window.updateReadonlyLiveTracker === 'function') {
+      window.updateReadonlyLiveTracker(liveData);
+    }
+  });
+}
+window.attachLiveSessionListener = attachLiveSessionListener;
+
+window.syncLiveSessionToCloud = function(data) {
+  if (!currentUser || !db) return;
+  if (window.isReadOnlyMode) return; // Viewer shouldn't broadcast state
+  const path = getLiveSessionCloudPath();
+  
+  if (data === null) {
+    db.ref(path).remove().catch(err => console.error("Firebase live session remove error:", err));
+  } else {
+    db.ref(path).set(data).catch(err => console.error("Firebase live session sync error:", err));
+  }
+};
+
 window.getDisplayUsername = function(email) {
   if (!email) return "USER";
   const safeEmail = email.replace(/\./g, ',');
@@ -119,11 +160,16 @@ if (auth && db) {
       const overlay = document.getElementById('welcome-overlay');
       if (overlay) overlay.style.display = 'none';
       attachCloudListener();
+      attachLiveSessionListener();
     } else {
       console.log("User is signed out (Offline Mode)");
       if (currentListenerPath) {
         db.ref(currentListenerPath).off('value');
         currentListenerPath = null;
+      }
+      if (currentLiveListenerPath) {
+        db.ref(currentLiveListenerPath).off('value');
+        currentLiveListenerPath = null;
       }
       if (localStorage.getItem('ca-skip-login') !== 'true') {
         const overlay = document.getElementById('welcome-overlay');
