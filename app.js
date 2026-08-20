@@ -3733,14 +3733,15 @@ function trackerStart() {
   updateTrackerUI('running');
   trackerState.intervalId = setInterval(updateTimerDisplay, 1000);
   saveTrackerState();
-  if (typeof window.syncLiveSessionToCloud === 'function') {
-    window.syncLiveSessionToCloud({
+  if (!window.isReadOnlyMode) {
+    DYNAMIC_DATA.liveSession = {
       active: true,
       startedAt: trackerState.startTime,
       pausedAccumSeconds: trackerState.pausedTime || 0,
       subject: trackerState.subject,
       topic: trackerState.topic
-    });
+    };
+    if (typeof saveDynamicData === 'function') saveDynamicData();
   }
 }
 
@@ -3749,14 +3750,11 @@ function trackerPause() {
   trackerState.pauseStart = (typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now());
   clearInterval(trackerState.intervalId);
   updateTrackerUI('paused'); saveTrackerState();
-  if (typeof window.syncLiveSessionToCloud === 'function') {
-    window.syncLiveSessionToCloud({
-      active: false,
-      startedAt: trackerState.startTime,
-      pausedAccumSeconds: trackerState.pausedTime || 0,
-      subject: trackerState.subject,
-      topic: trackerState.topic
-    });
+  if (!window.isReadOnlyMode) {
+    if (!DYNAMIC_DATA.liveSession) DYNAMIC_DATA.liveSession = {};
+    DYNAMIC_DATA.liveSession.active = false;
+    DYNAMIC_DATA.liveSession.pausedAccumSeconds = trackerState.pausedTime || 0;
+    if (typeof saveDynamicData === 'function') saveDynamicData();
   }
 }
 
@@ -3766,14 +3764,11 @@ function trackerResume() {
   updateTrackerUI('running');
   trackerState.intervalId = setInterval(updateTimerDisplay, 1000);
   saveTrackerState();
-  if (typeof window.syncLiveSessionToCloud === 'function') {
-    window.syncLiveSessionToCloud({
-      active: true,
-      startedAt: trackerState.startTime,
-      pausedAccumSeconds: trackerState.pausedTime || 0,
-      subject: trackerState.subject,
-      topic: trackerState.topic
-    });
+  if (!window.isReadOnlyMode) {
+    if (!DYNAMIC_DATA.liveSession) DYNAMIC_DATA.liveSession = {};
+    DYNAMIC_DATA.liveSession.active = true;
+    DYNAMIC_DATA.liveSession.pausedAccumSeconds = trackerState.pausedTime || 0;
+    if (typeof saveDynamicData === 'function') saveDynamicData();
   }
 }
 
@@ -3877,8 +3872,9 @@ function trackerStop() {
   updateTrackerUI('idle');
   document.getElementById('st-timer-value').textContent = '00:00:00';
   saveTrackerState();
-  if (typeof window.syncLiveSessionToCloud === 'function') {
-    window.syncLiveSessionToCloud(null);
+  if (!window.isReadOnlyMode) {
+    DYNAMIC_DATA.liveSession = null;
+    if (typeof saveDynamicData === 'function') saveDynamicData();
   }
 
   if (totalMinutes >= 1) {
@@ -4470,6 +4466,10 @@ window.reloadAppFromCloud = function(cloudData) {
     }
   }
 
+  // Always update the read-only live tracker UI if applicable, even if main data hash didn't change
+  if (window.isReadOnlyMode && typeof window.updateReadonlyLiveTracker === 'function') {
+    window.updateReadonlyLiveTracker(newDynamic.liveSession || null);
+  }
 };
 
 
