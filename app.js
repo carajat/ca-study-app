@@ -103,8 +103,8 @@ function loadDynamicData() {
         DYNAMIC_DATA[key] = JSON.parse(JSON.stringify(APP_DATA[state.activeGroup][key]));
       }
     }
-    if (!DYNAMIC_DATA.schedules['custom']) {
-      DYNAMIC_DATA.schedules['custom'] = JSON.parse(JSON.stringify(APP_DATA[state.activeGroup].schedules['custom']));
+    if (!DYNAMIC_DATA.schedules['naturalClock']) {
+      DYNAMIC_DATA.schedules['naturalClock'] = JSON.parse(JSON.stringify(APP_DATA[state.activeGroup].schedules['naturalClock']));
     }
   }
   
@@ -1017,10 +1017,10 @@ function renderSchedule() {
   
   const btnEarly = document.getElementById('btn-early');
   const btnLate = document.getElementById('btn-late');
-  const btnCustom = document.getElementById('btn-custom');
+  const btnNatural = document.getElementById('btn-natural');
   if (btnEarly) btnEarly.classList.toggle('active', state.activeSchedule === 'earlyMorning');
   if (btnLate) btnLate.classList.toggle('active', state.activeSchedule === 'lateNight');
-  if (btnCustom) btnCustom.classList.toggle('active', state.activeSchedule === 'custom');
+  if (btnNatural) btnNatural.classList.toggle('active', state.activeSchedule === 'naturalClock');
 
   const container = document.getElementById('schedule-slots-container');
   container.innerHTML = '';

@@ -53,12 +53,25 @@ const APP_DATA_GROUP2 = {
         { id: "ln12", label: "Sleep", startRange: "02:00-03:00", duration: 360, type: "sleep", icon: "bedtime" }
       ]
     },
-    custom: {
-      name: "Custom (Natural Clock)",
-      totalStudy: "0 hrs",
-      totalBreaks: "0 hrs",
-      sleep: "0 hrs",
-      slots: []
+    naturalClock: {
+      name: "Natural Clock",
+      totalStudy: "11.5 hrs",
+      totalBreaks: "4.5 hrs",
+      sleep: "6.5 hrs",
+      slots: [
+        { id: "nc1",  label: "Morning Routine",     startRange: "04:30-05:30", duration: 90,  type: "routine", icon: "wb_sunny" },
+        { id: "nc2",  label: "Study Session 1",     startRange: "06:00-07:00", duration: 120, type: "study",   icon: "menu_book" },
+        { id: "nc3",  label: "Travel to Library",   startRange: "08:00-09:00", duration: 30,  type: "break",   icon: "directions_walk" },
+        { id: "nc4",  label: "Study Session 2",     startRange: "08:30-09:30", duration: 150, type: "study",   icon: "menu_book" },
+        { id: "nc5",  label: "Lunch / Nap",         startRange: "11:00-12:00", duration: 60,  type: "break",   icon: "restaurant" },
+        { id: "nc6",  label: "Study Session 3",     startRange: "12:00-13:00", duration: 150, type: "study",   icon: "menu_book" },
+        { id: "nc7",  label: "Break",               startRange: "14:30-15:30", duration: 30,  type: "break",   icon: "local_cafe" },
+        { id: "nc8",  label: "Study Session 4",     startRange: "15:00-16:00", duration: 150, type: "study",   icon: "menu_book" },
+        { id: "nc9",  label: "Back Home Break",     startRange: "17:30-18:30", duration: 60,  type: "break",   icon: "home" },
+        { id: "nc10", label: "Study Session 5",     startRange: "18:30-19:30", duration: 120, type: "study",   icon: "menu_book" },
+        { id: "nc11", label: "Dinner / Phone",      startRange: "20:30-21:30", duration: 90,  type: "break",   icon: "restaurant" },
+        { id: "nc12", label: "Sleep",               startRange: "22:00-23:00", duration: 390, type: "sleep",   icon: "bedtime" }
+      ]
     },
     rules: [
       "Daily Practice MCQs for at least 15 Minutes",
