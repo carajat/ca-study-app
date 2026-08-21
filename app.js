@@ -4105,8 +4105,10 @@ window.deleteTodaysLog = function(idx) {
     const targetDate = window.viewLogsDate || getTodayStr();
     if (DYNAMIC_DATA.journalEntries[targetDate] && DYNAMIC_DATA.journalEntries[targetDate].rows) {
       DYNAMIC_DATA.journalEntries[targetDate].rows.splice(idx, 1);
+      refreshConsistencyData();
       saveDynamicData();
       renderTodaysLog();
+      if (state.activeTab === 'dashboard') updateConsistencyWidget();
     }
   }
 };
@@ -4252,9 +4254,11 @@ window.saveManualLog = function() {
     startTime: startTime
   });
   
+  refreshConsistencyData();
   saveDynamicData();
   closeModal();
   renderTodaysLog();
+  if (state.activeTab === 'dashboard') updateConsistencyWidget();
   
   window.editingLogIdx = undefined;
   window.editingLogDate = undefined;
