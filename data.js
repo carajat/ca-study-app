@@ -53,6 +53,13 @@ const APP_DATA_GROUP2 = {
         { id: "ln12", label: "Sleep", startRange: "02:00-03:00", duration: 360, type: "sleep", icon: "bedtime" }
       ]
     },
+    custom: {
+      name: "Custom (Natural Clock)",
+      totalStudy: "0 hrs",
+      totalBreaks: "0 hrs",
+      sleep: "0 hrs",
+      slots: []
+    },
     rules: [
       "Daily Practice MCQs for at least 15 Minutes",
       "Give Primary Subject at least 8 hours",
