@@ -669,6 +669,10 @@ function updateCountdown() {
 }
 
 function updateDashboardStats() {
+  ensureConsistencyInit();
+  const c = DYNAMIC_DATA.consistency;
+  const medalsHtml = `🥇${c.medals?.gold||0} 🥈${c.medals?.silver||0} 🥉${c.medals?.bronze||0}`;
+  document.getElementById('dash-medals-count').innerHTML = `<span style="font-size:13px; font-weight: 600; display:flex; gap: 4px; justify-content:center;"><span>🥇${c.medals?.gold||0}</span> <span>🥈${c.medals?.silver||0}</span> <span>🥉${c.medals?.bronze||0}</span></span>`;
   // Syllabus progress
   const pct = calculateOverallProgress();
   const excludeText = state.excludeIBS ? ' <span style="font-size:11px; font-weight:normal; opacity:0.6;">(Excl. IBS)</span>' : '';
@@ -1051,7 +1055,7 @@ function renderSchedule() {
           </div>
           ${(!isEditMode && slot.type === 'study' && slotResultsMap[slot.id]) ? (() => {
             const st = slotResultsMap[slot.id].status;
-            if (st === 'done') return `<div class="cons-slot-status cons-status-done">${_svgCheck}</div>`;
+            if (st === 'done') return `<div class="cons-slot-status cons-status-done">${_svgCheck}<span style="color:var(--success);">${_fmtMins(slotResultsMap[slot.id].actualMin)}</span></div>`;
             if (st === 'partial') return `<div class="cons-slot-status cons-status-partial">${_svgPartial}<span>${_fmtMins(slotResultsMap[slot.id].actualMin)}</span></div>`;
             if (st === 'upcoming') return `<div class="cons-slot-status cons-status-upcoming">${_svgUpcoming}<span>Upcoming</span></div>`;
             return `<div class="cons-slot-status cons-status-missed">${_svgPartial}<span>Missed</span></div>`;
@@ -1253,15 +1257,22 @@ function refreshConsistencyData() {
   
   let tempStreak = 0;
   let maxStreak = 0;
+  let gold = 0, silver = 0, bronze = 0;
   
   while (iterDate <= todayDate) {
     const dStr = iterDate.getFullYear() + '-' + String(iterDate.getMonth()+1).padStart(2,'0') + '-' + String(iterDate.getDate()).padStart(2,'0');
     const log = c.dailyLog[dStr];
     
+    if (log) {
+      if (log.actualMinutes >= 600) gold++;
+      else if (log.actualMinutes >= 480) silver++;
+      else if (log.actualMinutes >= 360) bronze++;
+    }
+    
     if (dStr === todayStr) {
-      if (log && log.adherencePct >= 80) tempStreak++;
+      if (log && log.actualMinutes >= 480) tempStreak++;
     } else {
-      if (log && log.adherencePct >= 80) {
+      if (log && log.actualMinutes >= 480) {
         tempStreak++;
       } else {
         tempStreak = 0;
@@ -1273,6 +1284,7 @@ function refreshConsistencyData() {
   
   c.currentStreak = tempStreak;
   c.longestStreak = maxStreak;
+  c.medals = { gold, silver, bronze };
   c.lastCountedDate = todayStr;
 }
 
