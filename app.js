@@ -671,8 +671,6 @@ function updateCountdown() {
 function updateDashboardStats() {
   ensureConsistencyInit();
   const c = DYNAMIC_DATA.consistency;
-  const medalsHtml = `🥇${c.medals?.gold||0} 🥈${c.medals?.silver||0} 🥉${c.medals?.bronze||0}`;
-  document.getElementById('dash-medals-count').innerHTML = `<span style="font-size:13px; font-weight: 600; display:flex; gap: 4px; justify-content:center;"><span>🥇${c.medals?.gold||0}</span> <span>🥈${c.medals?.silver||0}</span> <span>🥉${c.medals?.bronze||0}</span></span>`;
   // Syllabus progress
   const pct = calculateOverallProgress();
   const excludeText = state.excludeIBS ? ' <span style="font-size:11px; font-weight:normal; opacity:0.6;">(Excl. IBS)</span>' : '';
@@ -1493,7 +1491,14 @@ function updateConsistencyWidget() {
           <div class="cons-pill ${pillClass}">${pillIcon}${pillLabel}</div>
           <div class="cons-streak-num">${c.currentStreak}<span>days consistent</span></div>
         </div>
-        <div class="cons-best">Longest run<b>${c.longestStreak}</b></div>
+        <div class="cons-best">
+          Longest run<b>${c.longestStreak}</b>
+          <div style="margin-top:8px; display:flex; gap:6px; font-size:12px; color:var(--text-secondary);">
+            <span title="Gold (10+ hrs)">🥇 ${c.medals?.gold||0}</span>
+            <span title="Silver (8-10 hrs)">🥈 ${c.medals?.silver||0}</span>
+            <span title="Bronze (6-8 hrs)">🥉 ${c.medals?.bronze||0}</span>
+          </div>
+        </div>
       </div>
       <div class="cons-divider"></div>
       <div class="cons-adhere-row">

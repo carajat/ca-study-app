@@ -550,7 +550,7 @@ body {
 .cd-label { font-size: 10px; color: var(--text-muted); font-weight: 600; letter-spacing: 1px; margin-top: 4px; }
 
 /* ─── Stats Grid ─────────────────────── */
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; padding: 0 16px; margin-bottom: 12px; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; margin-bottom: 12px; }
 .stats-grid .glass-card { margin: 0; cursor: pointer; }
 .stat-icon { font-size: 24px; margin-bottom: 6px; }
 .stat-value { font-size: 22px; font-weight: 800; color: var(--text-primary); }
