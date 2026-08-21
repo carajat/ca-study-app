@@ -1431,7 +1431,7 @@ function updateConsistencyWidget() {
   const pw = state.paceWindow || 14;
   const pSubj = state.paceSubjectId || null;
   const proj = computeProjection(pSubj, pw);
-  const schedName = state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night';
+  const schedName = DYNAMIC_DATA.schedules[state.activeSchedule]?.name || 'Schedule';
   const adherePct = Math.min(todayResult.adherencePct, 100);
   const isGood = adherePct >= 80;
 
@@ -1623,7 +1623,7 @@ window.toggleNotifications = function() {
     updateNotifToggleUI();
     if (window.Capacitor) scheduleNativeAlarms(null);
   } else {
-    const schedName = state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night';
+    const schedName = DYNAMIC_DATA.schedules[state.activeSchedule]?.name || 'Schedule';
     
     if (window.Capacitor && window.Capacitor.Plugins.LocalNotifications) {
       window.Capacitor.Plugins.LocalNotifications.requestPermissions().then(perm => {
@@ -1673,7 +1673,7 @@ window.updateNotifToggleUI = function() {
   const isEnabled = state.activeNotificationSchedule === state.activeSchedule;
   toggle.checked = isEnabled;
   
-  const schedName = state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night';
+  const schedName = DYNAMIC_DATA.schedules[state.activeSchedule]?.name || 'Schedule';
   if (isEnabled) {
     iconBg.style.background = 'rgba(52,199,89,0.1)';
     iconBg.style.color = 'var(--success-color)';
@@ -4337,7 +4337,7 @@ window.startTutorial = function() {
         element: '#tab-schedule .schedule-toggle',
         popover: {
           title: 'Master Schedule (Routines)',
-          description: 'We have 2 schedules built-in: "Early Morning" for Early Birds, and "Late Night" for Night Owls. Switch between them here!',
+          description: 'We have 3 schedules built-in: "Early Morning", "Natural Clock", and "Late Night". Switch between them here!',
           side: "bottom", align: 'center'
         },
         onHighlightStarted: () => { 
