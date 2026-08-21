@@ -1493,10 +1493,10 @@ function updateConsistencyWidget() {
         </div>
         <div class="cons-best">
           Longest run<b>${c.longestStreak}</b>
-          <div style="margin-top:8px; display:flex; gap:6px; font-size:12px; color:var(--text-secondary);">
-            <span title="Gold (10+ hrs)">🥇 ${c.medals?.gold||0}</span>
-            <span title="Silver (8-10 hrs)">🥈 ${c.medals?.silver||0}</span>
-            <span title="Bronze (6-8 hrs)">🥉 ${c.medals?.bronze||0}</span>
+          <div style="margin-top:8px; display:flex; gap:4px;">
+            <span class="medal-pill medal-gold" title="Gold (10+ hrs)"><span class="material-symbols-rounded" style="font-size:13px;">workspace_premium</span>${c.medals?.gold||0}</span>
+            <span class="medal-pill medal-silver" title="Silver (8-10 hrs)"><span class="material-symbols-rounded" style="font-size:13px;">workspace_premium</span>${c.medals?.silver||0}</span>
+            <span class="medal-pill medal-bronze" title="Bronze (6-8 hrs)"><span class="material-symbols-rounded" style="font-size:13px;">workspace_premium</span>${c.medals?.bronze||0}</span>
           </div>
         </div>
       </div>
