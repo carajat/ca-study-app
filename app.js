@@ -2427,6 +2427,11 @@ function init() {
   }, 60000);
   
   performDailyBackup(); // Auto-save daily backup
+  
+  // Re-schedule native alarms on app boot (they get cleared on app update/restart)
+  if (state.activeNotificationSchedule && window.Capacitor) {
+    scheduleNativeAlarms(state.activeNotificationSchedule);
+  }
 }
 
 function performDailyBackup() {
