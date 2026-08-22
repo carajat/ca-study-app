@@ -10,13 +10,10 @@ let state = {
   activeNotificationSchedule: null,
   targetAttempt: 'Nov 2026',
   excludeIBS: false,
-  paceExcludeIBS: false,
   plannerDate: new Date(),
   calendarMonth: new Date(),
   syllabusView: 'list', // 'list' or 'detail'
-  activeSubject: null,
-  paceWindow: 14,
-  paceSubjectId: null
+  activeSubject: null
 };
 window.state = state;
 
@@ -102,9 +99,6 @@ function loadDynamicData() {
       if (!(key in DYNAMIC_DATA)) {
         DYNAMIC_DATA[key] = JSON.parse(JSON.stringify(APP_DATA[state.activeGroup][key]));
       }
-    }
-    if (!DYNAMIC_DATA.schedules['naturalClock']) {
-      DYNAMIC_DATA.schedules['naturalClock'] = JSON.parse(JSON.stringify(APP_DATA[state.activeGroup].schedules['naturalClock']));
     }
   }
   
@@ -669,8 +663,6 @@ function updateCountdown() {
 }
 
 function updateDashboardStats() {
-  ensureConsistencyInit();
-  const c = DYNAMIC_DATA.consistency;
   // Syllabus progress
   const pct = calculateOverallProgress();
   const excludeText = state.excludeIBS ? ' <span style="font-size:11px; font-weight:normal; opacity:0.6;">(Excl. IBS)</span>' : '';
@@ -1017,13 +1009,6 @@ function renderScoreChart() {
 function renderSchedule() {
   const schedule = DYNAMIC_DATA.schedules[state.activeSchedule];
   
-  const btnEarly = document.getElementById('btn-early');
-  const btnLate = document.getElementById('btn-late');
-  const btnNatural = document.getElementById('btn-natural');
-  if (btnEarly) btnEarly.classList.toggle('active', state.activeSchedule === 'earlyMorning');
-  if (btnLate) btnLate.classList.toggle('active', state.activeSchedule === 'lateNight');
-  if (btnNatural) btnNatural.classList.toggle('active', state.activeSchedule === 'naturalClock');
-
   const container = document.getElementById('schedule-slots-container');
   container.innerHTML = '';
   
@@ -1053,7 +1038,7 @@ function renderSchedule() {
           </div>
           ${(!isEditMode && slot.type === 'study' && slotResultsMap[slot.id]) ? (() => {
             const st = slotResultsMap[slot.id].status;
-            if (st === 'done') return `<div class="cons-slot-status cons-status-done">${_svgCheck}<span style="color:var(--success);">${_fmtMins(slotResultsMap[slot.id].actualMin)}</span></div>`;
+            if (st === 'done') return `<div class="cons-slot-status cons-status-done">${_svgCheck}</div>`;
             if (st === 'partial') return `<div class="cons-slot-status cons-status-partial">${_svgPartial}<span>${_fmtMins(slotResultsMap[slot.id].actualMin)}</span></div>`;
             if (st === 'upcoming') return `<div class="cons-slot-status cons-status-upcoming">${_svgUpcoming}<span>Upcoming</span></div>`;
             return `<div class="cons-slot-status cons-status-missed">${_svgPartial}<span>Missed</span></div>`;
@@ -1255,22 +1240,15 @@ function refreshConsistencyData() {
   
   let tempStreak = 0;
   let maxStreak = 0;
-  let gold = 0, silver = 0, bronze = 0;
   
   while (iterDate <= todayDate) {
     const dStr = iterDate.getFullYear() + '-' + String(iterDate.getMonth()+1).padStart(2,'0') + '-' + String(iterDate.getDate()).padStart(2,'0');
     const log = c.dailyLog[dStr];
     
-    if (log) {
-      if (log.actualMinutes >= 600) gold++;
-      else if (log.actualMinutes >= 480) silver++;
-      else if (log.actualMinutes >= 360) bronze++;
-    }
-    
     if (dStr === todayStr) {
-      if (log && log.actualMinutes >= 480) tempStreak++;
+      if (log && log.adherencePct >= 80) tempStreak++;
     } else {
-      if (log && log.actualMinutes >= 480) {
+      if (log && log.adherencePct >= 80) {
         tempStreak++;
       } else {
         tempStreak = 0;
@@ -1282,26 +1260,14 @@ function refreshConsistencyData() {
   
   c.currentStreak = tempStreak;
   c.longestStreak = maxStreak;
-  c.medals = { gold, silver, bronze };
   c.lastCountedDate = todayStr;
-}
-
-function isIBSSubject(subjName) {
-  if (!subjName) return false;
-  const lowerName = subjName.toLowerCase();
-  if (lowerName.includes('ibs')) return true;
-  const folder = (DYNAMIC_DATA.syllabusSubjects || []).find(s => s.type === 'folder' && (s.id === 'ibs-folder' || s.name.toLowerCase().includes('ibs')));
-  if (folder && folder.children) {
-    return !!folder.children.find(c => c.name.toLowerCase() === lowerName);
-  }
-  return false;
 }
 
 /**
  * Compute syllabus completion projection.
  * Returns null if < 7 days of dailyLog data exist.
  */
-function computeProjection(subjectId = null, paceWindow = 14) {
+function computeProjection(subjectId = null) {
   ensureConsistencyInit();
   const c = DYNAMIC_DATA.consistency;
   const dailyLog = c.dailyLog || {};
@@ -1320,7 +1286,7 @@ function computeProjection(subjectId = null, paceWindow = 14) {
   Object.values(journal).forEach(entry => {
     if (entry && entry.rows) {
       entry.rows.forEach(r => {
-        if (state.paceExcludeIBS && isIBSSubject(r.subject)) return;
+        if (state.excludeIBS && r.subject && r.subject.toLowerCase().includes('ibs')) return;
         if (subjName && (!r.subject || r.subject.toLowerCase() !== subjName)) return;
         totalLoggedMinutes += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
       });
@@ -1332,7 +1298,7 @@ function computeProjection(subjectId = null, paceWindow = 14) {
     const subj = DYNAMIC_DATA.syllabusSubjects.find(x => x.id === subjectId);
     if (subj) currentPct = calculateSubjectProgress(subj.id, subj.type);
   } else {
-    currentPct = calculateOverallProgress(state.paceExcludeIBS);
+    currentPct = calculateOverallProgress();
   }
   
   if (currentPct <= 0 || totalLoggedHours <= 0) return null;
@@ -1341,29 +1307,29 @@ function computeProjection(subjectId = null, paceWindow = 14) {
   
   const remainingHours = (100 - currentPct) * hoursPerPercent;
 
-  // Calculate average daily minutes over the last N CALENDAR days
-  let lastNMin = 0;
+  // Calculate average daily minutes over the last 14 CALENDAR days
+  let last14Min = 0;
   const now = new Date();
-  for (let i = 0; i < paceWindow; i++) {
+  for (let i = 0; i < 14; i++) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const dStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
     
-    if (subjectId || state.paceExcludeIBS) {
+    if (subjectId || state.excludeIBS) {
       const entry = journal[dStr];
       if (entry && entry.rows) {
         entry.rows.forEach(r => {
-          if (state.paceExcludeIBS && isIBSSubject(r.subject)) return;
+          if (state.excludeIBS && r.subject && r.subject.toLowerCase().includes('ibs')) return;
           if (subjName && (!r.subject || r.subject.toLowerCase() !== subjName)) return;
-          lastNMin += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
+          last14Min += (parseInt(r.durHH) || 0) * 60 + (parseInt(r.durMM) || 0);
         });
       }
     } else {
-      lastNMin += (dailyLog[dStr]?.actualMinutes || 0);
+      last14Min += (dailyLog[dStr]?.actualMinutes || 0);
     }
   }
-  const avgDailyHours = (lastNMin / paceWindow) / 60;
-  if (avgDailyHours <= 0.1) return null;
+  const avgDailyHours = (last14Min / 14) / 60;
+  if (avgDailyHours <= 0.1) return null; // Avoid divide by zero, need at least minimal activity
 
   const daysNeeded = remainingHours / avgDailyHours;
   const projectedDate = new Date();
@@ -1398,13 +1364,14 @@ function computeProjection(subjectId = null, paceWindow = 14) {
     exactRemainingHours: remainingHours,
     exactTotalLoggedHours: totalLoggedHours,
     exactHoursPerPercent: hoursPerPercent,
-    currentPct: currentPct,
-    paceWindow: paceWindow
+    currentPct: currentPct
   };
 }
 
 function switchSchedule(type) {
   state.activeSchedule = type;
+  document.getElementById('btn-early').classList.toggle('active', type === 'earlyMorning');
+  document.getElementById('btn-late').classList.toggle('active', type === 'lateNight');
   saveState({ activeSchedule: type });
   renderSchedule();
   updateNotifToggleUI();
@@ -1438,25 +1405,13 @@ function updateConsistencyWidget() {
   const c = DYNAMIC_DATA.consistency;
   const todayStr = getTodayStr();
   const todayResult = computeDayAdherence(todayStr);
-  const pw = state.paceWindow || 14;
-  const pSubj = state.paceSubjectId || null;
-  const proj = computeProjection(pSubj, pw);
-  const schedName = DYNAMIC_DATA.schedules[state.activeSchedule]?.name || 'Schedule';
+  const proj = computeProjection();
+  const schedName = state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night';
   const adherePct = Math.min(todayResult.adherencePct, 100);
   const isGood = adherePct >= 80;
 
-  // Resolve subject label for insight text
-  let paceLabel = 'syllabus';
-  if (pSubj) {
-    const s = (DYNAMIC_DATA.syllabusSubjects || []).find(x => x.id === pSubj);
-    if (s) paceLabel = s.name;
-  } else if (state.paceExcludeIBS) {
-    paceLabel = 'syllabus (excl. IBS)';
-  }
-  const windowLabel = `${pw}d avg`;
-
   const logDatesCount = Object.keys(c.dailyLog || {}).length;
-  const currentPct = pSubj ? (proj ? proj.currentPct : 0) : calculateOverallProgress(state.paceExcludeIBS);
+  const currentPct = calculateOverallProgress();
   const showPace = (logDatesCount >= 7 && currentPct >= 10 && proj);
 
   // Pace pill
@@ -1477,10 +1432,10 @@ function updateConsistencyWidget() {
     insightHtml = `<div class="cons-insight" style="background:transparent; border:1px dashed var(--glass-border); align-items:center;"><span class="material-symbols-rounded" style="color:var(--text-muted); font-size:18px;">hourglass_empty</span><p style="color:var(--text-muted); font-size:11.5px;">Building your pace profile &mdash; check back after a bit more progress.</p></div>`;
   } else {
     if (proj.onTrack) {
-      insightHtml = `<div class="cons-insight cons-insight-good" onclick="showPaceCalculation(${pSubj ? "'" + pSubj + "'" : 'null'})" style="cursor:pointer; margin-top:12px;">${_svgTrendUp}<p>At this pace <span style="opacity:0.7; font-size:11px;">(${windowLabel})</span>, <b>${paceLabel}</b> completes <b>${proj.daysVsExam} days before</b> your exam.</p></div>`;
+      insightHtml = `<div class="cons-insight cons-insight-good" onclick="showPaceCalculation()" style="cursor:pointer; margin-top:12px;">${_svgTrendUp}<p>At this pace, your <b>syllabus</b> completes <b>${proj.daysVsExam} days before</b> your exam date.</p></div>`;
     } else {
       const nudgeStr = proj.nudgeHours !== null ? `<span class="cons-nudge">Increase daily average by ~${proj.nudgeHours} hrs to get back on track.</span>` : '';
-      insightHtml = `<div class="cons-insight cons-insight-warn" onclick="showPaceCalculation(${pSubj ? "'" + pSubj + "'" : 'null'})" style="cursor:pointer; margin-top:12px;">${_svgWarn}<p>At this pace <span style="opacity:0.7; font-size:11px;">(${windowLabel})</span>, <b>${paceLabel}</b> completes <b>${proj.daysVsExam} days after</b> your exam.${nudgeStr}</p></div>`;
+      insightHtml = `<div class="cons-insight cons-insight-warn" onclick="showPaceCalculation()" style="cursor:pointer; margin-top:12px;">${_svgWarn}<p>At this pace, syllabus completes <b>${proj.daysVsExam} days after</b> your exam date.${nudgeStr}</p></div>`;
     }
   }
 
@@ -1491,14 +1446,7 @@ function updateConsistencyWidget() {
           <div class="cons-pill ${pillClass}">${pillIcon}${pillLabel}</div>
           <div class="cons-streak-num">${c.currentStreak}<span>days consistent</span></div>
         </div>
-        <div class="cons-best">
-          Longest run<b>${c.longestStreak}</b>
-          <div style="margin-top:8px; display:flex; gap:4px;">
-            <span class="medal-pill medal-gold" title="Gold (10+ hrs)"><span class="material-symbols-rounded" style="font-size:13px;">workspace_premium</span>${c.medals?.gold||0}</span>
-            <span class="medal-pill medal-silver" title="Silver (8-10 hrs)"><span class="material-symbols-rounded" style="font-size:13px;">workspace_premium</span>${c.medals?.silver||0}</span>
-            <span class="medal-pill medal-bronze" title="Bronze (6-8 hrs)"><span class="material-symbols-rounded" style="font-size:13px;">workspace_premium</span>${c.medals?.bronze||0}</span>
-          </div>
-        </div>
+        <div class="cons-best">Longest run<b>${c.longestStreak}</b></div>
       </div>
       <div class="cons-divider"></div>
       <div class="cons-adhere-row">
@@ -1512,40 +1460,18 @@ function updateConsistencyWidget() {
   `;
 }
 
-window.showPaceCalculation = function(subjectId = null, paceWindow = null) {
+window.showPaceCalculation = function(subjectId = null) {
   if (subjectId === 'ALL') subjectId = null;
-  if (paceWindow === null) paceWindow = state.paceWindow || 14;
-  if (typeof paceWindow === 'string') paceWindow = parseInt(paceWindow) || 14;
   
-  // Remember selection so home card reflects the same
-  state.paceWindow = paceWindow;
-  state.paceSubjectId = subjectId;
-  saveState({ paceWindow: paceWindow, paceSubjectId: subjectId });
-  if (state.activeTab === 'dashboard') updateConsistencyWidget();
-  
-  let selectHtml = `<select id="pace-subject-select" onchange="showPaceCalculation(this.value, ${paceWindow})" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-primary); color:var(--text-primary); margin-bottom:12px; font-weight:600; outline:none;">
+  let selectHtml = `<select id="pace-subject-select" onchange="showPaceCalculation(this.value)" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-primary); color:var(--text-primary); margin-bottom:16px; font-weight:600; outline:none;">
     <option value="ALL" ${subjectId === null ? 'selected' : ''}>Overall Syllabus</option>`;
   (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
-    if (s.type === 'folder' || (state.paceExcludeIBS && isIBSSubject(s.name))) return;
+    if (s.type === 'folder' || (state.excludeIBS && s.name.toLowerCase().includes('ibs'))) return;
     selectHtml += `<option value="${s.id}" ${subjectId === s.id ? 'selected' : ''}>${s.name}</option>`;
   });
   selectHtml += `</select>`;
 
-  // Pace window toggle buttons
-  const subjArg = subjectId ? `'${subjectId}'` : 'null';
-  const btnStyle = (w) => `padding:7px 0; flex:1; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s; border:1px solid ${paceWindow === w ? 'var(--primary)' : 'var(--border)'}; background:${paceWindow === w ? 'var(--primary)' : 'transparent'}; color:${paceWindow === w ? '#fff' : 'var(--text-secondary)'}; text-align:center;`;
-  selectHtml += `<div style="display:flex; gap:8px; margin-bottom:16px;">
-    <button onclick="showPaceCalculation(${subjArg}, 3)" style="${btnStyle(3)}">3 Days</button>
-    <button onclick="showPaceCalculation(${subjArg}, 7)" style="${btnStyle(7)}">7 Days</button>
-    <button onclick="showPaceCalculation(${subjArg}, 14)" style="${btnStyle(14)}">14 Days</button>
-  </div>`;
-
-  // IBS exclude toggle for pace
-  selectHtml += `<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; padding:8px 12px; background:var(--bg-card); border-radius:8px; border:1px solid var(--glass-border);">
-    <span style="font-size:12px; color:var(--text-secondary); font-weight:600;">Exclude IBS from Pace</span>
-    <label class="switch" style="transform:scale(0.7); margin:0;" onclick="event.stopPropagation()"><input type="checkbox" onchange="togglePaceIBS(this)" ${state.paceExcludeIBS ? 'checked' : ''}><span class="slider round"></span></label>
-  </div>`;
-  const proj = computeProjection(subjectId, paceWindow);
+  const proj = computeProjection(subjectId);
   
   let contentHtml = '';
   
@@ -1574,50 +1500,80 @@ window.showPaceCalculation = function(subjectId = null, paceWindow = null) {
     exam.setHours(0,0,0,0);
     const daysUntilExam = Math.round((exam - today) / (1000 * 60 * 60 * 24));
     
-   contentHtml = `
-      <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:16px; font-size:13px;">
-        <div style="display:flex; flex-direction:column; gap:10px;">
-          
-          <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
+    contentHtml = `
+      <div style="display:flex; flex-direction:column; gap:12px; font-size:13px;">
+        <p style="color:var(--text-muted); font-size:12px; margin-bottom:4px; text-align:center;">Mathematical breakdown of your ${subjectId ? 'subject' : 'syllabus'} projection</p>
+        
+        <!-- Step 1 -->
+        <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:var(--primary);"></div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <span class="material-symbols-rounded" style="color:var(--primary); font-size:18px;">analytics</span>
+            <span style="font-weight:700; color:var(--text-primary); font-size:14px;">1. Effort Ratio</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:6px;">
             <span>Total Study Time</span><span style="color:var(--text-primary); font-weight:600;">${totalLoggedHours.toFixed(1)} hrs</span>
           </div>
-          <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
-            <span>Progress</span><span style="color:var(--text-primary); font-weight:600;">${currentPct.toFixed(1)}%</span>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
+            <span>Current Progress</span><span style="color:var(--text-primary); font-weight:600;">${currentPct.toFixed(1)}%</span>
           </div>
-          
-          <div style="height:1px; background:var(--glass-border); margin:2px 0;"></div>
-          
-          <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
-            <span>Effort per 1%</span>
-            <span style="color:var(--primary); font-weight:700;">${hoursPerPercent.toFixed(1)} hrs</span>
+          <div style="background:var(--bg-primary); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-family:monospace; color:var(--text-muted); font-size:11px;">${totalLoggedHours.toFixed(1)} ÷ ${currentPct.toFixed(1)}%</span>
+            <span style="font-weight:700; color:var(--primary);">= ${hoursPerPercent.toFixed(1)} hrs / 1%</span>
           </div>
-          <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
-            <span>Remaining (${(100 - currentPct).toFixed(1)}% × ${hoursPerPercent.toFixed(1)})</span>
-            <span style="color:#e8a33d; font-weight:700;">${remainingHours.toFixed(0)} hrs</span>
+        </div>
+      
+        <!-- Step 2 -->
+        <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:#e8a33d;"></div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <span class="material-symbols-rounded" style="color:#e8a33d; font-size:18px;">target</span>
+            <span style="font-weight:700; color:var(--text-primary); font-size:14px;">2. Remaining Work</span>
           </div>
-          
-          <div style="height:1px; background:var(--glass-border); margin:2px 0;"></div>
-          
-          <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
-            <span>Avg Pace (${paceWindow}d)</span>
-            <span style="color:var(--text-primary); font-weight:600;">${proj.exactAvgDailyHours.toFixed(2)} hrs/day</span>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
+            <span>Syllabus Left</span><span style="color:var(--text-primary); font-weight:600;">${(100 - currentPct).toFixed(1)}%</span>
           </div>
-          <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
-            <span>Days to Finish</span>
-            <span style="color:#10b981; font-weight:700;">${Math.round(daysNeeded)} days</span>
+          <div style="background:var(--bg-primary); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-family:monospace; color:var(--text-muted); font-size:11px;">${(100 - currentPct).toFixed(1)}% × ${hoursPerPercent.toFixed(1)}</span>
+            <span style="font-weight:700; color:#e8a33d;">= ${remainingHours.toFixed(0)} hrs left</span>
           </div>
-          <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
-            <span>Est. Completion</span>
-            <span style="color:var(--text-primary); font-weight:600;">${fmtDate(proj.projectedDate)}</span>
+        </div>
+      
+        <!-- Step 3 -->
+        <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:#10b981;"></div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <span class="material-symbols-rounded" style="color:#10b981; font-size:18px;">speed</span>
+            <span style="font-weight:700; color:var(--text-primary); font-size:14px;">3. Pacing & ETA</span>
           </div>
-          <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
-            <span>Days Left for Exam</span>
-            <span style="color:var(--text-primary); font-weight:600;">${daysUntilExam} days</span>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
+            <span>Avg Pace (Last 14 Days)</span><span style="color:var(--text-primary); font-weight:600;">${proj.exactAvgDailyHours.toFixed(2)} hrs/day</span>
           </div>
-          
-          <div style="background:${proj.onTrack ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; padding:10px; border-radius:8px; text-align:center; margin-top:4px;">
-            <span style="font-weight:700; color:${proj.onTrack ? '#10b981' : '#ef4444'}; font-size:14px;">
-              ${proj.daysVsExam} days ${proj.onTrack ? 'buffer ✓' : 'shortfall ✗'}
+          <div style="background:var(--bg-primary); padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-family:monospace; color:var(--text-muted); font-size:11px;">${remainingHours.toFixed(0)} ÷ ${proj.exactAvgDailyHours.toFixed(2)}</span>
+            <span style="font-weight:700; color:#10b981;">= ${Math.round(daysNeeded)} days needed</span>
+          </div>
+        </div>
+      
+        <!-- Step 4 -->
+        <div style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:14px; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; left:0; width:4px; height:100%; background:${proj.onTrack ? '#10b981' : '#ef4444'};"></div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <span class="material-symbols-rounded" style="color:${proj.onTrack ? '#10b981' : '#ef4444'}; font-size:18px;">event_available</span>
+            <span style="font-weight:700; color:var(--text-primary); font-size:14px;">4. Exam Projection</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:6px;">
+            <span>Est. Completion Date</span><span style="color:var(--text-primary); font-weight:600;">${fmtDate(proj.projectedDate)}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:6px;">
+            <span>Days Left for Exam</span><span style="color:var(--text-primary); font-weight:600;">${daysUntilExam} days</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; color:var(--text-secondary); margin-bottom:12px;">
+            <span>Days Needed to Finish</span><span style="color:var(--text-primary); font-weight:600;">${Math.round(daysNeeded)} days</span>
+          </div>
+          <div style="background:${proj.onTrack ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:700; color:${proj.onTrack ? '#10b981' : '#ef4444'}; font-size:13px; width:100%; text-align:center;">
+              ${proj.daysVsExam} days ${proj.onTrack ? 'buffer remaining' : 'shortfall'}
             </span>
           </div>
         </div>
@@ -1625,7 +1581,6 @@ window.showPaceCalculation = function(subjectId = null, paceWindow = null) {
     `;
   }
   
-  updateConsistencyWidget();
   openModal('Calculation Breakdown', `<div id="pace-calc-wrapper">${selectHtml + contentHtml}</div>`);
 };
 
@@ -1640,7 +1595,7 @@ window.toggleNotifications = function() {
     updateNotifToggleUI();
     if (window.Capacitor) scheduleNativeAlarms(null);
   } else {
-    const schedName = DYNAMIC_DATA.schedules[state.activeSchedule]?.name || 'Schedule';
+    const schedName = state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night';
     
     if (window.Capacitor && window.Capacitor.Plugins.LocalNotifications) {
       window.Capacitor.Plugins.LocalNotifications.requestPermissions().then(perm => {
@@ -1690,7 +1645,7 @@ window.updateNotifToggleUI = function() {
   const isEnabled = state.activeNotificationSchedule === state.activeSchedule;
   toggle.checked = isEnabled;
   
-  const schedName = DYNAMIC_DATA.schedules[state.activeSchedule]?.name || 'Schedule';
+  const schedName = state.activeSchedule === 'earlyMorning' ? 'Early Morning' : 'Late Night';
   if (isEnabled) {
     iconBg.style.background = 'rgba(52,199,89,0.1)';
     iconBg.style.color = 'var(--success-color)';
@@ -1737,8 +1692,6 @@ async function scheduleNativeAlarms(scheduleId) {
           id: idCounter++,
           title: "CA Study Tracker",
           body: `Time for: ${slot.label}`,
-          smallIcon: "ic_stat_ca",
-          iconColor: "#6C3CE1",
           schedule: {
             on: { hour: hh, minute: mm },
             allowWhileIdle: true
@@ -2190,6 +2143,9 @@ function showSubjectsList() {
       '</div>' +
       (!isEditMode ? 
       '<div class="subj-progress" style="display:flex; align-items:center; justify-content:flex-end;">' +
+        (subj.name.toLowerCase().includes('ibs') ? 
+          '<label class="switch" style="transform: scale(0.65); margin: 0 8px 0 0;" onclick="event.stopPropagation()"><input type="checkbox" onchange="toggleIncludeIBS(this)" ' + (!state.excludeIBS ? 'checked' : '') + '><span class="slider round"></span></label>' 
+        : '') +
         '<div><span class="subj-pct">' + p + '%</span><div class="stat-bar"><div class="stat-bar-fill" style="width:' + p + '%"></div></div></div>' +
       '</div>' +
       '<span class="subj-arrow">▶</span>'
@@ -2387,12 +2343,12 @@ function calculateSubjectProgress(key, type) {
   return total > 0 ? Math.round((done / total) * 100) : 0;
 }
 
-function calculateOverallProgress(excludeIBSFlag = state.excludeIBS) {
+function calculateOverallProgress() {
   if (!DYNAMIC_DATA.syllabusSubjects || DYNAMIC_DATA.syllabusSubjects.length === 0) return 0;
   
   let totalWeight = 0, weightedSum = 0;
   DYNAMIC_DATA.syllabusSubjects.forEach(s => {
-    if (excludeIBSFlag && isIBSSubject(s.name)) return;
+    if (state.excludeIBS && s.name.toLowerCase().includes('ibs')) return;
     const pct = calculateSubjectProgress(s.id, s.type);
     const weight = s.type === 'main' ? 3 : 1;
     weightedSum += pct * weight;
@@ -2413,8 +2369,12 @@ function init() {
   loadDynamicData();
   smartRepairSyllabusData();
   
-  // Load saved state preferences
-  Object.assign(state, loadState());
+  // Load saved schedule preference
+  const saved = loadState();
+  if (saved.activeSchedule) state.activeSchedule = saved.activeSchedule;
+  if (saved.activeNotificationSchedule !== undefined) state.activeNotificationSchedule = saved.activeNotificationSchedule;
+  if (saved.excludeIBS !== undefined) state.excludeIBS = saved.excludeIBS;
+  
   // Render initial tab (updates UI state properly)
   switchTab(state.activeTab);
   updateNotifToggleUI();
@@ -2429,11 +2389,6 @@ function init() {
   }, 60000);
   
   performDailyBackup(); // Auto-save daily backup
-  
-  // Re-schedule native alarms on app boot (they get cleared on app update/restart)
-  if (state.activeNotificationSchedule && window.Capacitor) {
-    scheduleNativeAlarms(state.activeNotificationSchedule);
-  }
 }
 
 function performDailyBackup() {
@@ -2636,12 +2591,6 @@ window.toggleIncludeIBS = function(checkbox) {
   if (state.activeTab === 'dashboard') {
     renderDashboard();
   }
-};
-
-window.togglePaceIBS = function(checkbox) {
-  state.paceExcludeIBS = checkbox.checked;
-  saveState({ paceExcludeIBS: state.paceExcludeIBS });
-  showPaceCalculation(state.paceSubjectId, state.paceWindow);
 };
 
 window.confirmLogout = function() {
@@ -3758,16 +3707,6 @@ function trackerStart() {
   updateTrackerUI('running');
   trackerState.intervalId = setInterval(updateTimerDisplay, 1000);
   saveTrackerState();
-  if (!window.isReadOnlyMode) {
-    DYNAMIC_DATA.liveSession = {
-      active: true,
-      startedAt: trackerState.startTime,
-      pausedAccumSeconds: trackerState.pausedTime || 0,
-      subject: trackerState.subject,
-      topic: trackerState.topic
-    };
-    if (typeof saveDynamicData === 'function') saveDynamicData();
-  }
 }
 
 function trackerPause() {
@@ -3775,12 +3714,6 @@ function trackerPause() {
   trackerState.pauseStart = (typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now());
   clearInterval(trackerState.intervalId);
   updateTrackerUI('paused'); saveTrackerState();
-  if (!window.isReadOnlyMode) {
-    if (!DYNAMIC_DATA.liveSession) DYNAMIC_DATA.liveSession = {};
-    DYNAMIC_DATA.liveSession.active = false;
-    DYNAMIC_DATA.liveSession.frozenElapsedMs = getElapsedMs();
-    if (typeof saveDynamicData === 'function') saveDynamicData();
-  }
 }
 
 function trackerResume() {
@@ -3789,86 +3722,7 @@ function trackerResume() {
   updateTrackerUI('running');
   trackerState.intervalId = setInterval(updateTimerDisplay, 1000);
   saveTrackerState();
-  if (!window.isReadOnlyMode) {
-    if (!DYNAMIC_DATA.liveSession) DYNAMIC_DATA.liveSession = {};
-    DYNAMIC_DATA.liveSession.active = true;
-    DYNAMIC_DATA.liveSession.pausedAccumSeconds = trackerState.pausedTime || 0;
-    if (typeof saveDynamicData === 'function') saveDynamicData();
-  }
 }
-
-// Global state for read-only live tracker
-window.readonlyLiveTrackerState = { intervalId: null, data: null };
-
-window.updateReadonlyLiveTracker = function(data) {
-  // Clear any existing ticking interval
-  if (window.readonlyLiveTrackerState.intervalId) {
-    clearInterval(window.readonlyLiveTrackerState.intervalId);
-    window.readonlyLiveTrackerState.intervalId = null;
-  }
-  
-  window.readonlyLiveTrackerState.data = data;
-  
-  const timerValEl = document.getElementById('st-timer-value');
-  const timerDispEl = document.getElementById('st-timer-display');
-  const statusEl = document.getElementById('st-status');
-  
-  // Also hide all buttons for read-only user
-  ['st-btn-start', 'st-btn-pause', 'st-btn-resume', 'st-btn-stop'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'none';
-  });
-  
-  // Disable inputs
-  ['st-subject', 'st-topic', 'st-task-desc'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.disabled = true;
-  });
-  
-  if (!data) {
-    if (timerValEl) timerValEl.textContent = '00:00:00';
-    if (statusEl) statusEl.innerHTML = '<span class="material-symbols-rounded icon-sm" style="color:var(--text-muted); vertical-align:middle; font-size:16px;">cloud_off</span> Not studying currently';
-    if (timerDispEl) timerDispEl.className = 'st-timer-display';
-    return;
-  }
-  
-  // Fill subject/topic if available
-  if (data.subject) {
-    const subSel = document.getElementById('st-subject');
-    if (subSel) subSel.innerHTML = `<option>${data.subject}</option>`;
-  }
-  if (data.topic) {
-    const topSel = document.getElementById('st-topic');
-    if (topSel) topSel.innerHTML = `<option>${data.topic}</option>`;
-  }
-  
-  const updateViewerTimer = () => {
-    let elapsedMs = 0;
-    if (data.active) {
-      elapsedMs = (window.getGlobalTime ? window.getGlobalTime() : Date.now()) - data.startedAt - (data.pausedAccumSeconds || 0);
-    } else {
-      elapsedMs = data.frozenElapsedMs || 0;
-    }
-    if (elapsedMs < 0) elapsedMs = 0;
-    
-    const totalSecs = Math.floor(elapsedMs / 1000);
-    const h = Math.floor(totalSecs / 3600);
-    const m = Math.floor((totalSecs % 3600) / 60);
-    const s = totalSecs % 60;
-    if (timerValEl) timerValEl.textContent = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-  };
-  
-  updateViewerTimer();
-  
-  if (data.active) {
-    if (timerDispEl) timerDispEl.className = 'st-timer-display running';
-    if (statusEl) statusEl.innerHTML = '<span class="material-symbols-rounded icon-sm" style="color:var(--success); vertical-align:middle; font-size:16px;">radio_button_checked</span> Studying...';
-    window.readonlyLiveTrackerState.intervalId = setInterval(updateViewerTimer, 1000);
-  } else {
-    if (timerDispEl) timerDispEl.className = 'st-timer-display paused';
-    if (statusEl) statusEl.textContent = '⏸️ Paused';
-  }
-};
 
 function trackerStop() {
   if (trackerState.isPaused && trackerState.pauseStart) {
@@ -3897,10 +3751,6 @@ function trackerStop() {
   updateTrackerUI('idle');
   document.getElementById('st-timer-value').textContent = '00:00:00';
   saveTrackerState();
-  if (!window.isReadOnlyMode) {
-    DYNAMIC_DATA.liveSession = null;
-    if (typeof saveDynamicData === 'function') saveDynamicData();
-  }
 
   if (totalMinutes >= 1) {
     var today = new Date();
@@ -4112,10 +3962,8 @@ window.deleteTodaysLog = function(idx) {
     const targetDate = window.viewLogsDate || getTodayStr();
     if (DYNAMIC_DATA.journalEntries[targetDate] && DYNAMIC_DATA.journalEntries[targetDate].rows) {
       DYNAMIC_DATA.journalEntries[targetDate].rows.splice(idx, 1);
-      refreshConsistencyData();
       saveDynamicData();
       renderTodaysLog();
-      if (state.activeTab === 'dashboard') updateConsistencyWidget();
     }
   }
 };
@@ -4261,11 +4109,9 @@ window.saveManualLog = function() {
     startTime: startTime
   });
   
-  refreshConsistencyData();
   saveDynamicData();
   closeModal();
   renderTodaysLog();
-  if (state.activeTab === 'dashboard') updateConsistencyWidget();
   
   window.editingLogIdx = undefined;
   window.editingLogDate = undefined;
@@ -4365,7 +4211,7 @@ window.startTutorial = function() {
         element: '#tab-schedule .schedule-toggle',
         popover: {
           title: 'Master Schedule (Routines)',
-          description: 'We have 3 schedules built-in: "Early Morning", "Natural Clock", and "Late Night". Switch between them here!',
+          description: 'We have 2 schedules built-in: "Early Morning" for Early Birds, and "Late Night" for Night Owls. Switch between them here!',
           side: "bottom", align: 'center'
         },
         onHighlightStarted: () => { 
@@ -4486,7 +4332,7 @@ window.reloadAppFromCloud = function(cloudData) {
     
     // Soft reload to apply changes without refreshing the browser
     loadDynamicData();
-    Object.assign(state, loadState());
+    loadState();
     restoreTrackerState();
     switchTab(state.activeTab);
     
@@ -4495,10 +4341,6 @@ window.reloadAppFromCloud = function(cloudData) {
     }
   }
 
-  // Always update the read-only live tracker UI if applicable, even if main data hash didn't change
-  if (window.isReadOnlyMode && typeof window.updateReadonlyLiveTracker === 'function') {
-    window.updateReadonlyLiveTracker(newDynamic.liveSession || null);
-  }
 };
 
 
