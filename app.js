@@ -1649,6 +1649,15 @@ window.toggleNotifications = function() {
           saveState({ activeNotificationSchedule: state.activeSchedule });
           updateNotifToggleUI();
           scheduleNativeAlarms(state.activeSchedule);
+          window.Capacitor.Plugins.LocalNotifications.schedule({
+            notifications: [{
+              id: 9999,
+              title: "Alerts Enabled",
+              body: "Your notifications are working perfectly! 🚀",
+              smallIcon: "ic_stat_ca",
+              iconColor: "#6C3CE1"
+            }]
+          });
           alert("Alerts are ON for " + schedName + ".");
         } else {
           alert("Notifications are blocked in your phone settings! Please allow notifications to use this feature.");
