@@ -98,7 +98,7 @@ window.updateUserBadge = function() {
   if (!badgeEl) return;
   if (window.isCloudLoggedIn && window.loggedUserEmail) {
     const name = window.getDisplayUsername(window.loggedUserEmail);
-    badgeEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:12px; background:rgba(10,132,255,0.15); border:1px solid rgba(10,132,255,0.35); color:var(--primary, #0a84ff); font-size:11px; font-weight:600; margin-top:6px;"><span class="material-symbols-rounded" style="font-size:13px;">account_circle</span> ${name}</span>`;
+    badgeEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:12px; background:var(--checkbox-row-active); border:1px solid var(--border-glow); color:var(--primary); font-size:11px; font-weight:600; margin-top:6px;"><span class="material-symbols-rounded" style="font-size:13px;">account_circle</span> ${name}</span>`;
   } else {
     badgeEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:12px; background:rgba(255,159,10,0.15); border:1px solid rgba(255,159,10,0.35); color:#ff9f0a; font-size:11px; font-weight:600; margin-top:6px;"><span class="material-symbols-rounded" style="font-size:13px;">cloud_off</span> Offline Mode</span>`;
   }

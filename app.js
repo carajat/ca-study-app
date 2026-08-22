@@ -2593,10 +2593,10 @@ function openMenuModal() {
     
     <div class="menu-section-tag" style="margin-top:0;">Account</div>
     ${(window.isCloudLoggedIn) 
-      ? `<div style="padding: 12px; margin-bottom: 12px; background: rgba(10,132,255,0.1); border: 1px solid rgba(10,132,255,0.3); border-radius: 12px; display:flex; align-items:center; justify-content:space-between;">
+      ? `<div style="padding: 12px; margin-bottom: 12px; background: var(--checkbox-row-active); border: 1px solid var(--border-glow); border-radius: 12px; display:flex; align-items:center; justify-content:space-between;">
            <div>
              <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:700;">Active Cloud Account</div>
-             <div style="font-size:14px; color:var(--primary, #0a84ff); font-weight:700; margin-top:2px; display:flex; align-items:center; gap:6px;">
+             <div style="font-size:14px; color:var(--primary); font-weight:700; margin-top:2px; display:flex; align-items:center; gap:6px;">
                <span>👤 ${uName}</span>
                <span style="font-size:11px; color:var(--text-secondary); font-weight:400;">(${window.isReadOnlyMode ? 'View Mode' : 'Admin Mode'})</span>
                ${!window.isReadOnlyMode ? `<button style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; padding:0; display:flex;" onclick="editCustomUsername()" title="Edit Display Name"><span class="material-symbols-rounded" style="font-size:15px; color:var(--primary);">edit</span></button>` : ''}
@@ -2604,7 +2604,7 @@ function openMenuModal() {
            </div>
            <button style="background:linear-gradient(135deg, #ff453a, #d63630); color:#fff; border:none; padding:7px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;" onclick="confirmLogout()">Logout</button>
          </div>` 
-      : `<button class="menu-btn" style="background: rgba(10,132,255,0.15); border-color: var(--primary); color: var(--primary);" onclick="closeModal(); document.getElementById('welcome-overlay').style.display='flex';">
+      : `<button class="menu-btn" style="background: var(--checkbox-row-active); border-color: var(--primary); color: var(--primary);" onclick="closeModal(); document.getElementById('welcome-overlay').style.display='flex';">
           <span class="material-symbols-rounded menu-btn-icon">login</span> Login
          </button>`
     }
@@ -4033,7 +4033,7 @@ window.openPlannerPickerModal = function(target = 'tracker') {
     const name = (t.name || '').replace(/'/g, "\\'");
     
     html += `
-      <div class="glass-card" style="padding:10px; cursor:pointer; border:1px solid rgba(10,132,255,0.2);" onclick="pickPlannerTask('${subj}', '${topic}', '${name}', '${target}')">
+      <div class="glass-card" style="padding:10px; cursor:pointer; border:1px solid var(--border-glow);" onclick="pickPlannerTask('${subj}', '${topic}', '${name}', '${target}')">
         <div style="font-weight:600; font-size:14px;">${t.name}</div>
         <div style="font-size:12px; color:var(--text-secondary);">${subjName || 'No Subject'} ${topicName ? '— ' + topicName : ''}</div>
       </div>
@@ -4164,7 +4164,7 @@ function renderTodaysLog() {
         ${row.tasks ? '<div style="font-size:12px; color:var(--text-muted); margin-top:4px;"><i>' + row.tasks + '</i></div>' : ''}
       </div>
       <div style="text-align:right;">
-        <div style="font-size:13px; font-weight:600; color:var(--primary); background:rgba(10,132,255,0.1); padding:2px 6px; border-radius:6px; display:inline-block;">${durText}</div>
+        <div style="font-size:13px; font-weight:600; color:var(--primary); background:var(--checkbox-row-active); padding:2px 6px; border-radius:6px; display:inline-block;">${durText}</div>
         <div style="margin-top:6px; display:flex; gap:4px; justify-content:flex-end;">
           <button class="icon-btn" style="padding:4px;" onclick="openManualLogModal(${idx})" title="Edit Log"><span class="material-symbols-rounded" style="font-size:16px; color:var(--primary);">edit</span></button>
           <button class="icon-btn" style="padding:4px;" onclick="deleteTodaysLog(${idx})" title="Delete Log"><span class="material-symbols-rounded" style="font-size:16px; color:#ff453a;">delete</span></button>
@@ -4217,7 +4217,7 @@ window.openManualLogModal = function(idx) {
 
   document.getElementById('modal-title').innerHTML = isEditing ? 'Edit Manual Log' : 'Add Manual Log ' +
     '<button class="icon-btn" style="background: rgba(255,149,0,0.1); color: var(--accent); width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 10px; vertical-align: middle;" title="Pick Mock" onclick="openMockPickerModal(\'manual\')"><span class="material-symbols-rounded" style="font-size:18px;">quiz</span></button>' +
-    '<button class="icon-btn" style="background: rgba(10,132,255,0.1); color: var(--primary); width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; vertical-align: middle;" title="Pick from Planner" onclick="openPlannerPickerModal(\'manual\')"><span class="material-symbols-rounded" style="font-size:18px;">playlist_add</span></button>';
+    '<button class="icon-btn" style="background: var(--checkbox-row-active); color: var(--primary); width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; vertical-align: middle;" title="Pick from Planner" onclick="openPlannerPickerModal(\'manual\')"><span class="material-symbols-rounded" style="font-size:18px;">playlist_add</span></button>';
   
   let subjOptions = '<option value="">Select Subject</option>';
   let subjectsArray = [];
@@ -4993,7 +4993,7 @@ window.openLogHistoryModal = function() {
           <div style="font-size:11px; color:var(--success-color); text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;">Period Total</div>
           <div id="stats-period-total-val" style="font-size:18px; font-weight:bold; color:var(--text-primary); margin-top:5px;">${gh}h ${gm}m</div>
         </div>
-        <div style="padding:10px; background: rgba(10,132,255,0.1); border: 1px solid var(--primary-color); border-radius: 8px; text-align:center;">
+        <div style="padding:10px; background: var(--checkbox-row-active); border: 1px solid var(--primary-color); border-radius: 8px; text-align:center;">
           <div style="font-size:11px; color:var(--primary-color); text-transform:uppercase; font-weight:bold; letter-spacing:0.5px;">Daily Average</div>
           <div id="stats-daily-avg-val" style="font-size:18px; font-weight:bold; color:var(--text-primary); margin-top:5px;">0h 0m / day</div>
           <div id="stats-daily-avg-days" style="font-size:10px; color:var(--text-muted); margin-top:2px;">over 0 days</div>
