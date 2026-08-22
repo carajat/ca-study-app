@@ -2689,6 +2689,9 @@ function openThemeModal() {
     { id: 'bronze',  label: 'Bronze',        color: '#8C5A2E' },
     { id: 'slate',   label: 'Charcoal Slate',color: '#4A5560' },
     { id: 'platinum',label: 'Platinum',      color: '#AEB0B4' },
+    { id: 'bloom',   label: 'Bloom Sky',     color: '#6BA8D9' },
+    { id: 'pearl',   label: 'Pearl Blush',   color: '#C98A96' },
+    { id: 'sage',    label: 'Sage Mist',     color: '#7FA88A' }
   ];
 
   const swatchesHtml = themes.map(t => `
@@ -2714,12 +2717,16 @@ function openThemeModal() {
 
 function setTheme(themeName, element) {
   // Remove all theme classes
-  document.body.classList.remove('theme-navy', 'theme-espresso', 'theme-bronze', 'theme-slate', 'theme-platinum');
+  document.body.classList.remove('theme-navy', 'theme-espresso', 'theme-bronze', 'theme-slate', 'theme-platinum', 'theme-bloom', 'theme-pearl', 'theme-sage');
   
   if (themeName !== 'default') {
     document.body.classList.add('theme-' + themeName);
   }
   localStorage.setItem('ca-theme', themeName);
+  
+  if (['bloom', 'pearl', 'sage'].includes(themeName)) {
+    setMode('light');
+  }
   
   // Update swatch borders (inline-styled swatches need direct style update)
   document.querySelectorAll('.theme-circle').forEach(el => {
