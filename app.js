@@ -2712,21 +2712,25 @@ function openThemeModal() {
     </button>
     <p style="text-align:center; color:var(--text-secondary); margin-bottom: 4px; font-size:13px;">Personalize your app colors</p>
     <div class="theme-grid">${swatchesHtml}</div>
+    <div style="margin-top:20px; padding-top:15px; border-top: 1px solid var(--border-color); text-align:center;">
+      <p style="font-size:13px; color:var(--text-secondary); margin-bottom:10px;">Or enter a custom HEX color:</p>
+      <div style="display:flex; justify-content:center; gap:10px; align-items:center;">
+        <input type="color" id="customColorPicker" value="${localStorage.getItem('ca-custom-color') || '#6C3CE1'}" style="width:35px; height:35px; border:none; border-radius:50%; cursor:pointer; background:none;" oninput="document.getElementById('customHexInput').value = this.value.toUpperCase()">
+        <input type="text" id="customHexInput" value="${localStorage.getItem('ca-custom-color') || '#6C3CE1'}" placeholder="#HEXCODE" style="width:100px; padding:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-card); color:var(--text-primary);" oninput="document.getElementById('customColorPicker').value = this.value">
+        <button class="menu-btn btn-neutral" style="width:auto; padding:8px 15px; margin-bottom:0;" onclick="applyCustomTheme(document.getElementById('customHexInput').value); openThemeModal();">Apply</button>
+      </div>
+    </div>
   `);
 }
 
 function setTheme(themeName, element) {
   // Remove all theme classes
-  document.body.classList.remove('theme-navy', 'theme-espresso', 'theme-bronze', 'theme-slate', 'theme-platinum', 'theme-bloom', 'theme-pearl', 'theme-sage');
+  document.body.classList.remove('theme-navy', 'theme-espresso', 'theme-bronze', 'theme-slate', 'theme-platinum', 'theme-bloom', 'theme-pearl', 'theme-sage', 'theme-custom');
   
   if (themeName !== 'default') {
     document.body.classList.add('theme-' + themeName);
   }
   localStorage.setItem('ca-theme', themeName);
-  
-  if (['bloom', 'pearl', 'sage'].includes(themeName)) {
-    setMode('light');
-  }
   
   // Update swatch borders (inline-styled swatches need direct style update)
   document.querySelectorAll('.theme-circle').forEach(el => {
@@ -2742,6 +2746,53 @@ function setTheme(themeName, element) {
   if (state.activeTab === 'exams') {
     renderScoreChart();
   }
+}
+
+function hexToRgb(hex) {
+    let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '201, 161, 91';
+}
+
+function applyCustomTheme(hexColor) {
+    const rgb = hexToRgb(hexColor);
+    let styleEl = document.getElementById('custom-theme-style');
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'custom-theme-style';
+        document.head.appendChild(styleEl);
+    }
+    
+    styleEl.innerHTML = `
+        body.theme-custom {
+            --primary: ${hexColor};
+            --accent: ${hexColor};
+            --on-primary-container: ${hexColor};
+            --purple: ${hexColor};
+            --blue: ${hexColor};
+            --purple-glow: rgba(${rgb}, 0.4);
+            --border-glow: rgba(${rgb}, 0.3);
+            --checkbox-row-active: rgba(${rgb}, 0.1);
+            --toast-shadow: rgba(${rgb}, 0.4);
+            --bg-mesh: none;
+            --card-gradient-final: linear-gradient(145deg, rgba(${rgb}, 0.12), #1c1c1e);
+        }
+        body[data-theme="light"].theme-custom {
+            --primary: ${hexColor};
+            --accent: ${hexColor};
+            --on-primary-container: ${hexColor};
+            --purple: ${hexColor};
+            --blue: ${hexColor};
+            --purple-glow: rgba(${rgb}, 0.25);
+            --border-glow: rgba(${rgb}, 0.18);
+            --checkbox-row-active: rgba(${rgb}, 0.08);
+            --toast-shadow: rgba(${rgb}, 0.25);
+            --bg-mesh: none;
+            --card-gradient-final: linear-gradient(145deg, rgba(${rgb}, 0.15), #ffffff);
+        }
+    `;
+    
+    setTheme('custom');
+    localStorage.setItem('ca-custom-color', hexColor);
 }
 
 // ─── SYLLABUS EDIT HANDLERS ─────────────
@@ -2979,7 +3030,12 @@ function addScheduleSlot(scheduleKey) {
 
 function initTheme() {
   const savedTheme = localStorage.getItem('ca-theme') || 'default';
-  setTheme(savedTheme);
+  if (savedTheme === 'custom') {
+    const customHex = localStorage.getItem('ca-custom-color') || '#6C3CE1';
+    applyCustomTheme(customHex);
+  } else {
+    setTheme(savedTheme);
+  }
 }
 
 // ─── Data Export / Import ───
