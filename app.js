@@ -4180,8 +4180,8 @@ function renderTodaysLog() {
       <div style="text-align:right;">
         <div style="font-size:13px; font-weight:600; color:var(--primary); background:var(--checkbox-row-active); padding:2px 6px; border-radius:6px; display:inline-block;">${durText}</div>
         <div style="margin-top:6px; display:flex; gap:4px; justify-content:flex-end;">
-          <button class="icon-btn" style="padding:4px; background:transparent; box-shadow:none;" onclick="openManualLogModal(${idx})" title="Edit Log"><span class="material-symbols-rounded" style="font-size:18px; color:var(--primary);">edit</span></button>
-          <button class="icon-btn" style="padding:4px; background:transparent; box-shadow:none;" onclick="deleteTodaysLog(${idx})" title="Delete Log"><span class="material-symbols-rounded" style="font-size:18px; color:#ff453a;">delete</span></button>
+          <button class="icon-btn" style="padding:4px; background:transparent; border:none; box-shadow:none;" onclick="openManualLogModal(${idx})" title="Edit Log"><span class="material-symbols-rounded" style="font-size:18px; color:var(--primary);">edit</span></button>
+          <button class="icon-btn" style="padding:4px; background:transparent; border:none; box-shadow:none;" onclick="deleteTodaysLog(${idx})" title="Delete Log"><span class="material-symbols-rounded" style="font-size:18px; color:#ff453a;">delete</span></button>
         </div>
       </div>
     `;
