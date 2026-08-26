@@ -4932,7 +4932,7 @@ window.renderHistoryForDate = function(dateStr) {
   
   if (entries.length === 0) {
     container.innerHTML = '<div style="text-align:center; padding:15px; color:var(--text-muted); font-size:13px;">No logs found for this date.</div>';
-    document.getElementById('log-history-total').textContent = 'Total: 0h 0m';
+    document.getElementById('log-history-total').textContent = '0h 0m';
     return;
   }
   
@@ -4967,7 +4967,7 @@ window.renderHistoryForDate = function(dateStr) {
   
   const th = Math.floor(totalMinutes / 60);
   const tm = totalMinutes % 60;
-  document.getElementById('log-history-total').textContent = `Total: ${th}h ${tm}m`;
+  document.getElementById('log-history-total').textContent = `${th}h ${tm}m`;
 };
 
 window.updateDailyAverage = function(newDateStr, _ignore, fromUser = false) {
@@ -5158,7 +5158,7 @@ window.openLogHistoryModal = function() {
       <div id="log-history-calendar-container"></div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
         <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);" id="log-history-selected-date-label">Today</span>
-        <span id="log-history-total" style="font-size: 13px; font-weight: 600; color: var(--primary-color);">Total: 0h 0m</span>
+        <span id="log-history-total" style="font-size: 13px; font-weight: 600; color: var(--primary);">0h 0m</span>
       </div>
       <div id="log-history-list" style="display:flex; flex-direction:column; gap:8px;">
       </div>
