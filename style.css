@@ -1150,6 +1150,14 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 2px; }
 
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* ─── Medium Screens (Tablets) ─────────── */
 @media (min-width: 600px) and (max-width: 899px) {
   #app { max-width: 680px; margin: 0 auto; }
