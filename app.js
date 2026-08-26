@@ -1486,18 +1486,11 @@ function updateConsistencyWidget() {
 
   el.innerHTML = `
     <div onclick="switchTab('schedule')" style="cursor:pointer;">
-      <div class="cons-hw-top">
-        <div>
-          <div class="cons-pill ${pillClass}">${pillIcon}${pillLabel}</div>
-          <div class="cons-streak-num">${c.currentStreak}<span>days consistent</span></div>
-        </div>
-        <div class="cons-best">
-          Longest run<b>${c.longestStreak}</b>
-          <div style="margin-top:8px; display:flex; gap:4px;">
-            <span class="medal-pill medal-gold" title="Gold (10+ hrs)"><span class="material-symbols-rounded" style="font-size:13px;">workspace_premium</span>${c.medals?.gold||0}</span>
-            <span class="medal-pill medal-silver" title="Silver (8-10 hrs)"><span class="material-symbols-rounded" style="font-size:13px;">workspace_premium</span>${c.medals?.silver||0}</span>
-            <span class="medal-pill medal-bronze" title="Bronze (6-8 hrs)"><span class="material-symbols-rounded" style="font-size:13px;">workspace_premium</span>${c.medals?.bronze||0}</span>
-          </div>
+      <div class="cons-hw-top" style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="cons-pill ${pillClass}">${pillIcon}${pillLabel}</div>
+        <div style="display:flex; align-items:center; gap:6px; background:var(--glass-bg); padding:6px 12px; border-radius:20px; border:1px solid var(--glass-border); box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+           <span class="material-symbols-rounded" style="color:#FF9500; font-size:16px;">local_fire_department</span>
+           <span style="font-weight:700; font-size:13px; color:var(--text-primary);">${c.currentStreak} Day Streak</span>
         </div>
       </div>
       <div class="cons-divider"></div>
