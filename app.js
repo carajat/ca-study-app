@@ -519,7 +519,19 @@ function renderTrendGraph() {
   const container = document.getElementById('trend-graph-container');
   if (!container) return;
 
-  const days = 30;
+  let days = parseInt(localStorage.getItem('ca_trend_days')) || 14;
+  const selectEl = document.getElementById('trend-range-select');
+  if (selectEl) {
+    if (!localStorage.getItem('ca_trend_days')) selectEl.value = '14';
+    else selectEl.value = days.toString();
+  }
+  
+  if (days <= 14) {
+    container.style.width = '100%';
+  } else {
+    container.style.width = Math.round((days/14)*100) + '%';
+  }
+
   const today = new Date(typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now());
   
   let data = [];
@@ -597,6 +609,14 @@ function renderTrendGraph() {
     }, 50);
   }
 }
+
+window.saveTrendRange = function() {
+  const selectEl = document.getElementById('trend-range-select');
+  if (selectEl) {
+    localStorage.setItem('ca_trend_days', selectEl.value);
+    renderTrendGraph();
+  }
+};
 
 window.showTrendTooltip = function(event, el, timeStr, dateLabel) {
   if (event) event.stopPropagation();
