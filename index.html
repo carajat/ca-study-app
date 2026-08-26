@@ -11,7 +11,7 @@
   <title>CA Final Tracker</title>
   <link rel="manifest" href="manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300,0,0" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=280">
+  <link rel="stylesheet" href="style.css?v=281">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
   <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
   <!-- Mobile Drag and Drop Polyfill -->
@@ -210,10 +210,17 @@
       <!-- Today's Log -->
       <div class="todays-log-container glass-card" style="margin-bottom: 20px;">
         <div class="tl-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h3 style="margin: 0; font-size: 15px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
-            <span class="material-symbols-rounded icon-sm">list_alt</span> 
-            <input type="date" id="tl-date-picker" style="background:transparent; border:none; color:var(--text-primary); font-size:15px; font-weight:600; font-family:inherit; outline:none; padding:0; width:135px; cursor:pointer;" onchange="changeLogsDate()">
-          </h3>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="material-symbols-rounded icon-sm">list_alt</span>
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <button class="icon-btn" onclick="navigateLogDate(-1)" style="padding:4px; background:transparent; border:none; box-shadow:none; color:var(--text-secondary); cursor:pointer;"><span class="material-symbols-rounded" style="font-size:20px;">chevron_left</span></button>
+                <div style="position:relative; display:flex; align-items:center; cursor:pointer;">
+                  <span id="tl-date-display" style="font-size:15px; font-weight:600; color:var(--text-primary); user-select:none; min-width:85px; text-align:center;">Today</span>
+                  <input type="date" id="tl-date-picker" style="position:absolute; left:0; top:0; width:100%; height:100%; opacity:0; cursor:pointer; padding:0; margin:0;" onchange="changeLogsDate()">
+                </div>
+                <button class="icon-btn" onclick="navigateLogDate(1)" style="padding:4px; background:transparent; border:none; box-shadow:none; color:var(--text-secondary); cursor:pointer;"><span class="material-symbols-rounded" style="font-size:20px;">chevron_right</span></button>
+              </div>
+            </div>
           <div style="display:flex; align-items:center; gap:12px;">
             <button class="icon-btn" style="background: rgba(52,199,89,0.1); color: var(--success-color); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;" title="History & Stats" onclick="openLogHistoryModal()">
               <span class="material-symbols-rounded" style="font-size:16px;">history</span>
@@ -441,8 +448,8 @@
   <script src="Sortable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="version.js" onerror="window.BUILD_VERSION='unknown'"></script>
-  <script src="data.js?v=280"></script>
-  <script src="sync.js?v=280"></script>
-  <script src="app.js?v=280"></script>
+  <script src="data.js?v=281"></script>
+  <script src="sync.js?v=281"></script>
+  <script src="app.js?v=281"></script>
 </body>
 </html>

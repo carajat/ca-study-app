@@ -4116,6 +4116,39 @@ function getTodayStr() {
   return y + '-' + m + '-' + d;
 }
 
+window.navigateLogDate = function(direction) {
+  let dateObj = window.viewLogsDate ? new Date(window.viewLogsDate) : new Date();
+  dateObj.setDate(dateObj.getDate() + direction);
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const d = String(dateObj.getDate()).padStart(2, '0');
+  window.viewLogsDate = y + '-' + m + '-' + d;
+  
+  const dp = document.getElementById('tl-date-picker');
+  if (dp) dp.value = window.viewLogsDate;
+  
+  renderTodaysLog();
+};
+
+function getDisplayDateStr(dateStr) {
+  const target = new Date(dateStr);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  
+  if (target.toDateString() === today.toDateString()) return 'Today';
+  if (target.toDateString() === yesterday.toDateString()) return 'Yesterday';
+  if (target.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
+  
+  const options = { day: 'numeric', month: 'short' };
+  if (target.getFullYear() !== today.getFullYear()) {
+    options.year = 'numeric';
+  }
+  return target.toLocaleDateString('en-GB', options);
+}
+
 function renderTodaysLog() {
   const container = document.getElementById('tl-list');
   const totalEl = document.getElementById('tl-total-time');
@@ -4127,6 +4160,11 @@ function renderTodaysLog() {
   if (dp && !dp.value) dp.value = window.viewLogsDate;
   
   const targetDate = window.viewLogsDate;
+  
+  const displayEl = document.getElementById('tl-date-display');
+  if (displayEl) {
+    displayEl.textContent = getDisplayDateStr(targetDate);
+  }
   let entries = (DYNAMIC_DATA.journalEntries && DYNAMIC_DATA.journalEntries[targetDate] && DYNAMIC_DATA.journalEntries[targetDate].rows) || [];
   
   if (entries.length > 0) {
