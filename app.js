@@ -4129,6 +4129,17 @@ function renderTodaysLog() {
   const targetDate = window.viewLogsDate;
   let entries = (DYNAMIC_DATA.journalEntries && DYNAMIC_DATA.journalEntries[targetDate] && DYNAMIC_DATA.journalEntries[targetDate].rows) || [];
   
+  if (entries.length > 0) {
+    entries.sort((a, b) => {
+      let timeA = a.startTime || '';
+      let timeB = b.startTime || '';
+      if (!timeA && !timeB) return 0;
+      if (!timeA) return 1;
+      if (!timeB) return -1;
+      return timeA.localeCompare(timeB);
+    });
+  }
+  
   container.innerHTML = '';
   let totalMinutes = 0;
   
