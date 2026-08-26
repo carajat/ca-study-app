@@ -4157,17 +4157,20 @@ function renderTodaysLog() {
     div.style.justifyContent = 'space-between';
     div.style.alignItems = 'flex-start';
     
+    let timeHtml = row.startTime ? `<div style="font-size:12px; color:var(--text-muted); margin-top:4px; display:flex; align-items:center; gap:2px;"><span class="material-symbols-rounded" style="font-size:13px;">schedule</span>${row.startTime}</div>` : '';
+    
     div.innerHTML = `
       <div style="flex:1;">
         <div style="font-weight:600; font-size:14px; color:var(--text-primary);">${row.subject}</div>
         <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">${row.topic}</div>
         ${row.tasks ? '<div style="font-size:12px; color:var(--text-muted); margin-top:4px;"><i>' + row.tasks + '</i></div>' : ''}
+        ${timeHtml}
       </div>
       <div style="text-align:right;">
         <div style="font-size:13px; font-weight:600; color:var(--primary); background:var(--checkbox-row-active); padding:2px 6px; border-radius:6px; display:inline-block;">${durText}</div>
         <div style="margin-top:6px; display:flex; gap:4px; justify-content:flex-end;">
-          <button class="icon-btn" style="padding:4px;" onclick="openManualLogModal(${idx})" title="Edit Log"><span class="material-symbols-rounded" style="font-size:16px; color:var(--primary);">edit</span></button>
-          <button class="icon-btn" style="padding:4px;" onclick="deleteTodaysLog(${idx})" title="Delete Log"><span class="material-symbols-rounded" style="font-size:16px; color:#ff453a;">delete</span></button>
+          <button class="icon-btn" style="padding:4px; background:transparent; box-shadow:none;" onclick="openManualLogModal(${idx})" title="Edit Log"><span class="material-symbols-rounded" style="font-size:18px; color:var(--primary);">edit</span></button>
+          <button class="icon-btn" style="padding:4px; background:transparent; box-shadow:none;" onclick="deleteTodaysLog(${idx})" title="Delete Log"><span class="material-symbols-rounded" style="font-size:18px; color:#ff453a;">delete</span></button>
         </div>
       </div>
     `;
