@@ -1341,8 +1341,8 @@ input[type="checkbox"]:checked::before {
 .study-tracker {
   margin-bottom: 20px;
   padding: 20px;
-  border: 1px solid var(--border-glow);
-  background: linear-gradient(135deg, var(--checkbox-row-active), transparent);
+  border: 1px solid var(--toast-shadow);
+  background: linear-gradient(135deg, var(--border-glow), transparent);
 }
 .study-tracker-header {
   display: flex;
@@ -1488,7 +1488,7 @@ input[type="checkbox"]:checked::before {
 }
 
 body[data-theme="light"]   .study-tracker {
-    background: linear-gradient(135deg, var(--checkbox-row-active), transparent);
+    background: linear-gradient(135deg, var(--border-glow), transparent);
   }
 body[data-theme="light"]   .st-timer-display {
     background: rgba(0,0,0,0.04);
