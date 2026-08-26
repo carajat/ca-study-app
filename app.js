@@ -1474,7 +1474,9 @@ function updateConsistencyWidget() {
   const proj = computeProjection(pSubj, pw);
   const schedName = DYNAMIC_DATA.schedules[state.activeSchedule]?.name || 'Schedule';
   const adherePct = Math.min(todayResult.adherencePct, 100);
-  const isGood = adherePct >= 80;
+  
+  const streakGoalHours = parseInt(localStorage.getItem('ca_streak_goal')) || 6;
+  const isGoalMet = todayResult.actualMinutes >= (streakGoalHours * 60);
 
   // Resolve subject label for insight text
   let paceLabel = 'syllabus';
@@ -1527,9 +1529,9 @@ function updateConsistencyWidget() {
       <div class="cons-divider"></div>
       <div class="cons-adhere-row">
         <span class="cons-adhere-label">Today's Adherence</span>
-        <span class="cons-adhere-val ${isGood ? 'cons-val-good' : 'cons-val-warn'}">${adherePct}%</span>
+        <span class="cons-adhere-val ${isGoalMet ? 'cons-val-good' : 'cons-val-primary'}">${adherePct}%</span>
       </div>
-      <div class="cons-bar-track"><div class="cons-bar-fill ${isGood ? 'cons-fill-primary' : 'cons-fill-warn'}" style="width:${adherePct}%"></div></div>
+      <div class="cons-bar-track"><div class="cons-bar-fill ${isGoalMet ? 'cons-fill-success' : 'cons-fill-primary'}" style="width:${adherePct}%"></div></div>
       <div class="cons-sub">${_fmtMins(todayResult.actualMinutes)} of ${_fmtMins(todayResult.targetMinutes)} · ${schedName} routine</div>
     </div>
     ${insightHtml}

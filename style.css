@@ -1804,11 +1804,13 @@ input:checked + .slider:before {
 .cons-adhere-val { font-size: 12.5px; font-weight: 700; }
 .cons-val-good { color: var(--success); }
 .cons-val-warn { color: var(--warning); }
+.cons-val-primary { color: var(--primary); }
 
 .cons-bar-track { height: 7px; border-radius: 5px; background: rgba(128,128,128,0.15); overflow: hidden; }
 .cons-bar-fill { height: 100%; border-radius: 5px; transition: width 0.4s ease; }
 .cons-fill-primary { background: var(--primary); }
 .cons-fill-warn { background: var(--warning); }
+.cons-fill-success { background: var(--success); }
 
 .cons-sub { font-size: 11px; color: var(--text-muted); margin-top: 7px; }
 
