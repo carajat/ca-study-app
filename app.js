@@ -4163,25 +4163,35 @@ function renderTodaysLog() {
     div.style.background = 'rgba(255,255,255,0.03)';
     div.style.border = '1px solid var(--border-color)';
     div.style.borderRadius = '8px';
-    div.style.padding = '10px';
-    div.style.display = 'flex';
-    div.style.justifyContent = 'space-between';
-    div.style.alignItems = 'flex-start';
+    div.style.overflow = 'hidden';
+    div.style.position = 'relative';
+    div.style.marginBottom = '12px';
     
     let timeHtml = row.startTime ? `<div style="font-size:12px; color:var(--text-muted); margin-top:4px; display:flex; align-items:center; gap:2px;"><span class="material-symbols-rounded" style="font-size:13px;">schedule</span>${row.startTime}</div>` : '';
     
     div.innerHTML = `
-      <div style="flex:1;">
-        <div style="font-weight:600; font-size:14px; color:var(--text-primary);">${row.subject}</div>
-        <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">${row.topic}</div>
-        ${row.tasks ? '<div style="font-size:12px; color:var(--text-muted); margin-top:4px;"><i>' + row.tasks + '</i></div>' : ''}
-        ${timeHtml}
-      </div>
-      <div style="text-align:right;">
-        <div style="font-size:13px; font-weight:600; color:var(--primary); background:var(--checkbox-row-active); padding:2px 6px; border-radius:6px; display:inline-block;">${durText}</div>
-        <div style="margin-top:6px; display:flex; gap:4px; justify-content:flex-end;">
-          <button class="icon-btn" style="padding:4px; background:transparent; border:none; box-shadow:none;" onclick="openManualLogModal(${idx})" title="Edit Log"><span class="material-symbols-rounded" style="font-size:18px; color:var(--primary);">edit</span></button>
-          <button class="icon-btn" style="padding:4px; background:transparent; border:none; box-shadow:none;" onclick="deleteTodaysLog(${idx})" title="Delete Log"><span class="material-symbols-rounded" style="font-size:18px; color:#ff453a;">delete</span></button>
+      <div class="log-swipe-wrap" style="display:flex; width:calc(100% + 120px); transform:translateX(0); transition:transform 0.2s ease;"
+           ontouchstart="window.logSwipeStart(event, this)"
+           ontouchmove="window.logSwipeMove(event, this)"
+           ontouchend="window.logSwipeEnd(event, this)">
+        <div style="width:100%; flex-shrink:0; padding:10px; display:flex; justify-content:space-between; align-items:flex-start;">
+          <div style="flex:1;">
+            <div style="font-weight:600; font-size:14px; color:var(--text-primary);">${row.subject}</div>
+            <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">${row.topic}</div>
+            ${row.tasks ? '<div style="font-size:12px; color:var(--text-muted); margin-top:4px;"><i>' + row.tasks + '</i></div>' : ''}
+            ${timeHtml}
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:13px; font-weight:600; color:var(--primary); background:var(--checkbox-row-active); padding:2px 6px; border-radius:6px; display:inline-block;">${durText}</div>
+          </div>
+        </div>
+        <div style="width:120px; flex-shrink:0; display:flex;">
+          <div onclick="openManualLogModal(${idx})" style="flex:1; background:var(--checkbox-row-active); display:flex; justify-content:center; align-items:center; cursor:pointer; color:var(--primary);">
+            <span class="material-symbols-rounded" style="font-size:22px;">edit</span>
+          </div>
+          <div onclick="deleteTodaysLog(${idx})" style="flex:1; background:rgba(255,69,58,0.15); display:flex; justify-content:center; align-items:center; cursor:pointer; color:#ff453a;">
+            <span class="material-symbols-rounded" style="font-size:22px;">delete</span>
+          </div>
         </div>
       </div>
     `;
@@ -4192,6 +4202,53 @@ function renderTodaysLog() {
   const totM = totalMinutes % 60;
   totalEl.textContent = `Total: ${totH}h ${totM}m`;
 }
+
+window.logSwipeStart = function(e, el) {
+  el.style.transition = 'none';
+  el.dataset.startX = e.touches[0].clientX;
+  el.dataset.startY = e.touches[0].clientY;
+  el.dataset.swiping = 'false';
+  let match = el.style.transform.match(/-?\d+/);
+  el.dataset.currentX = match ? parseInt(match[0]) : 0;
+};
+
+window.logSwipeMove = function(e, el) {
+  if (!el.dataset.startX) return;
+  let diffX = e.touches[0].clientX - parseFloat(el.dataset.startX);
+  let diffY = e.touches[0].clientY - parseFloat(el.dataset.startY);
+  
+  if (el.dataset.swiping === 'false') {
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 10) {
+      el.dataset.swiping = 'true';
+    } else if (Math.abs(diffY) > 10) {
+      el.dataset.startX = ''; 
+      return;
+    }
+  }
+  
+  if (el.dataset.swiping === 'true') {
+    if (e.cancelable) e.preventDefault();
+    let newX = parseFloat(el.dataset.currentX) + diffX;
+    if (newX > 0) newX = 0;
+    if (newX < -120) newX = -120;
+    el.style.transform = `translateX(${newX}px)`;
+  }
+};
+
+window.logSwipeEnd = function(e, el) {
+  if (!el.dataset.startX) return;
+  el.style.transition = 'transform 0.2s ease';
+  let match = el.style.transform.match(/-?\d+/);
+  let currentX = match ? parseInt(match[0]) : 0;
+  
+  if (currentX < -40) {
+    el.style.transform = `translateX(-120px)`;
+  } else {
+    el.style.transform = `translateX(0px)`;
+  }
+  el.dataset.startX = '';
+  el.dataset.swiping = 'false';
+};
 
 window.deleteTodaysLog = function(idx) {
   if(confirm('Are you sure you want to delete this log?')) {
