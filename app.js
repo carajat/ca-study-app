@@ -4117,12 +4117,19 @@ function getTodayStr() {
 }
 
 window.navigateLogDate = function(direction) {
+  const todayStr = getTodayStr();
+  if (direction === 1 && window.viewLogsDate === todayStr) return;
+
   let dateObj = window.viewLogsDate ? new Date(window.viewLogsDate) : new Date();
   dateObj.setDate(dateObj.getDate() + direction);
   const y = dateObj.getFullYear();
   const m = String(dateObj.getMonth() + 1).padStart(2, '0');
   const d = String(dateObj.getDate()).padStart(2, '0');
-  window.viewLogsDate = y + '-' + m + '-' + d;
+  
+  const targetDateStr = y + '-' + m + '-' + d;
+  if (targetDateStr > todayStr) return; // Prevent future navigation
+  
+  window.viewLogsDate = targetDateStr;
   
   const dp = document.getElementById('tl-date-picker');
   if (dp) dp.value = window.viewLogsDate;
@@ -4154,12 +4161,28 @@ function renderTodaysLog() {
   const totalEl = document.getElementById('tl-total-time');
   if (!container) return;
   
-  if (!window.viewLogsDate) window.viewLogsDate = getTodayStr();
+  const todayStr = getTodayStr();
+  if (!window.viewLogsDate) window.viewLogsDate = todayStr;
   
   const dp = document.getElementById('tl-date-picker');
-  if (dp && !dp.value) dp.value = window.viewLogsDate;
+  if (dp) {
+    if (!dp.value) dp.value = window.viewLogsDate;
+    dp.max = todayStr;
+  }
   
   const targetDate = window.viewLogsDate;
+  const isToday = targetDate === todayStr;
+  
+  const nextBtn = document.getElementById('tl-btn-next-date');
+  if (nextBtn) {
+    if (isToday) {
+      nextBtn.style.opacity = '0.3';
+      nextBtn.style.pointerEvents = 'none';
+    } else {
+      nextBtn.style.opacity = '1';
+      nextBtn.style.pointerEvents = 'auto';
+    }
+  }
   
   const displayEl = document.getElementById('tl-date-display');
   if (displayEl) {
