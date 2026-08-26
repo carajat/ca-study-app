@@ -11,7 +11,7 @@
   <title>CA Final Tracker</title>
   <link rel="manifest" href="manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300,0,0" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=298">
+  <link rel="stylesheet" href="style.css?v=299">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
   <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
   <!-- Mobile Drag and Drop Polyfill -->
@@ -131,7 +131,10 @@
                 <option value="90">90 Days</option>
               </select>
             </div>
-            <span id="trend-max-label" style="font-size:11px; color:var(--text-secondary); font-weight:600;"></span>
+            <div style="background:var(--checkbox-row-active); padding:4px 10px; border-radius:12px; border:1px solid var(--glass-border); display:flex; align-items:center; gap:4px;">
+              <span class="material-symbols-rounded" style="font-size:14px; color:var(--primary);">emoji_events</span>
+              <span id="trend-max-label" style="font-size:11px; color:var(--primary); font-weight:700;"></span>
+            </div>
           </div>
         <div id="trend-scroll-wrapper" style="width:100%; overflow-x:auto; overflow-y:hidden; padding-bottom:5px; scroll-behavior:smooth;" class="hide-scrollbar">
           <div id="trend-graph-container" style="height: 100px; width: 800px; position: relative;">
@@ -227,19 +230,19 @@
              onmousemove="window.dateSwipeMove(event)"
              onmouseup="window.dateSwipeEnd(event)"
              onmouseleave="window.dateSwipeEnd(event)">
-            <div style="display: flex; align-items: center; flex: 1;">
-              <div style="position:relative; display:flex; align-items:center; cursor:pointer; background:var(--checkbox-row-active); padding:6px 16px; border-radius:20px; gap:8px;">
-                <span class="material-symbols-rounded" style="font-size:18px; color:var(--primary); opacity:0.8;">swap_horiz</span>
-                <span id="tl-date-display" style="font-size:14px; font-weight:600; color:var(--primary); user-select:none;">Today</span>
-                <input type="date" id="tl-date-picker" style="position:absolute; left:0; top:0; width:100%; height:100%; opacity:0; cursor:pointer; padding:0; margin:0;" onchange="changeLogsDate()">
+              <div style="display: flex; align-items: center; gap:8px;">
+                <div style="position:relative; display:flex; align-items:center; cursor:pointer; background:var(--checkbox-row-active); padding:6px 16px; border-radius:20px; gap:8px; border:1px solid var(--glass-border);">
+                  <span class="material-symbols-rounded" style="font-size:18px; color:var(--primary); opacity:0.8;">swap_horiz</span>
+                  <span id="tl-date-display" style="font-size:14px; font-weight:600; color:var(--primary); user-select:none;">Today</span>
+                  <input type="date" id="tl-date-picker" style="position:absolute; left:0; top:0; width:100%; height:100%; opacity:0; cursor:pointer; padding:0; margin:0;" onchange="changeLogsDate()">
+                </div>
+                <button class="icon-btn" style="background: var(--checkbox-row-active); color: var(--primary); width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border:1px solid var(--glass-border);" title="History & Stats" onclick="openLogHistoryModal()">
+                  <span class="material-symbols-rounded" style="font-size:18px;">history</span>
+                </button>
               </div>
+            <div style="display:flex; align-items:center; background:var(--glass-bg); padding:6px 14px; border-radius:20px; border:1px solid var(--glass-border); box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+              <span id="tl-total-time" style="font-size: 13px; font-weight: 700; color: var(--primary);">0h 0m</span>
             </div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span id="tl-total-time" style="font-size: 14px; font-weight: 600; color: var(--primary);">0h 0m</span>
-            <button class="icon-btn" style="background: var(--checkbox-row-active); color: var(--primary); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;" title="History & Stats" onclick="openLogHistoryModal()">
-              <span class="material-symbols-rounded" style="font-size:16px;">history</span>
-            </button>
-          </div>
         </div>
         <div id="tl-list" style="display: flex; flex-direction: column; gap: 8px;">
           <!-- Logs will be rendered here -->
@@ -461,8 +464,8 @@
   <script src="Sortable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="version.js" onerror="window.BUILD_VERSION='unknown'"></script>
-  <script src="data.js?v=298"></script>
-  <script src="sync.js?v=298"></script>
-  <script src="app.js?v=298"></script>
+  <script src="data.js?v=299"></script>
+  <script src="sync.js?v=299"></script>
+  <script src="app.js?v=299"></script>
 </body>
 </html>
