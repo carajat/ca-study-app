@@ -4170,11 +4170,15 @@ function renderTodaysLog() {
     let timeHtml = row.startTime ? `<div style="font-size:12px; color:var(--text-muted); margin-top:4px; display:flex; align-items:center; gap:2px;"><span class="material-symbols-rounded" style="font-size:13px;">schedule</span>${row.startTime}</div>` : '';
     
     div.innerHTML = `
-      <div class="log-swipe-wrap" style="display:flex; width:calc(100% + 120px); transform:translateX(0); transition:transform 0.2s ease;"
+      <div class="log-swipe-wrap" style="display:flex; width:calc(100% + 120px); transform:translateX(0); transition:transform 0.2s ease; cursor:grab;"
            ontouchstart="window.logSwipeStart(event, this)"
            ontouchmove="window.logSwipeMove(event, this)"
-           ontouchend="window.logSwipeEnd(event, this)">
-        <div style="width:100%; flex-shrink:0; padding:10px; display:flex; justify-content:space-between; align-items:flex-start;">
+           ontouchend="window.logSwipeEnd(event, this)"
+           onmousedown="window.logSwipeStart(event, this)"
+           onmousemove="window.logSwipeMove(event, this)"
+           onmouseup="window.logSwipeEnd(event, this)"
+           onmouseleave="window.logSwipeEnd(event, this)">
+        <div style="width:calc(100% - 120px); flex-shrink:0; padding:10px; display:flex; justify-content:space-between; align-items:flex-start; box-sizing:border-box;">
           <div style="flex:1;">
             <div style="font-weight:600; font-size:14px; color:var(--text-primary);">${row.subject}</div>
             <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">${row.topic}</div>
@@ -4205,8 +4209,8 @@ function renderTodaysLog() {
 
 window.logSwipeStart = function(e, el) {
   el.style.transition = 'none';
-  el.dataset.startX = e.touches[0].clientX;
-  el.dataset.startY = e.touches[0].clientY;
+  el.dataset.startX = e.clientX || (e.touches && e.touches[0].clientX);
+  el.dataset.startY = e.clientY || (e.touches && e.touches[0].clientY);
   el.dataset.swiping = 'false';
   let match = el.style.transform.match(/-?\d+/);
   el.dataset.currentX = match ? parseInt(match[0]) : 0;
@@ -4214,13 +4218,19 @@ window.logSwipeStart = function(e, el) {
 
 window.logSwipeMove = function(e, el) {
   if (!el.dataset.startX) return;
-  let diffX = e.touches[0].clientX - parseFloat(el.dataset.startX);
-  let diffY = e.touches[0].clientY - parseFloat(el.dataset.startY);
+  
+  let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+  let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+  
+  if (clientX === undefined || clientY === undefined) return;
+
+  let diffX = clientX - parseFloat(el.dataset.startX);
+  let diffY = clientY - parseFloat(el.dataset.startY);
   
   if (el.dataset.swiping === 'false') {
-    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 10) {
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 5) {
       el.dataset.swiping = 'true';
-    } else if (Math.abs(diffY) > 10) {
+    } else if (Math.abs(diffY) > 5) {
       el.dataset.startX = ''; 
       return;
     }
