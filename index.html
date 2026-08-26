@@ -11,7 +11,7 @@
   <title>CA Final Tracker</title>
   <link rel="manifest" href="manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300,0,0" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=295">
+  <link rel="stylesheet" href="style.css?v=296">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
   <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
   <!-- Mobile Drag and Drop Polyfill -->
@@ -122,11 +122,13 @@
       <!-- Trend Graph -->
       <div class="glass-card" style="margin-bottom: 20px;" id="dashboard-trend-card">
         <div class="ca-header" style="margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;">
-          <span><span class="material-symbols-rounded icon-sm">trending_up</span> 14-Day Trend</span>
+          <span><span class="material-symbols-rounded icon-sm">trending_up</span> Study Trend (30 Days)</span>
           <span id="trend-max-label" style="font-size:11px; color:var(--text-secondary); font-weight:600;"></span>
         </div>
-        <div id="trend-graph-container" style="height: 100px; width: 100%; position: relative;">
-          <!-- SVG injected here -->
+        <div id="trend-scroll-wrapper" style="width:100%; overflow-x:auto; overflow-y:hidden; padding-bottom:5px; scroll-behavior:smooth;" class="hide-scrollbar">
+          <div id="trend-graph-container" style="height: 100px; width: 800px; position: relative;">
+            <!-- SVG injected here -->
+          </div>
         </div>
         <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-secondary); margin-top:8px; font-weight:600;">
           <span id="trend-start-date"></span>
@@ -451,8 +453,8 @@
   <script src="Sortable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="version.js" onerror="window.BUILD_VERSION='unknown'"></script>
-  <script src="data.js?v=295"></script>
-  <script src="sync.js?v=295"></script>
-  <script src="app.js?v=295"></script>
+  <script src="data.js?v=296"></script>
+  <script src="sync.js?v=296"></script>
+  <script src="app.js?v=296"></script>
 </body>
 </html>

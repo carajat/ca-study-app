@@ -519,7 +519,7 @@ function renderTrendGraph() {
   const container = document.getElementById('trend-graph-container');
   if (!container) return;
 
-  const days = 14;
+  const days = 30;
   const today = new Date(typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now());
   
   let data = [];
@@ -588,6 +588,14 @@ function renderTrendGraph() {
   
   svgHtml += `</svg>`;
   container.innerHTML = svgHtml + htmlDots;
+
+  // Auto-scroll to the rightmost edge to show 'Today'
+  const wrapper = document.getElementById('trend-scroll-wrapper');
+  if (wrapper) {
+    setTimeout(() => {
+      wrapper.scrollLeft = wrapper.scrollWidth;
+    }, 50);
+  }
 }
 
 window.showTrendTooltip = function(event, el, timeStr, dateLabel) {
