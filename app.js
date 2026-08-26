@@ -1517,8 +1517,8 @@ function updateConsistencyWidget() {
   }
 
   // Swipeable Adherence Html
-  let adherenceHtml = `<div style="display:flex; overflow-x:auto; scroll-snap-type: x mandatory; padding-bottom:5px;" class="hide-scrollbar">`;
-  for(let i=0; i<7; i++) {
+  let adherenceHtml = `<div id="cons-adherence-scroll" style="display:flex; overflow-x:auto; scroll-snap-type: x mandatory; padding-bottom:5px;" class="hide-scrollbar">`;
+  for(let i=29; i>=0; i--) {
     let d = new Date();
     if(typeof window.getGlobalTime === 'function') d = new Date(window.getGlobalTime());
     d.setDate(d.getDate() - i);
@@ -1530,7 +1530,7 @@ function updateConsistencyWidget() {
     let label = i === 0 ? "Today's Adherence" : i === 1 ? "Yesterday's Adherence" : d.toLocaleDateString('en-US', {month:'short', day:'numeric'}) + " Adherence";
     
     adherenceHtml += `
-      <div style="flex: 0 0 100%; scroll-snap-align: start; box-sizing:border-box;">
+      <div style="flex: 0 0 100%; scroll-snap-align: center; box-sizing:border-box;">
         <div class="cons-adhere-row">
           <span class="cons-adhere-label">${label}</span>
           <span class="cons-adhere-val ${met ? 'cons-val-good' : 'cons-val-primary'}">${adPct}%</span>
@@ -1556,6 +1556,13 @@ function updateConsistencyWidget() {
     </div>
     ${insightHtml}
   `;
+
+  setTimeout(() => {
+    const adhereScroll = document.getElementById('cons-adherence-scroll');
+    if (adhereScroll) {
+      adhereScroll.scrollLeft = adhereScroll.scrollWidth;
+    }
+  }, 10);
 }
 
 window.showPaceCalculation = function(subjectId = null, paceWindow = null) {
