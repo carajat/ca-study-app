@@ -1257,6 +1257,9 @@ function refreshConsistencyData() {
   let maxStreak = 0;
   let gold = 0, silver = 0, bronze = 0;
   
+  const streakGoalHours = parseInt(localStorage.getItem('ca_streak_goal')) || 6;
+  const streakGoalMins = streakGoalHours * 60;
+  
   while (iterDate <= todayDate) {
     const dStr = iterDate.getFullYear() + '-' + String(iterDate.getMonth()+1).padStart(2,'0') + '-' + String(iterDate.getDate()).padStart(2,'0');
     const log = c.dailyLog[dStr];
@@ -1268,9 +1271,9 @@ function refreshConsistencyData() {
     }
     
     if (dStr === todayStr) {
-      if (log && log.actualMinutes >= 360) tempStreak++;
+      if (log && log.actualMinutes >= streakGoalMins) tempStreak++;
     } else {
-      if (log && log.actualMinutes >= 360) {
+      if (log && log.actualMinutes >= streakGoalMins) {
         tempStreak++;
       } else {
         tempStreak = 0;
@@ -1488,7 +1491,7 @@ function updateConsistencyWidget() {
     <div onclick="switchTab('schedule')" style="cursor:pointer;">
       <div class="cons-hw-top" style="display:flex; justify-content:space-between; align-items:center;">
         <div class="cons-pill ${pillClass}">${pillIcon}${pillLabel}</div>
-        <div style="display:flex; align-items:center; gap:6px; background:var(--glass-bg); padding:6px 12px; border-radius:20px; border:1px solid var(--glass-border); box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+        <div onclick="event.stopPropagation(); openStreakGoalModal();" style="cursor:pointer; display:flex; align-items:center; gap:6px; background:var(--glass-bg); padding:6px 12px; border-radius:20px; border:1px solid var(--glass-border); box-shadow:0 2px 8px rgba(0,0,0,0.05);">
            <span class="material-symbols-rounded" style="color:#FF9500; font-size:16px;">local_fire_department</span>
            <span style="font-weight:700; font-size:13px; color:var(--text-primary);">${c.currentStreak} Day Streak</span>
         </div>
@@ -4370,6 +4373,38 @@ window.deleteTodaysLog = function(idx) {
     }
   }
 };
+
+  window.openStreakGoalModal = function() {
+    const body = document.getElementById('modal-body');
+    const currentGoal = parseInt(localStorage.getItem('ca_streak_goal')) || 6;
+    
+    document.getElementById('modal-title').textContent = 'Daily Streak Goal';
+    
+    const options = [4, 6, 8, 10, 12];
+    let html = `<p style="margin-bottom:16px; color:var(--text-muted); font-size:13px; line-height:1.4;">Select the minimum daily study hours required to maintain your consistency streak.</p>`;
+    html += `<div style="display:flex; flex-direction:column; gap:10px;">`;
+    
+    options.forEach(opt => {
+      const isSelected = (opt === currentGoal);
+      html += `
+        <div onclick="saveStreakGoal(${opt})" style="cursor:pointer; padding:16px; border-radius:12px; border:2px solid ${isSelected ? 'var(--primary)' : 'var(--glass-border)'}; background:${isSelected ? 'var(--checkbox-row-active)' : 'transparent'}; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:600; color:var(--text-primary); font-size:15px;">${opt} Hours</span>
+          ${isSelected ? `<span class="material-symbols-rounded" style="color:var(--primary);">check_circle</span>` : ''}
+        </div>
+      `;
+    });
+    
+    html += `</div>`;
+    body.innerHTML = html;
+    document.getElementById('modal-overlay').style.display = 'flex';
+  };
+  
+  window.saveStreakGoal = function(hours) {
+    localStorage.setItem('ca_streak_goal', hours);
+    refreshConsistencyData();
+    if (state.activeTab === 'dashboard') updateConsistencyWidget();
+    closeModal();
+  };
 
 window.openManualLogModal = function(idx) {
   const body = document.getElementById('modal-body');
