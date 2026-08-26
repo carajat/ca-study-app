@@ -1430,16 +1430,36 @@ function _fmtMins(m) {
  * Render (or update) the compact Consistency widget on the Home tab.
  * The widget lives in #consistency-home-widget which is injected into index.html.
  */
+window._paceRotationIndex = window._paceRotationIndex || 0;
+window._paceRotationTimeout = window._paceRotationTimeout || null;
+
 function updateConsistencyWidget() {
   const el = document.getElementById('consistency-home-widget');
   if (!el) return;
+  
+  if (window._paceRotationTimeout) clearTimeout(window._paceRotationTimeout);
 
   ensureConsistencyInit();
   const c = DYNAMIC_DATA.consistency;
   const todayStr = getTodayStr();
   const todayResult = computeDayAdherence(todayStr);
   const pw = state.paceWindow || 14;
-  const pSubj = state.paceSubjectId || null;
+  
+  // Find rotation IDs (Overall, DT, IDT) that have valid data
+  let validRotationIds = [null]; // null = Overall
+  (DYNAMIC_DATA.syllabusSubjects || []).forEach(s => {
+    const sName = s.name.toUpperCase();
+    if (sName === 'DT' || sName === 'IDT' || sName.includes('DIRECT TAX') || sName.includes('INDIRECT TAX')) {
+      const p = computeProjection(s.id, pw);
+      if (p && p.currentPct >= 1) { // must have some data
+        if (!validRotationIds.includes(s.id)) validRotationIds.push(s.id);
+      }
+    }
+  });
+  
+  if (window._paceRotationIndex >= validRotationIds.length) window._paceRotationIndex = 0;
+  const pSubj = validRotationIds[window._paceRotationIndex];
+  
   const proj = computeProjection(pSubj, pw);
   const schedName = DYNAMIC_DATA.schedules[state.activeSchedule]?.name || 'Schedule';
   const adherePct = Math.min(todayResult.adherencePct, 100);
@@ -1471,16 +1491,30 @@ function updateConsistencyWidget() {
     pillLabel = proj.onTrack ? 'Exam-Ready Pace' : 'Behind Pace';
   }
 
+  // Dots indicator for rotation
+  let dotHtml = '';
+  if (validRotationIds.length > 1 && showPace) {
+    dotHtml = `<div style="display:flex; justify-content:center; gap:4px; margin-top:8px;">
+      ${validRotationIds.map((id, i) => `<div style="width:4px; height:4px; border-radius:50%; background:currentColor; opacity:${i === window._paceRotationIndex ? '1' : '0.2'}; transition:opacity 0.3s;"></div>`).join('')}
+    </div>`;
+    
+    // Auto-rotate every 6 seconds
+    window._paceRotationTimeout = setTimeout(() => {
+      window._paceRotationIndex = (window._paceRotationIndex + 1) % validRotationIds.length;
+      updateConsistencyWidget();
+    }, 6000);
+  }
+
   // Insight card
   let insightHtml = '';
   if (!showPace) {
     insightHtml = `<div class="cons-insight" style="background:transparent; border:1px dashed var(--glass-border); align-items:center;"><span class="material-symbols-rounded" style="color:var(--text-muted); font-size:18px;">hourglass_empty</span><p style="color:var(--text-muted); font-size:11.5px;">Building your pace profile &mdash; check back after a bit more progress.</p></div>`;
   } else {
     if (proj.onTrack) {
-      insightHtml = `<div class="cons-insight cons-insight-good" onclick="showPaceCalculation(${pSubj ? "'" + pSubj + "'" : 'null'})" style="cursor:pointer; margin-top:12px;">${_svgTrendUp}<p>At this pace <span style="opacity:0.7; font-size:11px;">(${windowLabel})</span>, <b>${paceLabel}</b> completes <b>${proj.daysVsExam} days before</b> your exam.</p></div>`;
+      insightHtml = `<div class="cons-insight cons-insight-good" onclick="showPaceCalculation(${pSubj ? "'" + pSubj + "'" : 'null'})" style="cursor:pointer; margin-top:12px; transition:opacity 0.3s;">${_svgTrendUp}<div style="flex:1;"><p>At this pace <span style="opacity:0.7; font-size:11px;">(${windowLabel})</span>, <b>${paceLabel}</b> completes <b>${proj.daysVsExam} days before</b> your exam.</p>${dotHtml}</div></div>`;
     } else {
       const nudgeStr = proj.nudgeHours !== null ? `<span class="cons-nudge">Increase daily average by ~${proj.nudgeHours} hrs to get back on track.</span>` : '';
-      insightHtml = `<div class="cons-insight cons-insight-warn" onclick="showPaceCalculation(${pSubj ? "'" + pSubj + "'" : 'null'})" style="cursor:pointer; margin-top:12px;">${_svgWarn}<p>At this pace <span style="opacity:0.7; font-size:11px;">(${windowLabel})</span>, <b>${paceLabel}</b> completes <b>${proj.daysVsExam} days after</b> your exam.${nudgeStr}</p></div>`;
+      insightHtml = `<div class="cons-insight cons-insight-warn" onclick="showPaceCalculation(${pSubj ? "'" + pSubj + "'" : 'null'})" style="cursor:pointer; margin-top:12px; transition:opacity 0.3s;">${_svgWarn}<div style="flex:1;"><p>At this pace <span style="opacity:0.7; font-size:11px;">(${windowLabel})</span>, <b>${paceLabel}</b> completes <b>${proj.daysVsExam} days after</b> your exam.${nudgeStr}</p>${dotHtml}</div></div>`;
     }
   }
 
