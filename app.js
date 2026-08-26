@@ -1493,7 +1493,7 @@ function updateConsistencyWidget() {
 
   // Dots indicator for rotation
   let dotHtml = '';
-  if (validRotationIds.length > 1 && showPace) {
+  if (validRotationIds.length > 1) {
     dotHtml = `<div style="display:flex; justify-content:center; gap:4px; margin-top:8px;">
       ${validRotationIds.map((id, i) => `<div style="width:4px; height:4px; border-radius:50%; background:currentColor; opacity:${i === window._paceRotationIndex ? '1' : '0.2'}; transition:opacity 0.3s;"></div>`).join('')}
     </div>`;
@@ -1508,7 +1508,7 @@ function updateConsistencyWidget() {
   // Insight card
   let insightHtml = '';
   if (!showPace) {
-    insightHtml = `<div class="cons-insight" style="background:transparent; border:1px dashed var(--glass-border); align-items:center;"><span class="material-symbols-rounded" style="color:var(--text-muted); font-size:18px;">hourglass_empty</span><p style="color:var(--text-muted); font-size:11.5px;">Building your pace profile &mdash; check back after a bit more progress.</p></div>`;
+    insightHtml = `<div class="cons-insight" style="background:transparent; border:1px dashed var(--glass-border); align-items:center;"><span class="material-symbols-rounded" style="color:var(--text-muted); font-size:18px;">hourglass_empty</span><div style="flex:1;"><p style="color:var(--text-muted); font-size:11.5px;">Building your pace profile &mdash; check back after a bit more progress.</p>${dotHtml}</div></div>`;
   } else {
     if (proj.onTrack) {
       insightHtml = `<div class="cons-insight cons-insight-good" onclick="showPaceCalculation(${pSubj ? "'" + pSubj + "'" : 'null'})" style="cursor:pointer; margin-top:12px; transition:opacity 0.3s;">${_svgTrendUp}<div style="flex:1;"><p>At this pace <span style="opacity:0.7; font-size:11px;">(${windowLabel})</span>, <b>${paceLabel}</b> completes <b>${proj.daysVsExam} days before</b> your exam.</p>${dotHtml}</div></div>`;
