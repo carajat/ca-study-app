@@ -1530,7 +1530,7 @@ function updateConsistencyWidget() {
     let label = i === 0 ? "Today's Adherence" : i === 1 ? "Yesterday's Adherence" : d.toLocaleDateString('en-US', {month:'short', day:'numeric'}) + " Adherence";
     
     adherenceHtml += `
-      <div style="flex: 0 0 100%; scroll-snap-align: center; box-sizing:border-box;">
+      <div style="flex: 0 0 100%; scroll-snap-align: center; scroll-snap-stop: always; box-sizing:border-box;">
         <div class="cons-adhere-row">
           <span class="cons-adhere-label">${label}</span>
           <span class="cons-adhere-val ${met ? 'cons-val-good' : 'cons-val-primary'}">${adPct}%</span>
