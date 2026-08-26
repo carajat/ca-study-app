@@ -4184,7 +4184,7 @@ function renderTodaysLog() {
   if (entries.length === 0) {
     let emptyMsg = targetDate === getTodayStr() ? 'No logs today yet. Start studying!' : `No logs found for ${targetDate}.`;
     container.innerHTML = `<div style="text-align:center; padding:15px; color:var(--text-muted); font-size:13px;">${emptyMsg}</div>`;
-    totalEl.textContent = 'Total: 0h 0m';
+    totalEl.textContent = '0h 0m';
     return;
   }
   
@@ -4242,7 +4242,7 @@ function renderTodaysLog() {
   
   const totH = Math.floor(totalMinutes / 60);
   const totM = totalMinutes % 60;
-  totalEl.textContent = `Total: ${totH}h ${totM}m`;
+  totalEl.textContent = `${totH}h ${totM}m`;
 }
 
 window.logSwipeStart = function(e, el) {
