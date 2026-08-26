@@ -1268,9 +1268,9 @@ function refreshConsistencyData() {
     }
     
     if (dStr === todayStr) {
-      if (log && log.actualMinutes >= 480) tempStreak++;
+      if (log && log.actualMinutes >= 360) tempStreak++;
     } else {
-      if (log && log.actualMinutes >= 480) {
+      if (log && log.actualMinutes >= 360) {
         tempStreak++;
       } else {
         tempStreak = 0;
