@@ -4116,6 +4116,50 @@ function getTodayStr() {
   return y + '-' + m + '-' + d;
 }
 
+window.dateSwipeStart = function(e) {
+  const t = e.touches ? e.touches[0] : e;
+  window._dateStartX = t.clientX;
+  window._dateStartY = t.clientY;
+  window._dateSwiping = false;
+};
+
+window.dateSwipeMove = function(e) {
+  if (window._dateStartX === undefined) return;
+  const t = e.touches ? e.touches[0] : e;
+  
+  if (t.clientX === undefined || t.clientY === undefined) return;
+  
+  const diffX = t.clientX - window._dateStartX;
+  const diffY = t.clientY - window._dateStartY;
+  
+  if (!window._dateSwiping) {
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 20) {
+      window._dateSwiping = true;
+    } else if (Math.abs(diffY) > 20) {
+      window._dateStartX = undefined; 
+      return;
+    }
+  }
+  
+  if (window._dateSwiping) {
+    if (e.cancelable) e.preventDefault(); 
+    window._dateDiffX = diffX;
+  }
+};
+
+window.dateSwipeEnd = function(e) {
+  if (window._dateSwiping && window._dateDiffX) {
+    if (window._dateDiffX > 40) {
+      window.navigateLogDate(-1);
+    } else if (window._dateDiffX < -40) {
+      window.navigateLogDate(1);
+    }
+  }
+  window._dateStartX = undefined;
+  window._dateSwiping = false;
+  window._dateDiffX = 0;
+};
+
 window.navigateLogDate = function(direction) {
   const todayStr = getTodayStr();
   if (direction === 1 && window.viewLogsDate === todayStr) return;
