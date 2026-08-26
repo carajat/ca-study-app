@@ -1473,10 +1473,9 @@ function updateConsistencyWidget() {
   const pSubj = state.paceSubjectId || null;
   const proj = computeProjection(pSubj, pw);
   const schedName = DYNAMIC_DATA.schedules[state.activeSchedule]?.name || 'Schedule';
-  const adherePct = Math.min(todayResult.adherencePct, 100);
   
   const streakGoalHours = parseInt(localStorage.getItem('ca_streak_goal')) || 6;
-  const isGoalMet = todayResult.actualMinutes >= (streakGoalHours * 60);
+  const streakGoalMins = streakGoalHours * 60;
 
   // Resolve subject label for insight text
   let paceLabel = 'syllabus';
@@ -1517,6 +1516,32 @@ function updateConsistencyWidget() {
     }
   }
 
+  // Swipeable Adherence Html
+  let adherenceHtml = `<div style="display:flex; overflow-x:auto; scroll-snap-type: x mandatory; padding-bottom:5px;" class="hide-scrollbar">`;
+  for(let i=0; i<7; i++) {
+    let d = new Date();
+    if(typeof window.getGlobalTime === 'function') d = new Date(window.getGlobalTime());
+    d.setDate(d.getDate() - i);
+    let dStr = dateKey(d);
+    let res = computeDayAdherence(dStr);
+    let adPct = Math.min(res.adherencePct, 100);
+    let met = res.actualMinutes >= streakGoalMins;
+    
+    let label = i === 0 ? "Today's Adherence" : i === 1 ? "Yesterday's Adherence" : d.toLocaleDateString('en-US', {month:'short', day:'numeric'}) + " Adherence";
+    
+    adherenceHtml += `
+      <div style="flex: 0 0 100%; scroll-snap-align: start; box-sizing:border-box;">
+        <div class="cons-adhere-row">
+          <span class="cons-adhere-label">${label}</span>
+          <span class="cons-adhere-val ${met ? 'cons-val-good' : 'cons-val-primary'}">${adPct}%</span>
+        </div>
+        <div class="cons-bar-track"><div class="cons-bar-fill ${met ? 'cons-fill-success' : 'cons-fill-primary'}" style="width:${adPct}%"></div></div>
+        <div class="cons-sub">${_fmtMins(res.actualMinutes)} of ${_fmtMins(res.targetMinutes)} · ${schedName} routine</div>
+      </div>
+    `;
+  }
+  adherenceHtml += `</div>`;
+
   el.innerHTML = `
     <div onclick="switchTab('schedule')" style="cursor:pointer;">
       <div class="cons-hw-top" style="display:flex; justify-content:space-between; align-items:center;">
@@ -1527,12 +1552,7 @@ function updateConsistencyWidget() {
         </div>
       </div>
       <div class="cons-divider"></div>
-      <div class="cons-adhere-row">
-        <span class="cons-adhere-label">Today's Adherence</span>
-        <span class="cons-adhere-val ${isGoalMet ? 'cons-val-good' : 'cons-val-primary'}">${adherePct}%</span>
-      </div>
-      <div class="cons-bar-track"><div class="cons-bar-fill ${isGoalMet ? 'cons-fill-success' : 'cons-fill-primary'}" style="width:${adherePct}%"></div></div>
-      <div class="cons-sub">${_fmtMins(todayResult.actualMinutes)} of ${_fmtMins(todayResult.targetMinutes)} · ${schedName} routine</div>
+      ${adherenceHtml}
     </div>
     ${insightHtml}
   `;
