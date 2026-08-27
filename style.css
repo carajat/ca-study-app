@@ -1493,11 +1493,11 @@ input[type="checkbox"]:checked::before {
   box-shadow: 0 4px 16px var(--purple-glow);
 }
 .st-btn-pause {
-  background: var(--warning);
-  color: #000;
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--accent);
 }
 .st-btn-stop {
-  background: var(--danger);
+  background: var(--primary);
   color: #fff;
 }
 .st-status {

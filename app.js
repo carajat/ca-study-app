@@ -3927,7 +3927,7 @@ function updateTrackerUI(mode) {
     btnStart.style.display = 'none'; btnPause.style.display = 'none';
     btnResume.style.display = 'flex'; btnStop.style.display = 'flex';
     subSel.disabled = true; topSel.disabled = true; taskInp.disabled = false;
-    statusEl.textContent = '⏸️ Paused';
+    statusEl.innerHTML = '<span class="material-symbols-rounded icon-sm" style="color:var(--accent); vertical-align:middle; font-size:16px;">pause_circle</span> Paused';
   }
 }
 
@@ -4063,7 +4063,7 @@ window.updateReadonlyLiveTracker = function(data) {
     window.readonlyLiveTrackerState.intervalId = setInterval(updateViewerTimer, 1000);
   } else {
     if (timerDispEl) timerDispEl.className = 'st-timer-display paused';
-    if (statusEl) statusEl.textContent = '⏸️ Paused';
+    if (statusEl) statusEl.innerHTML = '<span class="material-symbols-rounded icon-sm" style="color:var(--accent); vertical-align:middle; font-size:16px;">pause_circle</span> Paused';
   }
 };
 
