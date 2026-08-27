@@ -4363,6 +4363,17 @@ function renderTodaysLog() {
   const totH = Math.floor(totalMinutes / 60);
   const totM = totalMinutes % 60;
   totalEl.textContent = `${totH}h ${totM}m`;
+  
+  // Set initial expanded/collapsed state
+  const isExpanded = localStorage.getItem('ca_logs_expanded') === 'true';
+  const icon = document.getElementById('tl-expand-icon');
+  if (isExpanded) {
+    container.style.display = 'flex';
+    if (icon) icon.style.transform = 'rotate(180deg)';
+  } else {
+    container.style.display = 'none';
+    if (icon) icon.style.transform = 'rotate(0deg)';
+  }
 }
 
 window.logSwipeStart = function(e, el) {
@@ -5165,6 +5176,22 @@ window.updateDailyAverage = function(newDateStr, _ignore, fromUser = false) {
   if (valEl) valEl.innerHTML = `${ah}h ${am}m / day`;
   if (daysEl) daysEl.innerHTML = `over ${totalDays} days`;
   if (totalEl) totalEl.innerHTML = `${ph}h ${pm}m`;
+};
+
+window.toggleLogList = function() {
+  const list = document.getElementById('tl-list');
+  const icon = document.getElementById('tl-expand-icon');
+  if (!list) return;
+  
+  if (list.style.display === 'none') {
+    list.style.display = 'flex';
+    if(icon) icon.style.transform = 'rotate(180deg)';
+    localStorage.setItem('ca_logs_expanded', 'true');
+  } else {
+    list.style.display = 'none';
+    if(icon) icon.style.transform = 'rotate(0deg)';
+    localStorage.setItem('ca_logs_expanded', 'false');
+  }
 };
 
 window.openLogHistoryModal = function() {
