@@ -746,19 +746,28 @@ function updateCurrentActivity() {
     }
   }
   
+  const caSlotName = document.getElementById('ca-slot-name');
+  const caSlotDetails = document.getElementById('ca-slot-details');
+  const caNextSlot = document.getElementById('ca-next-slot');
+
   if (currentSlot) {
-    document.getElementById('ca-slot-name').innerHTML = '<span class="material-symbols-rounded" style="vertical-align:middle; margin-right:6px; font-size: 20px;">' + (currentSlot.icon || '').trim() + '</span> ' + currentSlot.label;
-    document.getElementById('ca-slot-details').textContent = `Window: ${currentSlot.startRange} · Duration: ${currentSlot.duration >= 60 ? (currentSlot.duration/60) + ' hrs' : currentSlot.duration + ' min'}`;
-    document.getElementById('ca-slot-name').className = 'ca-slot-name slot-' + currentSlot.type;
+    if(caSlotName) {
+        caSlotName.innerHTML = '<span class="material-symbols-rounded" style="vertical-align:middle; margin-right:6px; font-size: 20px;">' + (currentSlot.icon || '').trim() + '</span> ' + currentSlot.label;
+        caSlotName.className = 'ca-slot-name slot-' + currentSlot.type;
+    }
+    if(caSlotDetails) caSlotDetails.textContent = `Window: ${currentSlot.startRange} · Duration: ${currentSlot.duration >= 60 ? (currentSlot.duration/60) + ' hrs' : currentSlot.duration + ' min'}`;
   } else {
-    document.getElementById('ca-slot-name').innerHTML = '<span class="material-symbols-rounded icon-sm">bed</span> Rest Time';
-    document.getElementById('ca-slot-details').textContent = 'No active session right now';
+    if(caSlotName) {
+        caSlotName.innerHTML = '<span class="material-symbols-rounded icon-sm">bed</span> Rest Time';
+        caSlotName.className = 'ca-slot-name';
+    }
+    if(caSlotDetails) caSlotDetails.textContent = 'No active session right now';
   }
   
-  if (nextSlot) {
-    document.getElementById('ca-next-slot').innerHTML = '<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">arrow_forward</span> Next: ' + '<span class="material-symbols-rounded" style="vertical-align:middle; font-size:14px; margin-right:4px;">' + (nextSlot.icon || '').trim() + '</span> ' + nextSlot.label;
-  } else {
-    document.getElementById('ca-next-slot').textContent = '';
+  if (nextSlot && caNextSlot) {
+    caNextSlot.innerHTML = '<span class="material-symbols-rounded icon-sm" style="vertical-align:middle;">arrow_forward</span> Next: ' + '<span class="material-symbols-rounded" style="vertical-align:middle; font-size:14px; margin-right:4px;">' + (nextSlot.icon || '').trim() + '</span> ' + nextSlot.label;
+  } else if (caNextSlot) {
+    caNextSlot.textContent = '';
   }
 }
 
@@ -767,10 +776,16 @@ function updateDashboardPlanner() {
   const todayTasks = tasks[dateKey(new Date())] || [];
   const done = todayTasks.filter(t => t.done).length;
   const total = todayTasks.length;
-  document.getElementById('dash-planner-done').textContent = done;
-  document.getElementById('dash-planner-total').textContent = total;
+  
+  const dpDone = document.getElementById('dash-planner-done');
+  const dpTotal = document.getElementById('dash-planner-total');
+  const dpBar = document.getElementById('dash-planner-bar');
+  
+  if (dpDone) dpDone.textContent = done;
+  if (dpTotal) dpTotal.textContent = total;
+  
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-  document.getElementById('dash-planner-bar').style.width = pct + '%';
+  if (dpBar) dpBar.style.width = pct + '%';
 }
 
 function updateQuote() {
