@@ -1486,7 +1486,7 @@ input[type="checkbox"]:checked::before {
   transform: scale(0.96);
 }
 .st-btn-start {
-  background: var(--primary);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 85%, white), var(--primary));
   color: #fff;
 }
 .st-btn-start:hover {
@@ -1498,9 +1498,9 @@ input[type="checkbox"]:checked::before {
   border: 1px solid var(--glass-border);
 }
 .st-btn-stop {
-  background: transparent;
-  color: var(--primary);
-  border: 1px solid var(--primary);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 70%, black), color-mix(in srgb, var(--primary) 45%, black));
+  color: #fff;
+  border: none;
 }
 .st-status {
   margin-top: 12px;
