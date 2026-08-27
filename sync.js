@@ -85,6 +85,7 @@ window.attachCloudListener = attachCloudListener;
 
 window.getDisplayUsername = function(email) {
   if (!email) return "USER";
+  if (email.toLowerCase() === 'shrutiagrrawal@gmail.com') return "Shruti";
   const safeEmail = email.replace(/\./g, ',');
   if (window.DYNAMIC_DATA && DYNAMIC_DATA.customUsernames && DYNAMIC_DATA.customUsernames[safeEmail]) {
     return DYNAMIC_DATA.customUsernames[safeEmail];
