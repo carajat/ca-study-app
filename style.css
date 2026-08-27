@@ -1493,12 +1493,14 @@ input[type="checkbox"]:checked::before {
   box-shadow: 0 4px 16px var(--purple-glow);
 }
 .st-btn-pause {
-  background: rgba(59, 130, 246, 0.15);
-  color: var(--accent);
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
 }
 .st-btn-stop {
-  background: var(--primary);
-  color: #fff;
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid var(--primary);
 }
 .st-status {
   margin-top: 12px;
