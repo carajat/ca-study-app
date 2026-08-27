@@ -3892,8 +3892,25 @@ function updateTrackerUI(mode) {
   var subSel = document.getElementById('st-subject');
   var topSel = document.getElementById('st-topic');
   var taskInp = document.getElementById('st-task-desc');
+  var badge = document.getElementById('st-start-time-badge');
+  var badgeVal = document.getElementById('st-start-time-val');
   if (!timerDisp) return;
   timerDisp.className = 'st-timer-display';
+  
+  if (badge) {
+    if (mode === 'idle') {
+      badge.style.display = 'none';
+      badge.style.opacity = '0';
+    } else {
+      if (trackerState && trackerState.startTime) {
+        var d = new Date(trackerState.startTime);
+        if (badgeVal) badgeVal.textContent = 'Started at ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        badge.style.display = 'flex';
+        setTimeout(function(){ badge.style.opacity = '1'; }, 50);
+      }
+    }
+  }
+
   if (mode === 'idle') {
     btnStart.style.display = 'flex'; btnPause.style.display = 'none';
     btnResume.style.display = 'none'; btnStop.style.display = 'none';
@@ -3995,11 +4012,21 @@ window.updateReadonlyLiveTracker = function(data) {
     if (el) el.disabled = true;
   });
   
+  const badge = document.getElementById('st-start-time-badge');
+  const badgeVal = document.getElementById('st-start-time-val');
   if (!data) {
     if (timerValEl) timerValEl.textContent = '00:00:00';
     if (statusEl) statusEl.innerHTML = '<span class="material-symbols-rounded icon-sm" style="color:var(--text-muted); vertical-align:middle; font-size:16px;">cloud_off</span> Not studying currently';
     if (timerDispEl) timerDispEl.className = 'st-timer-display';
+    if (badge) { badge.style.display = 'none'; badge.style.opacity = '0'; }
     return;
+  }
+  
+  if (badge && data.startedAt) {
+    const d = new Date(data.startedAt);
+    if (badgeVal) badgeVal.textContent = 'Started at ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    badge.style.display = 'flex';
+    setTimeout(function(){ badge.style.opacity = '1'; }, 50);
   }
   
   // Fill subject/topic if available
