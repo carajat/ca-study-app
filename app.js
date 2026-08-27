@@ -1544,6 +1544,30 @@ function updateConsistencyWidget() {
     
     let label = i === 0 ? "Today's Adherence" : i === 1 ? "Yesterday's Adherence" : d.toLocaleDateString('en-US', {month:'short', day:'numeric'}) + " Adherence";
     
+    let currentActivityStr = '';
+    if (i === 0) {
+      const schedule = DYNAMIC_DATA.schedules[state.activeSchedule];
+      if (schedule) {
+        let d2 = new Date();
+        if(typeof window.getGlobalTime === 'function') d2 = new Date(window.getGlobalTime());
+        const cTime = d2.getHours() * 60 + d2.getMinutes();
+        let cSlot = null;
+        for (let s = 0; s < schedule.slots.length; s++) {
+          const slot = schedule.slots[s];
+          const [startStr] = slot.startRange.split('-');
+          const [sh, sm] = startStr.split(':').map(Number);
+          const startMin = sh * 60 + sm;
+          const endMin = startMin + slot.duration;
+          if (cTime >= startMin && cTime < endMin) { cSlot = slot; break; }
+        }
+        if (cSlot) {
+          currentActivityStr = `<div style="font-size:11px; margin-top:4px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;"><span class="material-symbols-rounded" style="font-size:14px; color:var(--primary);">${(cSlot.icon || 'schedule').trim()}</span> <span>Current: <b style="color:var(--text-primary);">${cSlot.label}</b></span></div>`;
+        } else {
+          currentActivityStr = `<div style="font-size:11px; margin-top:4px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;"><span class="material-symbols-rounded" style="font-size:14px; color:var(--text-muted);">bed</span> <span>Current: <b style="color:var(--text-muted);">Rest Time</b></span></div>`;
+        }
+      }
+    }
+    
     adherenceHtml += `
       <div style="flex: 0 0 100%; scroll-snap-align: center; scroll-snap-stop: always; box-sizing:border-box;">
         <div class="cons-adhere-row">
@@ -1551,7 +1575,10 @@ function updateConsistencyWidget() {
           <span class="cons-adhere-val ${met ? 'cons-val-good' : 'cons-val-primary'}">${adPct}%</span>
         </div>
         <div class="cons-bar-track"><div class="cons-bar-fill ${met ? 'cons-fill-success' : 'cons-fill-primary'}" style="width:${adPct}%"></div></div>
-        <div class="cons-sub">${_fmtMins(res.actualMinutes)} of ${_fmtMins(res.targetMinutes)} · ${schedName} routine</div>
+        <div class="cons-sub" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>${_fmtMins(res.actualMinutes)} of ${_fmtMins(res.targetMinutes)} · ${schedName}</span>
+        </div>
+        ${currentActivityStr}
       </div>
     `;
   }
