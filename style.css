@@ -1150,12 +1150,19 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 2px; }
 
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+@media (hover: none) and (pointer: coarse) {
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
+
+select option {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 /* ─── Medium Screens (Tablets) ─────────── */
