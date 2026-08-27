@@ -2213,7 +2213,10 @@ function copyToTomorrow() {
   const todayTasks = tasks[todayKey] || [];
   if (todayTasks.length === 0) { showToast('No tasks to copy! Add tasks first.'); return; }
   
-  tasks[tomorrowKey] = todayTasks.map((t, i) => ({ ...t, done: false, originalIndex: i }));
+  const tomorrowTasks = tasks[tomorrowKey] || [];
+  const newTasks = todayTasks.map((t, i) => ({ ...t, done: false, originalIndex: tomorrowTasks.length + i }));
+  
+  tasks[tomorrowKey] = [...tomorrowTasks, ...newTasks];
   savePlannerTasks(tasks);
   showToast('Copied to tomorrow!');
 }
