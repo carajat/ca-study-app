@@ -1,8 +1,8 @@
 // ========================================
-// CA Final Study Companion â€” App Logic
+// CA Final Study Companion — App Logic
 // ========================================
 
-// â”€â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── State ──────────────────────────────
 let state = {
   activeGroup: localStorage.getItem('ca_app_prefs_group') || 'group1',
   activeTab: 'dashboard',
@@ -20,7 +20,7 @@ let state = {
 };
 window.state = state;
 
-// â”€â”€â”€ Dynamic Data State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Dynamic Data State ─────────────────
 var DYNAMIC_DATA = null;
 let isEditMode = false;
 
@@ -38,13 +38,13 @@ function switchGroup(groupId) {
   // ULTIMATE EMOJI TO MATERIAL ICON MIGRATION
   let dataStr = JSON.stringify(DYNAMIC_DATA);
   const emojiMap = {
-    'â˜€ï¸': 'wb_sunny', 'â˜•': 'local_cafe', 'ðŸ½ï¸': 'restaurant', 'ðŸ˜´': 'bedtime',
-    'ðŸ“š': 'menu_book', 'ðŸ“–': 'menu_book', 'âœï¸': 'edit_document', 'ðŸ’¾': 'save',
-    'ðŸ‹ï¸': 'fitness_center', 'ðŸ“±': 'phone_iphone', 'ðŸ“º': 'tv', 'ðŸŸ¢': 'radio_button_checked',
-    'âš ï¸': 'warning', 'âœ…': 'check_circle', 'ðŸ“…': 'calendar_month', 'ðŸ“Š': 'bar_chart',
-    'â±ï¸': 'timer', 'ðŸ“': 'edit_document', 'ðŸ“': 'folder', 'ðŸ“˜': 'menu_book',
-    'ðŸ’ª': 'fitness_center', 'ðŸƒ': 'directions_run', 'ðŸ§˜': 'self_improvement',
-    'ðŸš¿': 'shower', 'ðŸšŒ': 'directions_bus', 'ðŸš—': 'directions_car'
+    '☀️': 'wb_sunny', '☕': 'local_cafe', '🍽️': 'restaurant', '😴': 'bedtime',
+    '📚': 'menu_book', '📖': 'menu_book', '✍️': 'edit_document', '💾': 'save',
+    '🏋️': 'fitness_center', '📱': 'phone_iphone', '📺': 'tv', '🟢': 'radio_button_checked',
+    '⚠️': 'warning', '✅': 'check_circle', '📅': 'calendar_month', '📊': 'bar_chart',
+    '⏱️': 'timer', '📝': 'edit_document', '📁': 'folder', '📘': 'menu_book',
+    '💪': 'fitness_center', '🏃': 'directions_run', '🧘': 'self_improvement',
+    '🚿': 'shower', '🚌': 'directions_bus', '🚗': 'directions_car'
   };
   
   // Replace all known mapped emojis with their material icon equivalents in strings
@@ -172,11 +172,11 @@ function loadDynamicData() {
     DYNAMIC_DATA.syllabusSubjects = [
       { id: 'dt', name: 'Paper 4: DT & International Tax', source: 'CA Aarish Khan', type: 'main', chapters: DYNAMIC_DATA.dtChapters || APP_DATA.group2.dtChapters },
       { id: 'idt', name: 'Paper 5: IDT (GST + Customs)', source: 'VB Sir', type: 'main', chapters: DYNAMIC_DATA.idtChapters || APP_DATA.group2.idtChapters },
-      { id: 'ibs-fr', name: 'IBS â€” FR', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.fr) ? DYNAMIC_DATA.ibsSubjects.fr.chapters : APP_DATA.group2.ibsSubjects.fr.chapters },
-      { id: 'ibs-afm', name: 'IBS â€” AFM', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.afm) ? DYNAMIC_DATA.ibsSubjects.afm.chapters : APP_DATA.group2.ibsSubjects.afm.chapters },
-      { id: 'ibs-audit', name: 'IBS â€” Audit', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.audit) ? DYNAMIC_DATA.ibsSubjects.audit.chapters : APP_DATA.group2.ibsSubjects.audit.chapters },
-      { id: 'ibs-law', name: 'IBS â€” Law (SPOM A)', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.law) ? DYNAMIC_DATA.ibsSubjects.law.chapters : APP_DATA.group2.ibsSubjects.law.chapters },
-      { id: 'ibs-scpm', name: 'IBS â€” SC&PM (SPOM B)', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.scpm) ? DYNAMIC_DATA.ibsSubjects.scpm.chapters : APP_DATA.group2.ibsSubjects.scpm.chapters }
+      { id: 'ibs-fr', name: 'IBS — FR', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.fr) ? DYNAMIC_DATA.ibsSubjects.fr.chapters : APP_DATA.group2.ibsSubjects.fr.chapters },
+      { id: 'ibs-afm', name: 'IBS — AFM', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.afm) ? DYNAMIC_DATA.ibsSubjects.afm.chapters : APP_DATA.group2.ibsSubjects.afm.chapters },
+      { id: 'ibs-audit', name: 'IBS — Audit', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.audit) ? DYNAMIC_DATA.ibsSubjects.audit.chapters : APP_DATA.group2.ibsSubjects.audit.chapters },
+      { id: 'ibs-law', name: 'IBS — Law (SPOM A)', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.law) ? DYNAMIC_DATA.ibsSubjects.law.chapters : APP_DATA.group2.ibsSubjects.law.chapters },
+      { id: 'ibs-scpm', name: 'IBS — SC&PM (SPOM B)', source: '', type: 'ibs', chapters: (DYNAMIC_DATA.ibsSubjects && DYNAMIC_DATA.ibsSubjects.scpm) ? DYNAMIC_DATA.ibsSubjects.scpm.chapters : APP_DATA.group2.ibsSubjects.scpm.chapters }
     ];
     saveDynamicData();
   }
@@ -237,7 +237,7 @@ function toggleEditMode() {
   switchTab(state.activeTab); // re-render current tab
 }
 
-// â”€â”€â”€ Drag and Drop & Edit Helpers â”€â”€â”€â”€â”€â”€â”€
+// ─── Drag and Drop & Edit Helpers ───────
 
 window.activeSortables = [];
 function initSortable(containerIdOrEl, arrayRef, saveCallback) {
@@ -332,7 +332,7 @@ function confirmDelete(itemName, callback) {
 }
 
 
-// â”€â”€â”€ Storage Helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Storage Helper ─────────────────────
 
 
 function loadState() {
@@ -381,7 +381,7 @@ function savePlannerTasks(tasks) {
   saveState({ plannerTasks: tasks });
 }
 
-// â”€â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Toast ──────────────────────────────
 function showToast(msg) {
   const toast = document.getElementById('toast');
   toast.innerHTML = msg;
@@ -389,7 +389,7 @@ function showToast(msg) {
   setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
-// â”€â”€â”€ Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Modal ──────────────────────────────
 function openModal(title, bodyHtml) {
   document.getElementById('modal-title').innerHTML = title;
   document.getElementById('modal-body').innerHTML = bodyHtml;
@@ -437,7 +437,7 @@ function submitFormModal(numFields) {
   }
 }
 
-// â”€â”€â”€ Tab Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Tab Navigation ─────────────────────
 function switchTab(tabName) {
   state.activeTab = tabName;
   document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -468,7 +468,7 @@ function switchTab(tabName) {
   window.scrollTo(0, 0);
 }
 
-// â”€â”€â”€ Date Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Date Helpers ───────────────────────
 function formatDate(dateStr) {
   const d = new Date(dateStr);
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -501,9 +501,9 @@ function isToday(date) {
   return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════
 //  DASHBOARD
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════
 function renderDashboard() {
   refreshConsistencyData();
   updateCountdown();
@@ -755,7 +755,7 @@ function updateCurrentActivity() {
         caSlotName.innerHTML = '<span class="material-symbols-rounded" style="vertical-align:middle; margin-right:6px; font-size: 20px;">' + (currentSlot.icon || '').trim() + '</span> ' + currentSlot.label;
         caSlotName.className = 'ca-slot-name slot-' + currentSlot.type;
     }
-    if(caSlotDetails) caSlotDetails.textContent = `Window: ${currentSlot.startRange} Â· Duration: ${currentSlot.duration >= 60 ? (currentSlot.duration/60) + ' hrs' : currentSlot.duration + ' min'}`;
+    if(caSlotDetails) caSlotDetails.textContent = `Window: ${currentSlot.startRange} · Duration: ${currentSlot.duration >= 60 ? (currentSlot.duration/60) + ' hrs' : currentSlot.duration + ' min'}`;
   } else {
     if(caSlotName) {
         caSlotName.innerHTML = '<span class="material-symbols-rounded icon-sm">bed</span> Rest Time';
@@ -794,9 +794,9 @@ function updateQuote() {
   document.getElementById('daily-quote').textContent = '"' + DYNAMIC_DATA.quotes[quoteIdx] + '"';
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════
 //  EXAM SCHEDULE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════
 function renderExams() {
   let examDateStr = DYNAMIC_DATA.exam.date;
   if (DYNAMIC_DATA.finalExams && DYNAMIC_DATA.finalExams.length > 0) {
@@ -875,7 +875,7 @@ function renderExams() {
   }
 
   
-  // â”€â”€â”€ Final Exam Datesheet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Final Exam Datesheet ─────────────
   container.innerHTML += `
     <div class="mock-series glass-card final-datesheet">
       <h3 class="series-title" style="display:flex; justify-content:space-between; align-items:center; width:100%;">
@@ -887,7 +887,7 @@ function renderExams() {
               <option value="May 2027" ${state.targetAttempt==='May 2027'?'selected':''}>May 2027</option>
               <option value="Nov 2027" ${state.targetAttempt==='Nov 2027'?'selected':''}>Nov 2027</option>
             </select>
-            <button class="add-item-btn" style="padding:4px 8px; font-size:12px;" onclick="syncOfficialDates()">ðŸ”„ Sync Dates</button>
+            <button class="add-item-btn" style="padding:4px 8px; font-size:12px;" onclick="syncOfficialDates()">🔄 Sync Dates</button>
           </div>
         ` : ''}
       </h3>
@@ -943,7 +943,7 @@ function openMockScoreModal(mockId, subject, series, date) {
   const scores = getMockScores();
   const existing = scores[mockId] || {};
   
-  openModal(`${subject} â€” Series ${series}`, `
+  openModal(`${subject} — Series ${series}`, `
     <div class="mock-modal">
       <p class="mock-modal-date"><span class="material-symbols-rounded icon-sm">event</span> ${formatDate(date)}</p>
       <div class="form-group">
@@ -1054,9 +1054,9 @@ function renderScoreChart() {
   });
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════
 //  TIMETABLE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════
 function renderSchedule() {
   const schedule = DYNAMIC_DATA.schedules[state.activeSchedule];
   
@@ -1131,9 +1131,9 @@ function renderSchedule() {
   refreshConsistencyData();
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════
 //  CONSISTENCY ENGINE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════
 
 /** Ensure DYNAMIC_DATA.consistency exists with all required fields */
 function ensureConsistencyInit() {
@@ -1456,7 +1456,7 @@ function switchSchedule(type) {
   updateNotifToggleUI();
 }
 
-// â”€â”€â”€ Consistency UI helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Consistency UI helpers ──────────────────────────────
 const _svgCheck = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--success)" stroke-width="1.8"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const _svgPartial = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--warning)" stroke-width="1.8"/><path d="M12 8v5" stroke="var(--warning)" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1" fill="var(--warning)"/></svg>`;
 const _svgUpcoming = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--text-muted)" stroke-width="1.8"/><path d="M12 7v5l3 3" stroke="var(--text-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -1576,7 +1576,7 @@ function updateConsistencyWidget() {
         </div>
         <div class="cons-bar-track"><div class="cons-bar-fill ${met ? 'cons-fill-success' : 'cons-fill-primary'}" style="width:${adPct}%"></div></div>
         <div class="cons-sub" style="display:flex; justify-content:space-between; align-items:center;">
-          <span>${_fmtMins(res.actualMinutes)} of ${_fmtMins(res.targetMinutes)} Â· ${schedName}</span>
+          <span>${_fmtMins(res.actualMinutes)} of ${_fmtMins(res.targetMinutes)} · ${schedName}</span>
         </div>
         ${currentActivityStr}
       </div>
@@ -1687,7 +1687,7 @@ window.showPaceCalculation = function(subjectId = null, paceWindow = null) {
             <span style="color:var(--primary); font-weight:700;">${hoursPerPercent.toFixed(1)} hrs</span>
           </div>
           <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
-            <span>Remaining (${(100 - currentPct).toFixed(1)}% Ã— ${hoursPerPercent.toFixed(1)})</span>
+            <span>Remaining (${(100 - currentPct).toFixed(1)}% × ${hoursPerPercent.toFixed(1)})</span>
             <span style="color:#e8a33d; font-weight:700;">${remainingHours.toFixed(0)} hrs</span>
           </div>
           
@@ -1712,7 +1712,7 @@ window.showPaceCalculation = function(subjectId = null, paceWindow = null) {
           
           <div style="background:${proj.onTrack ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; padding:10px; border-radius:8px; text-align:center; margin-top:4px;">
             <span style="font-weight:700; color:${proj.onTrack ? '#10b981' : '#ef4444'}; font-size:14px;">
-              ${proj.daysVsExam} days ${proj.onTrack ? 'buffer âœ“' : 'shortfall âœ—'}
+              ${proj.daysVsExam} days ${proj.onTrack ? 'buffer ✓' : 'shortfall ✗'}
             </span>
           </div>
         </div>
@@ -1748,7 +1748,7 @@ window.toggleNotifications = function() {
             notifications: [{
               id: 9999,
               title: "Alerts Enabled",
-              body: "Your notifications are working perfectly! ðŸš€",
+              body: "Your notifications are working perfectly! 🚀",
               smallIcon: "ic_stat_ca",
               iconColor: "#6C3CE1"
             }]
@@ -1765,14 +1765,14 @@ window.toggleNotifications = function() {
         state.activeNotificationSchedule = state.activeSchedule;
         saveState({ activeNotificationSchedule: state.activeSchedule });
         updateNotifToggleUI();
-        fireNotification("Notifications Enabled! ðŸš€", "Alerts are ON for " + schedName + ".");
+        fireNotification("Notifications Enabled! 🚀", "Alerts are ON for " + schedName + ".");
       } else if (Notification.permission !== "denied") {
         Notification.requestPermission().then(permission => {
           if (permission === "granted") {
             state.activeNotificationSchedule = state.activeSchedule;
             saveState({ activeNotificationSchedule: state.activeSchedule });
             updateNotifToggleUI();
-            fireNotification("Notifications Enabled! ðŸš€", "Alerts are ON for " + schedName + ".");
+            fireNotification("Notifications Enabled! 🚀", "Alerts are ON for " + schedName + ".");
           }
         });
       } else {
@@ -1910,9 +1910,9 @@ function checkScheduleNotifications() {
   });
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════
 //  CALENDAR PLANNER
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════
 function renderPlanner() {
   renderPlannerMockReminder();
   renderMiniCalendar();
@@ -2008,7 +2008,7 @@ function changePlannerDay(delta) {
 
 function renderPlannerDay() {
   const date = state.plannerDate;
-  const label = isToday(date) ? 'Today â€” ' + formatDateFull(date) : formatDateFull(date);
+  const label = isToday(date) ? 'Today — ' + formatDateFull(date) : formatDateFull(date);
   document.getElementById('planner-day-label').textContent = label;
   
   const tasks = getPlannerTasks();
@@ -2025,7 +2025,7 @@ function renderPlannerDay() {
 }
 
 function renderPlannerTaskList(tasks, dayKey) {
-  if (tasks.length === 0) return '<div class="empty-tasks">No tasks yet â€” tap "+ Add Task"</div>';
+  if (tasks.length === 0) return '<div class="empty-tasks">No tasks yet — tap "+ Add Task"</div>';
   
   return tasks.map((task, idx) => `
     <div class="planner-task ${task.done ? 'task-done' : ''}" onclick="togglePlannerTask('${dayKey}', ${task.originalIndex})">
@@ -2081,7 +2081,7 @@ function openAddTaskModal() {
   };
   const subjects = flattenSubjects(DYNAMIC_DATA.syllabusSubjects).map(s => ({ value: s.id, label: s.name }));
   
-  openModal('<span class="material-symbols-rounded icon-sm">add</span> Add Task', '<div class="form-group"><label>Date</label><input type="date" id="task-date" value="' + dateKey(state.plannerDate) + '"></div><div class="form-group"><label>Category</label><select id="task-category" onchange="onTaskCategoryChange()"><option value="primary">Primary Subject</option><option value="secondary">Secondary Subject</option><option value="quick">Quick Task</option></select></div><div id="task-study-fields"><div class="form-group"><label>Subject</label><select id="task-subject" onchange="onTaskSubjectChange()"><option value="">â€” Select â€”</option>' + subjects.map(s => '<option value="' + s.value + '">' + s.label + '</option>').join('') + '</select></div><div class="form-group" id="task-chapter-group" style="display:none;"><label>Chapter</label><select id="task-chapter" onchange="onTaskChapterChange()"><option value="">â€” Select â€”</option></select></div><div class="form-group" id="task-activity-group" style="display:none;"><label>Activity</label><select id="task-activity" onchange="onTaskChapterChange()"><option value="">â€” Select â€”</option><option value="conceptBook">Book (Concepts)</option><option value="questionBank">Question Bank</option><option value="revisionVideo">Revision Video</option></select></div></div><div class="form-group"><label>Task Description</label><input type="text" id="task-name" placeholder="e.g. Complete pending questions"></div><button class="btn-primary" onclick="addPlannerTask()">Add Task <span class="material-symbols-rounded icon-sm">check_circle</span></button>');
+  openModal('<span class="material-symbols-rounded icon-sm">add</span> Add Task', '<div class="form-group"><label>Date</label><input type="date" id="task-date" value="' + dateKey(state.plannerDate) + '"></div><div class="form-group"><label>Category</label><select id="task-category" onchange="onTaskCategoryChange()"><option value="primary">Primary Subject</option><option value="secondary">Secondary Subject</option><option value="quick">Quick Task</option></select></div><div id="task-study-fields"><div class="form-group"><label>Subject</label><select id="task-subject" onchange="onTaskSubjectChange()"><option value="">— Select —</option>' + subjects.map(s => '<option value="' + s.value + '">' + s.label + '</option>').join('') + '</select></div><div class="form-group" id="task-chapter-group" style="display:none;"><label>Chapter</label><select id="task-chapter" onchange="onTaskChapterChange()"><option value="">— Select —</option></select></div><div class="form-group" id="task-activity-group" style="display:none;"><label>Activity</label><select id="task-activity" onchange="onTaskChapterChange()"><option value="">— Select —</option><option value="conceptBook">Book (Concepts)</option><option value="questionBank">Question Bank</option><option value="revisionVideo">Revision Video</option></select></div></div><div class="form-group"><label>Task Description</label><input type="text" id="task-name" placeholder="e.g. Complete pending questions"></div><button class="btn-primary" onclick="addPlannerTask()">Add Task <span class="material-symbols-rounded icon-sm">check_circle</span></button>');
 }
 
 window.onTaskCategoryChange = function() {
@@ -2126,7 +2126,7 @@ function onTaskSubjectChange() {
   
   if (chapters.length > 0) {
     chapterGroup.style.display = 'block';
-    chapterSelect.innerHTML = '<option value="">â€” Select Chapter â€”</option>' + 
+    chapterSelect.innerHTML = '<option value="">— Select Chapter —</option>' + 
       chapters.map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('');
       
     if (subjectObj && (subjectObj.type === 'ibs' || subj.toLowerCase().startsWith('ibs-'))) {
@@ -2154,7 +2154,7 @@ function onTaskChapterChange() {
   if (chapterId) {
     // Strip emojis for cleaner task name
     const cleanActivity = activityName ? activityName.replace(/[^a-zA-Z\\s\\(\\)]/g, '').trim() : '';
-    taskName.value = chapterName + (cleanActivity ? ` â€” ${cleanActivity}` : '');
+    taskName.value = chapterName + (cleanActivity ? ` — ${cleanActivity}` : '');
   }
 }
 
@@ -2221,9 +2221,9 @@ function copyToTomorrow() {
   showToast('Copied to tomorrow!');
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════
 //  SYLLABUS TRACKER
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════
 function renderSyllabus() {
   if (state.syllabusView === 'detail' && state.activeSubject) {
     renderSyllabusDetail(state.activeSubject);
@@ -2299,7 +2299,7 @@ function showSubjectsList() {
       '<div class="subj-progress" style="display:flex; align-items:center; justify-content:flex-end;">' +
         '<div><span class="subj-pct">' + p + '%</span><div class="stat-bar"><div class="stat-bar-fill" style="width:' + p + '%"></div></div></div>' +
       '</div>' +
-      '<span class="subj-arrow">â–¶</span>'
+      '<span class="subj-arrow">▶</span>'
       : 
       '<div class="edit-mode-controls" style="display:flex; gap:4px; align-items:center;">' +
       '<button class="move-btn" onclick="event.stopPropagation(); openSubjectDetail(\'' + subj.id + '\', \'' + subj.type + '\')" title="Open Subject"><span class="material-symbols-rounded">arrow_forward</span></button>' +
@@ -2442,7 +2442,7 @@ function toggleIbsCheck(chapterId) {
   renderSyllabusDetail(state.activeSubject);
 }
 
-// â”€â”€â”€ Progress Calculation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Progress Calculation ───────────────
 function calculateSubjectProgress(key, type) {
   const progress = getSyllabusProgress();
   const subjects = DYNAMIC_DATA.syllabusSubjects || [];
@@ -2509,9 +2509,9 @@ function calculateOverallProgress(excludeIBSFlag = state.excludeIBS) {
   return totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════
 //  INITIALIZATION
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════
 function init() {
   // Initialize Themes
   initTheme();
@@ -2593,9 +2593,9 @@ if ('serviceWorker' in navigator) {
 
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════
 //  MENU, THEMES & DATA SHARING
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════
 window.editCustomUsername = function() {
   const email = window.loggedUserEmail;
   if (!email) return alert("Please login first to edit your account name!");
@@ -2695,7 +2695,7 @@ function openMenuModal() {
            <div>
              <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:700;">Active Cloud Account</div>
              <div style="font-size:14px; color:var(--primary); font-weight:700; margin-top:2px; display:flex; align-items:center; gap:6px;">
-               <span>ðŸ‘¤ ${uName}</span>
+               <span>👤 ${uName}</span>
                <span style="font-size:11px; color:var(--text-secondary); font-weight:400;">(${window.isReadOnlyMode ? 'View Mode' : 'Admin Mode'})</span>
                ${!window.isReadOnlyMode ? `<button style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; padding:0; display:flex;" onclick="editCustomUsername()" title="Edit Display Name"><span class="material-symbols-rounded" style="font-size:15px; color:var(--primary);">edit</span></button>` : ''}
              </div>
@@ -2893,7 +2893,7 @@ function applyCustomTheme(hexColor) {
     localStorage.setItem('ca-custom-color', hexColor);
 }
 
-// â”€â”€â”€ SYLLABUS EDIT HANDLERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── SYLLABUS EDIT HANDLERS ─────────────
 function reorderSyllabusSubject(from, to) {
   reorderArray(DYNAMIC_DATA.syllabusSubjects, from, to);
 }
@@ -2965,7 +2965,7 @@ function addSyllabusChapter(subjectId) {
   }
 }
 
-// â”€â”€â”€ EXAMS EDIT HANDLERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── EXAMS EDIT HANDLERS ───────────────
 function reorderMock(from, to, seriesKey) {
   const series = DYNAMIC_DATA.mocks.find(s => s.id === seriesKey);
   if (series) reorderArray(series.tests, from, to);
@@ -3061,7 +3061,7 @@ function updateTargetAttempt(attempt) {
 async function syncOfficialDates() {
   const btn = document.querySelector('.final-datesheet .add-item-btn');
   const oldText = btn.innerHTML;
-  btn.innerHTML = 'â³ Syncing...';
+  btn.innerHTML = '⏳ Syncing...';
   btn.disabled = true;
   
   try {
@@ -3096,7 +3096,7 @@ async function syncOfficialDates() {
   }
 }
 
-// â”€â”€â”€ SCHEDULE EDIT HANDLERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── SCHEDULE EDIT HANDLERS ─────────────
 function reorderScheduleSlot(from, to, scheduleKey) {
   reorderArray(DYNAMIC_DATA.schedules[scheduleKey].slots, from, to);
 }
@@ -3136,7 +3136,7 @@ function initTheme() {
   }
 }
 
-// â”€â”€â”€ Data Export / Import â”€â”€â”€
+// ─── Data Export / Import ───
 async function exportData() {
   try {
     const data = localStorage.getItem(getStorageKey()) || '{}';
@@ -3249,7 +3249,7 @@ function handleImportFile(event) {
   event.target.value = ''; // reset input
 }
 
-// â”€â”€â”€ PDF Generation â”€â”€â”€
+// ─── PDF Generation ───
 async function shareProgressPDF(exportType = 'pdf') {
   const overallPct = calculateOverallProgress();
   
@@ -3303,8 +3303,8 @@ async function shareProgressPDF(exportType = 'pdf') {
       let trendColor = '#666';
       if (i > 0) {
         const diff = sortedMocks[i].score - sortedMocks[i-1].score;
-        if (diff > 0) { trendStr = 'â†‘ +' + diff; trendColor = '#30d158'; }
-        else if (diff < 0) { trendStr = 'â†“ ' + diff; trendColor = '#ff453a'; }
+        if (diff > 0) { trendStr = '↑ +' + diff; trendColor = '#30d158'; }
+        else if (diff < 0) { trendStr = '↓ ' + diff; trendColor = '#ff453a'; }
       }
       mocksHtml += `<tr style="border-bottom:1px solid #eee;">
         <td style="padding:8px;">${sortedMocks[i].name}</td>
@@ -3381,7 +3381,7 @@ async function shareProgressPDF(exportType = 'pdf') {
     const cons = DYNAMIC_DATA.consistency || {};
     const currentStreak = cons.currentStreak || streak;
     const longestStreak = cons.longestStreak || 0;
-    const paceLabel = avgHoursFloat >= 8 ? 'Excellent Pace ðŸ”¥' : avgHoursFloat >= 5 ? 'Good Pace âœ…' : avgHoursFloat >= 2 ? 'Moderate Pace' : 'Needs Improvement';
+    const paceLabel = avgHoursFloat >= 8 ? 'Excellent Pace 🔥' : avgHoursFloat >= 5 ? 'Good Pace ✅' : avgHoursFloat >= 2 ? 'Moderate Pace' : 'Needs Improvement';
     consistencyHtml = `<div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
       <div style="flex:1; min-width:80px; border:1px solid #e2e2e2; border-radius:8px; padding:10px; text-align:center;">
         <div style="font-size:20px; font-weight:800;">${currentStreak}</div>
@@ -3576,7 +3576,7 @@ async function shareProgressPDF(exportType = 'pdf') {
 
 }
 
-// â”€â”€â”€ Test Series Managers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Test Series Managers ─────────────────────
 function addMockSeries() {
   openFormModal('Add Test Series', [
     { label: 'Series Name', type: 'text', placeholder: 'e.g., ICAI MTPs' }
@@ -4160,7 +4160,7 @@ window.openPlannerPickerModal = function(target = 'tracker') {
     html += `
       <div class="glass-card" style="padding:10px; cursor:pointer; border:1px solid var(--border-glow);" onclick="pickPlannerTask('${subj}', '${topic}', '${name}', '${target}')">
         <div style="font-weight:600; font-size:14px;">${t.name}</div>
-        <div style="font-size:12px; color:var(--text-secondary);">${subjName || 'No Subject'} ${topicName ? 'â€” ' + topicName : ''}</div>
+        <div style="font-size:12px; color:var(--text-secondary);">${subjName || 'No Subject'} ${topicName ? '— ' + topicName : ''}</div>
       </div>
     `;
   });
@@ -4985,7 +4985,7 @@ function smartRepairSyllabusData() {
   enforceSubject('idt', { id: 'idt', name: 'Paper 5: IDT (GST + Customs)', source: 'VB Sir', type: 'main', chapters: APP_DATA.group2.idtChapters });
   
   ['fr', 'afm', 'audit', 'law', 'scpm'].forEach(key => {
-    let nameMap = { fr: 'IBS â€” FR', afm: 'IBS â€” AFM', audit: 'IBS â€” Audit', law: 'IBS â€” Law (SPOM A)', scpm: 'IBS â€” SC&PM (SPOM B)' };
+    let nameMap = { fr: 'IBS — FR', afm: 'IBS — AFM', audit: 'IBS — Audit', law: 'IBS — Law (SPOM A)', scpm: 'IBS — SC&PM (SPOM B)' };
     enforceSubject('ibs-' + key, { id: 'ibs-' + key, name: nameMap[key], source: '', type: 'ibs', chapters: APP_DATA.group2.ibsSubjects[key].chapters });
   });
 
@@ -5557,7 +5557,7 @@ async function checkForUpdates() {
       return;
     }
 
-    // Check current version â€” use localStorage as the single source of truth
+    // Check current version — use localStorage as the single source of truth
     // BUILD_VERSION is set at build time in version.js, but after OTA it won't change
     // So we always trust localStorage over BUILD_VERSION
     const installedOtaVersion = localStorage.getItem('app_ota_version');
@@ -5566,7 +5566,7 @@ async function checkForUpdates() {
     
     // If we already have this version, we're up to date
     if (currentVersion && currentVersion === latestVersion) {
-      showToast('App is already up to date! âœ“', 'success');
+      showToast('App is already up to date! ✓', 'success');
       return;
     }
 
@@ -5639,3 +5639,4 @@ document.addEventListener("DOMContentLoaded", () => {
   updateMeta();
   new MutationObserver(updateMeta).observe(document.body, { attributes: true, attributeFilter: ["data-theme"] });
 });
+

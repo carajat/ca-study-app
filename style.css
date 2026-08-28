@@ -1935,5 +1935,11 @@ body.edit-mode-active {
   display: inline-block !important;
 }
 
-. a p p - h e a d e r ,   . t a b - h e a d e r   {   - w e b k i t - a p p - r e g i o n :   d r a g ;   p a d d i n g - t o p :   c a l c ( 1 6 p x   +   e n v ( t i t l e b a r - a r e a - h e i g h t ,   0 p x ) )   ! i m p o r t a n t ;   }   . a p p - h e a d e r   * ,   . t a b - h e a d e r   *   {   - w e b k i t - a p p - r e g i o n :   n o - d r a g ;   }  
- 
+.app-header, .tab-header {
+  -webkit-app-region: drag;
+  padding-top: calc(16px + env(titlebar-area-height, 0px)) !important;
+}
+.app-header *, .tab-header * {
+  -webkit-app-region: no-drag;
+}
+
