@@ -4,6 +4,7 @@
   "description": "Track your CA Final Group 2 preparation",
   "start_url": ".",
   "display": "standalone",
+  "display_override": ["window-controls-overlay"],
   "background_color": "#0a0b14",
   "theme_color": "#6C3CE1",
   "orientation": "portrait",
