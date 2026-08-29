@@ -1951,11 +1951,11 @@ body.zen-mode-active .app-header,
 body.zen-mode-active .bottom-nav {
   display: none !important;
 }
-body.zen-mode-active section#dashboard-tab > *:not(#study-tracker-card) {
+body.zen-mode-active section#tab-dashboard > *:not(#study-tracker-card) {
   display: none !important;
   opacity: 0;
 }
-body.zen-mode-active #app > *:not(section#dashboard-tab) {
+body.zen-mode-active #app > *:not(section#tab-dashboard) {
   display: none !important;
 }
 body.zen-mode-active #study-tracker-card {
