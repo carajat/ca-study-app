@@ -1,3 +1,4 @@
+window.getTrackerEl = function(id) { let el = document.getElementById(id); if (!el && window.pipWindow && window.pipWindow.document) { el = window.pipWindow.document.getElementById(id); } return el; };
 // ========================================
 // CA Final Study Companion — App Logic
 // ========================================
@@ -3766,12 +3767,12 @@ function restoreTrackerState() {
           if (trackerState.intervalId) clearInterval(trackerState.intervalId);
           trackerState.intervalId = setInterval(updateTimerDisplay, 1000);
         }
-        var subSel = document.getElementById('st-subject');
+        var subSel = getTrackerEl('st-subject');
         if (subSel) subSel.value = trackerState.subject;
         onTrackerSubjectChange(true);
-        var topSel = document.getElementById('st-topic');
+        var topSel = getTrackerEl('st-topic');
         if (topSel) topSel.value = trackerState.topic;
-        var taskInp = document.getElementById('st-task-desc');
+        var taskInp = getTrackerEl('st-task-desc');
         if (taskInp) taskInp.value = trackerState.task;
       }
     } else {
@@ -3782,7 +3783,7 @@ function restoreTrackerState() {
       trackerState.pauseStart = null;
       if (trackerState.intervalId) { clearInterval(trackerState.intervalId); trackerState.intervalId = null; }
       updateTrackerUI('idle');
-      var el = document.getElementById('st-timer-value');
+      var el = getTrackerEl('st-timer-value');
       if (el) el.textContent = '00:00:00';
     }
   } catch(e) { console.error('restoreTrackerState', e); }
@@ -3804,7 +3805,7 @@ function saveTrackerState() {
 }
 
 function populateTrackerSubjects() {
-  var sel = document.getElementById('st-subject');
+  var sel = getTrackerEl('st-subject');
   if (!sel) return;
   sel.innerHTML = '<option value="">Select Subject</option>';
   var subjects = [];
@@ -3823,8 +3824,8 @@ function populateTrackerSubjects() {
 }
 
 function onTrackerSubjectChange(restoring) {
-  var subSel = document.getElementById('st-subject');
-  var topSel = document.getElementById('st-topic');
+  var subSel = getTrackerEl('st-subject');
+  var topSel = getTrackerEl('st-topic');
   if (!subSel || !topSel) return;
   var subj = subSel.value;
   topSel.innerHTML = '<option value="">Select Topic</option>';
@@ -3857,7 +3858,7 @@ function onTrackerSubjectChange(restoring) {
 }
 
 function onTrackerTopicChange() {
-  trackerState.topic = document.getElementById('st-topic').value;
+  trackerState.topic = getTrackerEl('st-topic').value;
   saveTrackerState();
 }
 
@@ -3878,22 +3879,22 @@ function formatElapsed(ms) {
 }
 
 function updateTimerDisplay() {
-  var el = document.getElementById('st-timer-value');
+  var el = getTrackerEl('st-timer-value');
   if (el) el.textContent = formatElapsed(getElapsedMs());
 }
 
 function updateTrackerUI(mode) {
-  var timerDisp = document.getElementById('st-timer-display');
-  var btnStart = document.getElementById('st-btn-start');
-  var btnPause = document.getElementById('st-btn-pause');
-  var btnResume = document.getElementById('st-btn-resume');
-  var btnStop = document.getElementById('st-btn-stop');
-  var statusEl = document.getElementById('st-status');
-  var subSel = document.getElementById('st-subject');
-  var topSel = document.getElementById('st-topic');
-  var taskInp = document.getElementById('st-task-desc');
-  var badge = document.getElementById('st-start-time-badge');
-  var badgeVal = document.getElementById('st-start-time-val');
+  var timerDisp = getTrackerEl('st-timer-display');
+  var btnStart = getTrackerEl('st-btn-start');
+  var btnPause = getTrackerEl('st-btn-pause');
+  var btnResume = getTrackerEl('st-btn-resume');
+  var btnStop = getTrackerEl('st-btn-stop');
+  var statusEl = getTrackerEl('st-status');
+  var subSel = getTrackerEl('st-subject');
+  var topSel = getTrackerEl('st-topic');
+  var taskInp = getTrackerEl('st-task-desc');
+  var badge = getTrackerEl('st-start-time-badge');
+  var badgeVal = getTrackerEl('st-start-time-val');
   if (!timerDisp) return;
   timerDisp.className = 'st-timer-display';
   
@@ -3932,16 +3933,16 @@ function updateTrackerUI(mode) {
 }
 
 function trackerStart() {
-  var subj = document.getElementById('st-subject').value;
+  var subj = getTrackerEl('st-subject').value;
   if (!subj) {
-    document.getElementById('st-status').innerHTML = '<span class="material-symbols-rounded icon-sm" style="color:var(--accent); vertical-align:middle; font-size:16px;">warning</span> Please select a subject first';
+    getTrackerEl('st-status').innerHTML = '<span class="material-symbols-rounded icon-sm" style="color:var(--accent); vertical-align:middle; font-size:16px;">warning</span> Please select a subject first';
     return;
   }
   trackerState.isRunning = true; trackerState.isPaused = false;
   trackerState.startTime = (typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now()); trackerState.pausedTime = 0; trackerState.pauseStart = null;
-  trackerState.subject = document.getElementById('st-subject').value;
-  trackerState.topic = document.getElementById('st-topic').value;
-  trackerState.task = document.getElementById('st-task-desc').value;
+  trackerState.subject = getTrackerEl('st-subject').value;
+  trackerState.topic = getTrackerEl('st-topic').value;
+  trackerState.task = getTrackerEl('st-task-desc').value;
   updateTrackerUI('running');
   trackerState.intervalId = setInterval(updateTimerDisplay, 1000);
   saveTrackerState();
@@ -3996,9 +3997,9 @@ window.updateReadonlyLiveTracker = function(data) {
   
   window.readonlyLiveTrackerState.data = data;
   
-  const timerValEl = document.getElementById('st-timer-value');
-  const timerDispEl = document.getElementById('st-timer-display');
-  const statusEl = document.getElementById('st-status');
+  const timerValEl = getTrackerEl('st-timer-value');
+  const timerDispEl = getTrackerEl('st-timer-display');
+  const statusEl = getTrackerEl('st-status');
   
   // Also hide all buttons for read-only user
   ['st-btn-start', 'st-btn-pause', 'st-btn-resume', 'st-btn-stop'].forEach(id => {
@@ -4012,8 +4013,8 @@ window.updateReadonlyLiveTracker = function(data) {
     if (el) el.disabled = true;
   });
   
-  const badge = document.getElementById('st-start-time-badge');
-  const badgeVal = document.getElementById('st-start-time-val');
+  const badge = getTrackerEl('st-start-time-badge');
+  const badgeVal = getTrackerEl('st-start-time-val');
   if (!data) {
     if (timerValEl) timerValEl.textContent = '00:00:00';
     if (statusEl) statusEl.innerHTML = '<span class="material-symbols-rounded icon-sm" style="color:var(--text-muted); vertical-align:middle; font-size:16px;">cloud_off</span> Not studying currently';
@@ -4031,11 +4032,11 @@ window.updateReadonlyLiveTracker = function(data) {
   
   // Fill subject/topic if available
   if (data.subject) {
-    const subSel = document.getElementById('st-subject');
+    const subSel = getTrackerEl('st-subject');
     if (subSel) subSel.innerHTML = `<option>${data.subject}</option>`;
   }
   if (data.topic) {
-    const topSel = document.getElementById('st-topic');
+    const topSel = getTrackerEl('st-topic');
     if (topSel) topSel.innerHTML = `<option>${data.topic}</option>`;
   }
   
@@ -4077,9 +4078,9 @@ function trackerStop() {
   var hh = Math.floor(totalMinutes / 60);
   var mm = totalMinutes % 60;
   clearInterval(trackerState.intervalId);
-  var subject = trackerState.subject || document.getElementById('st-subject').value;
-  var topic = trackerState.topic || document.getElementById('st-topic').value;
-  var task = document.getElementById('st-task-desc').value;
+  var subject = trackerState.subject || getTrackerEl('st-subject').value;
+  var topic = trackerState.topic || getTrackerEl('st-topic').value;
+  var task = getTrackerEl('st-task-desc').value;
   
   // Capture startTime BEFORE nulling trackerState (format: "HH:MM")
   var sessionStartTime = '';
@@ -4092,7 +4093,7 @@ function trackerStop() {
   trackerState.isRunning = false; trackerState.isPaused = false;
   trackerState.startTime = null; trackerState.pausedTime = 0; trackerState.pauseStart = null;
   updateTrackerUI('idle');
-  document.getElementById('st-timer-value').textContent = '00:00:00';
+  getTrackerEl('st-timer-value').textContent = '00:00:00';
   saveTrackerState();
   if (!window.isReadOnlyMode) {
     DYNAMIC_DATA.liveSession = null;
@@ -4114,13 +4115,13 @@ function trackerStop() {
     });
     saveDynamicData();
     renderTodaysLog();
-    document.getElementById('st-status').innerHTML = '<span class="material-symbols-rounded icon-sm" style="color:var(--success-color); vertical-align:middle; font-size:16px;">check_circle</span> Saved ' + hh + 'h ' + mm + 'm to journal';
+    getTrackerEl('st-status').innerHTML = '<span class="material-symbols-rounded icon-sm" style="color:var(--success-color); vertical-align:middle; font-size:16px;">check_circle</span> Saved ' + hh + 'h ' + mm + 'm to journal';
   } else {
-    document.getElementById('st-status').textContent = 'Session too short (< 1 min), not saved';
+    getTrackerEl('st-status').textContent = 'Session too short (< 1 min), not saved';
   }
   
   setTimeout(function() {
-    var st = document.getElementById('st-status');
+    var st = getTrackerEl('st-status');
     if (st) st.textContent = '';
   }, 4000);
 }
@@ -5059,9 +5060,9 @@ window.pickMockTask = function(seriesName, mockSubject, target) {
   const mockTopic = seriesName;
   
   if (target === 'tracker') {
-    const subSel = document.getElementById('st-subject');
-    const topSel = document.getElementById('st-topic');
-    const descInput = document.getElementById('st-task-desc');
+    const subSel = getTrackerEl('st-subject');
+    const topSel = getTrackerEl('st-topic');
+    const descInput = getTrackerEl('st-task-desc');
     
     let actualSubjName = mockSubject;
     let flat = [];
