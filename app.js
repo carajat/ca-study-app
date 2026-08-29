@@ -1093,14 +1093,21 @@ function renderSchedule() {
           <div style="display:flex; align-items:center;">
             <span class="material-symbols-rounded slot-icon">${(slot.icon || "").trim()}</span>
             ${!isEditMode ? `<span class="slot-label">${slot.label}</span>` : `<input type="text" class="inline-input" value="${slot.label}" onchange="updateScheduleSlot('${state.activeSchedule}', ${idx}, 'label', this.value)">`}
-            ${isActive && !isEditMode ? `<span class="active-indicator" style="position:static; display:inline-flex; align-items:center; gap:3px; margin-left:10px; background:var(--red-light, rgba(239, 68, 68, 0.15)); padding:2px 6px; border-radius:10px;"><span class="material-symbols-rounded icon-sm" style="font-size:10px;">circle</span> ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}</span>` : ''}
+            ${isActive && !isEditMode ? (() => {
+              const isTrk = typeof trackerState !== 'undefined' && (trackerState.isRunning || trackerState.isPaused);
+              const bg = isTrk ? 'var(--success-light, rgba(16, 185, 129, 0.15))' : 'var(--red-light, rgba(239, 68, 68, 0.15))';
+              const col = isTrk ? 'var(--success, #10B981)' : 'var(--red, #EF4444)';
+              const txt = isTrk ? 'Studying' : 'Not Studying';
+              const icn = isTrk ? 'timer' : 'timer_off';
+              return `<span class="active-indicator realtime-time-badge" style="position:static; display:inline-flex; align-items:center; gap:4px; margin-left:10px; background:${bg}; color:${col}; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:600;"><span class="material-symbols-rounded icon-sm" style="font-size:13px; color:${col};">${icn}</span> ${txt} • ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}</span>`;
+            })() : ''}
           </div>
           ${(!isEditMode && slot.type === 'study' && slotResultsMap[slot.id]) ? (() => {
             const st = slotResultsMap[slot.id].status;
             if (st === 'done') return `<div class="cons-slot-status cons-status-done">${_svgCheck}<span style="color:var(--success);">${_fmtMins(slotResultsMap[slot.id].actualMin)}</span></div>`;
             if (st === 'partial') return `<div class="cons-slot-status cons-status-partial">${_svgPartial}<span>${_fmtMins(slotResultsMap[slot.id].actualMin)}</span></div>`;
             if (st === 'upcoming') return `<div class="cons-slot-status cons-status-upcoming">${_svgUpcoming}<span>Upcoming</span></div>`;
-            if (st === 'studying') return `<div class="cons-slot-status" style="color:var(--primary); font-weight:600;"><span class="material-symbols-rounded icon-sm" style="font-size:16px;">timer</span><span>Studying...</span></div>`;
+            if (st === 'current') return ''; // Handled by badge
             return `<div class="cons-slot-status cons-status-missed">${_svgPartial}<span>Missed</span></div>`;
           })() : ''}
         </div>
@@ -1242,9 +1249,10 @@ function computeDayAdherence(dateStr) {
 
     const pct = slot.duration > 0 ? actualMin / slot.duration : 0;
     let status;
+    const isCurrentSlot = dateStr === todayStr && nowMin >= rangeStart && nowMin < (rangeStart + (slot.duration || 60));
     if (pct >= 0.8) status = 'done';
     else if (pct > 0) status = 'partial';
-    else if (dateStr === todayStr && typeof trackerState !== 'undefined' && (trackerState.isRunning || trackerState.isPaused) && nowMin >= rangeStart && nowMin < (rangeStart + (slot.duration || 60))) status = 'studying';
+    else if (isCurrentSlot) status = 'current';
     else if (dateStr === todayStr && nowMin < rangeStart) status = 'upcoming';
     else status = 'missed';
 
@@ -1564,10 +1572,13 @@ function updateConsistencyWidget() {
           const endMin = startMin + slot.duration;
           if (cTime >= startMin && cTime < endMin) { cSlot = slot; break; }
         }
+        const isTrk = typeof trackerState !== 'undefined' && (trackerState.isRunning || trackerState.isPaused);
+        const trkCol = isTrk ? 'var(--success, #10B981)' : 'var(--red, #EF4444)';
+        const trkTxt = isTrk ? 'Studying' : 'Not Studying';
         if (cSlot) {
-          currentActivityStr = `<div style="font-size:11px; margin-top:4px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;"><span class="material-symbols-rounded" style="font-size:14px; color:var(--primary);">${(cSlot.icon || 'schedule').trim()}</span> <span style="flex:1;">Current: <b style="color:var(--text-primary);">${cSlot.label}</b></span> <span style="font-weight:700; color:var(--primary-color);">${timeStr}</span></div>`;
+          currentActivityStr = `<div style="font-size:11px; margin-top:4px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;"><span class="material-symbols-rounded" style="font-size:14px; color:var(--primary);">${(cSlot.icon || 'schedule').trim()}</span> <span style="flex:1;">Current: <b style="color:var(--text-primary);">${cSlot.label}</b></span> <span style="font-weight:700; color:${trkCol}; display:flex; align-items:center; gap:3px;">${trkTxt} • ${timeStr}</span></div>`;
         } else {
-          currentActivityStr = `<div style="font-size:11px; margin-top:4px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;"><span class="material-symbols-rounded" style="font-size:14px; color:var(--text-muted);">bed</span> <span style="flex:1;">Current: <b style="color:var(--text-muted);">Rest Time</b></span> <span style="font-weight:700; color:var(--text-muted);">${timeStr}</span></div>`;
+          currentActivityStr = `<div style="font-size:11px; margin-top:4px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;"><span class="material-symbols-rounded" style="font-size:14px; color:var(--text-muted);">bed</span> <span style="flex:1;">Current: <b style="color:var(--text-muted);">Rest Time</b></span> <span style="font-weight:700; color:${trkCol}; display:flex; align-items:center; gap:3px;">${trkTxt} • ${timeStr}</span></div>`;
         }
       }
     }
@@ -3762,11 +3773,11 @@ function restoreTrackerState() {
           trackerState.isPaused = true;
           trackerState.pauseStart = s.pauseStart;
           if (trackerState.intervalId) { clearInterval(trackerState.intervalId); trackerState.intervalId = null; }
-          updateTrackerUI('paused');
+          updateTrackerUI('paused'); refreshLiveUI();
           updateTimerDisplay();
         } else {
           trackerState.isRunning = true;
-          updateTrackerUI('running');
+          updateTrackerUI('running'); refreshLiveUI();
           if (trackerState.intervalId) clearInterval(trackerState.intervalId);
           trackerState.intervalId = setInterval(updateTimerDisplay, 1000);
         }
@@ -3946,7 +3957,7 @@ function trackerStart() {
   trackerState.subject = getTrackerEl('st-subject').value;
   trackerState.topic = getTrackerEl('st-topic').value;
   trackerState.task = getTrackerEl('st-task-desc').value;
-  updateTrackerUI('running');
+  updateTrackerUI('running'); refreshLiveUI();
   trackerState.intervalId = setInterval(updateTimerDisplay, 1000);
   saveTrackerState();
   if (!window.isReadOnlyMode) {
@@ -3965,7 +3976,7 @@ function trackerPause() {
   trackerState.isRunning = false; trackerState.isPaused = true;
   trackerState.pauseStart = (typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now());
   clearInterval(trackerState.intervalId);
-  updateTrackerUI('paused'); saveTrackerState();
+  updateTrackerUI('paused'); refreshLiveUI(); saveTrackerState();
   if (!window.isReadOnlyMode) {
     if (!DYNAMIC_DATA.liveSession) DYNAMIC_DATA.liveSession = {};
     DYNAMIC_DATA.liveSession.active = false;
@@ -3977,7 +3988,7 @@ function trackerPause() {
 function trackerResume() {
   if (trackerState.pauseStart) trackerState.pausedTime += ((typeof window.getGlobalTime === 'function' ? window.getGlobalTime() : Date.now()) - trackerState.pauseStart);
   trackerState.pauseStart = null; trackerState.isRunning = true; trackerState.isPaused = false;
-  updateTrackerUI('running');
+  updateTrackerUI('running'); refreshLiveUI();
   trackerState.intervalId = setInterval(updateTimerDisplay, 1000);
   saveTrackerState();
   if (!window.isReadOnlyMode) {
@@ -5730,3 +5741,11 @@ document.addEventListener("DOMContentLoaded", () => {
   new MutationObserver(updateMeta).observe(document.body, { attributes: true, attributeFilter: ["data-theme"] });
 });
 
+
+// Auto-refresh UI for live time updates
+function refreshLiveUI() {
+  if (typeof isEditMode !== 'undefined' && isEditMode) return;
+  if (state.activeTab === 'schedule' && typeof renderSchedule === 'function') renderSchedule();
+  if (state.activeTab === 'home' && typeof updateConsistencyWidget === 'function') updateConsistencyWidget();
+}
+setInterval(refreshLiveUI, 30000);
