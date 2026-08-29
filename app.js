@@ -608,8 +608,8 @@ function renderTrendGraph() {
     setTimeout(() => {
       wrapper.scrollLeft = wrapper.scrollWidth;
     }, 50);
-  }
-}
+    initDragToScroll(wrapper);
+
 
 window.saveTrendRange = function() {
   const selectEl = document.getElementById('trend-range-select');
