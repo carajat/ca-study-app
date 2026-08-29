@@ -5748,4 +5748,5 @@ function refreshLiveUI() {
   if (state.activeTab === 'schedule' && typeof renderSchedule === 'function') renderSchedule();
   if (state.activeTab === 'home' && typeof updateConsistencyWidget === 'function') updateConsistencyWidget();
 }
-let _lastTickMin = new Date().getMinutes();\nsetInterval(() => { const m = new Date().getMinutes(); if (m !== _lastTickMin) { _lastTickMin = m; refreshLiveUI(); } }, 1000);
+let _lastTickMin = new Date().getMinutes();
+setInterval(() => { const m = new Date().getMinutes(); if (m !== _lastTickMin) { _lastTickMin = m; refreshLiveUI(); } }, 1000);
