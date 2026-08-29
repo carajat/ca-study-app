@@ -1,115 +1,27 @@
 const fs = require('fs');
-let code = fs.readFileSync('app.js', 'utf8');
+let c = fs.readFileSync('app.js', 'utf8');
 
-// 1. Add openConfirmModal function
-const confirmModalStr = `
-window.openConfirmModal = function(title, body, confirmText, onConfirm) {
-  openModal('', \`
-    <div class="confirm-icon-wrap">
-      <span class="material-symbols-rounded">warning</span>
-    </div>
-    <div class="confirm-title">\${title}</div>
-    <div class="confirm-body">\${body}</div>
-    <div class="confirm-row">
-      <button class="confirm-btn cb-cancel" onclick="closeModal()">Cancel</button>
-      <button class="confirm-btn cb-confirm" id="confirm-action-btn">\${confirmText}</button>
-    </div>
-  \`);
-  setTimeout(() => {
-    document.getElementById('confirm-action-btn').onclick = () => {
-      closeModal();
-      if(onConfirm) onConfirm();
-    };
-  }, 100);
-};
-`;
-if (!code.includes('openConfirmModal')) {
-  code += confirmModalStr;
-}
+const regex = /\$\{hasSmartBadge \? \(\(\) => \{\s*const isThisStudy = slot\.type === 'study';\s*const bg = isTrk \? 'var\(--success-light, rgba\(16, 185, 129, 0\.15\)\)' : \(isThisStudy \? 'var\(--red-light, rgba\(239, 68, 68, 0\.15\)\)' : 'var\(--bg-tertiary, #333333\)'\);\s*const col = isTrk \? 'var\(--success, #10B981\)' : \(isThisStudy \? 'var\(--red, #EF4444\)' : 'var\(--text-muted, #888888\)'\);\s*const txt = isTrk \? 'Studying' : \(isThisStudy \? 'Not Studying' : 'Break Time'\);\s*const icn = isTrk \? 'timer' : \(isThisStudy \? 'timer_off' : 'free_breakfast'\);\s*return `<span class="active-indicator realtime-time-badge" style="position:static; display:inline-flex; align-items:center; gap:4px; margin-left:10px; background:\$\{bg\}; color:\$\{col\}; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:600;"><span class="material-symbols-rounded icon-sm" style="font-size:13px; color:\$\{col\};">\$\{icn\}<\/span> \$\{txt\} • \$\{String\(now\.getHours\(\)\)\.padStart\(2,'0'\)\}:\$\{String\(now\.getMinutes\(\)\)\.padStart\(2,'0'\)\}<\/span>`;\s*\}\)\(\) : ''\}/;
 
-// 2. Update toggleEditMode
-const oldEditModeStr = `window.isEditMode = !window.isEditMode;
-  renderHome();`;
-const newEditModeStr = `window.isEditMode = !window.isEditMode;
-  if(window.isEditMode) {
-    document.body.classList.add('edit-mode-active');
-  } else {
-    document.body.classList.remove('edit-mode-active');
-  }
-  renderHome();`;
-code = code.replace(oldEditModeStr, newEditModeStr);
+const rep = ``; // Remove badge from the header's left side
 
-// 3. Update restoreDailyBackup to use openConfirmModal
-const oldRestoreConfirm = `if (confirm("Are you sure you want to overwrite current data with the backup from " + dateStr + "? This will replace both cloud and local data.")) {
-    try {
-      const data = JSON.parse(backupStr);
-      if (data.trackerData) localStorage.setItem(getStorageKey(), JSON.stringify(data.trackerData));
-      if (data.dynamicData) {
-        DYNAMIC_DATA = data.dynamicData;
-        saveDynamicData();
-      }
-      alert("Backup restored successfully! Reloading app...");
-      window.location.reload();
-    } catch (e) {
-      alert("Failed to restore backup.");
-    }
-  }`;
+c = c.replace(regex, rep);
 
-const newRestoreConfirm = `window.openConfirmModal(
-    "Restore Backup",
-    "Are you sure you want to overwrite current data with the backup from " + dateStr + "? This will replace both cloud and local data.",
-    "Restore",
-    () => {
-      try {
-        const data = JSON.parse(backupStr);
-        if (data.trackerData) localStorage.setItem(getStorageKey(), JSON.stringify(data.trackerData));
-        if (data.dynamicData) {
-          DYNAMIC_DATA = data.dynamicData;
-          saveDynamicData();
-        }
-        showToast("Backup restored! Reloading...");
-        setTimeout(() => window.location.reload(), 1500);
-      } catch (e) {
-        showToast("Failed to restore backup.", true);
-      }
-    }
-  );`;
-code = code.replace(oldRestoreConfirm, newRestoreConfirm);
+const regex2 = /<\/div>\s*<div class="slot-details" style="\$\{isEditMode \? 'display:flex; flex-direction:column; gap:4px; margin-right:10px;' : ''\}">/;
 
-// 4. Update importData to use openConfirmModal
-const oldImportConfirm = `if (confirm("Are you sure you want to overwrite current data with this backup?")) {
-          localStorage.setItem(getStorageKey(), e.target.result);
-          alert("Data imported successfully! Reloading app...");
-          window.location.reload();
-        }`;
-const newImportConfirm = `window.openConfirmModal(
-          "Import JSON",
-          "Are you sure you want to overwrite current data with this backup?",
-          "Import",
-          () => {
-            localStorage.setItem(getStorageKey(), e.target.result);
-            showToast("Data imported! Reloading...");
-            setTimeout(() => window.location.reload(), 1500);
-          }
-        );`;
-code = code.replace(oldImportConfirm, newImportConfirm);
+const rep2 = `</div>
+        \${hasSmartBadge ? (() => {
+              const isThisStudy = slot.type === 'study';
+              const isPaused = isTrk && typeof trackerState !== 'undefined' && trackerState.isPaused;
+              const bg = isTrk ? (isPaused ? 'var(--warning-light, rgba(245, 158, 11, 0.15))' : 'var(--success-light, rgba(16, 185, 129, 0.15))') : (isThisStudy ? 'var(--red-light, rgba(239, 68, 68, 0.15))' : 'var(--bg-tertiary, #333333)');
+              const col = isTrk ? (isPaused ? 'var(--warning, #F59E0B)' : 'var(--success, #10B981)') : (isThisStudy ? 'var(--red, #EF4444)' : 'var(--text-muted, #888888)');
+              const txt = isTrk ? (isPaused ? 'Paused' : 'Studying') : (isThisStudy ? 'Not Studying' : 'Break Time');
+              const icn = isTrk ? (isPaused ? 'pause_circle' : 'timer') : (isThisStudy ? 'timer_off' : 'free_breakfast');
+              return \`<div style="margin-top:8px; margin-bottom:2px;"><span class="active-indicator realtime-time-badge" style="display:inline-flex; align-items:center; gap:4px; background:\${bg}; color:\${col}; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600;"><span class="material-symbols-rounded icon-sm" style="font-size:14px; color:\${col};">\${icn}</span> \${txt} • \${String(now.getHours()).padStart(2,'0')}:\${String(now.getMinutes()).padStart(2,'0')}</span></div>\`;
+            })() : ''}
+        <div class="slot-details" style="\${isEditMode ? 'display:flex; flex-direction:column; gap:4px; margin-right:10px;' : ''}">`;
 
-// Note: Another place for importData
-code = code.replace(/if\s*\(confirm\("Are you sure you want to overwrite current data with this backup\?"\)\)\s*{\s*localStorage\.setItem\(getStorageKey\(\),\s*JSON\.stringify\(data\.trackerData\)\);\s*if\s*\(data\.dynamicData\)\s*{\s*DYNAMIC_DATA\s*=\s*data\.dynamicData;\s*saveDynamicData\(\);\s*}\s*alert\("Data imported successfully! Reloading app..."\);\s*window\.location\.reload\(\);\s*}/g, 
-`window.openConfirmModal(
-          "Import JSON",
-          "Are you sure you want to overwrite current data with this backup?",
-          "Import",
-          () => {
-            localStorage.setItem(getStorageKey(), JSON.stringify(data.trackerData));
-            if (data.dynamicData) {
-              DYNAMIC_DATA = data.dynamicData;
-              saveDynamicData();
-            }
-            showToast("Data imported! Reloading...");
-            setTimeout(() => window.location.reload(), 1500);
-          }
-        );`
-);
+c = c.replace(regex2, rep2);
 
-fs.writeFileSync('app.js', code);
+fs.writeFileSync('app.js', c);
+console.log('Success UI');

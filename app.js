@@ -1146,14 +1146,7 @@ function renderSchedule() {
           <div style="display:flex; align-items:center;">
             <span class="material-symbols-rounded slot-icon">${(slot.icon || "").trim()}</span>
             ${!isEditMode ? `<span class="slot-label">${slot.label}</span>` : `<input type="text" class="inline-input" value="${slot.label}" onchange="updateScheduleSlot('${state.activeSchedule}', ${idx}, 'label', this.value)">`}
-            ${hasSmartBadge ? (() => {
-              const isThisStudy = slot.type === 'study';
-              const bg = isTrk ? 'var(--success-light, rgba(16, 185, 129, 0.15))' : (isThisStudy ? 'var(--red-light, rgba(239, 68, 68, 0.15))' : 'var(--bg-tertiary, #333333)');
-              const col = isTrk ? 'var(--success, #10B981)' : (isThisStudy ? 'var(--red, #EF4444)' : 'var(--text-muted, #888888)');
-              const txt = isTrk ? 'Studying' : (isThisStudy ? 'Not Studying' : 'Break Time');
-              const icn = isTrk ? 'timer' : (isThisStudy ? 'timer_off' : 'free_breakfast');
-              return `<span class="active-indicator realtime-time-badge" style="position:static; display:inline-flex; align-items:center; gap:4px; margin-left:10px; background:${bg}; color:${col}; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:600;"><span class="material-symbols-rounded icon-sm" style="font-size:13px; color:${col};">${icn}</span> ${txt} • ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}</span>`;
-            })() : ''}
+            
           </div>
           ${(!isEditMode && slot.type === 'study' && slotResultsMap[slot.id]) ? (() => {
             const st = slotResultsMap[slot.id].status;
@@ -1165,6 +1158,15 @@ function renderSchedule() {
             return `<div class="cons-slot-status cons-status-missed">${_svgPartial}<span>Missed</span></div>`;
           })() : ''}
         </div>
+        ${hasSmartBadge ? (() => {
+              const isThisStudy = slot.type === 'study';
+              const isPaused = isTrk && typeof trackerState !== 'undefined' && trackerState.isPaused;
+              const bg = isTrk ? (isPaused ? 'var(--warning-light, rgba(245, 158, 11, 0.15))' : 'var(--success-light, rgba(16, 185, 129, 0.15))') : (isThisStudy ? 'var(--red-light, rgba(239, 68, 68, 0.15))' : 'var(--bg-tertiary, #333333)');
+              const col = isTrk ? (isPaused ? 'var(--warning, #F59E0B)' : 'var(--success, #10B981)') : (isThisStudy ? 'var(--red, #EF4444)' : 'var(--text-muted, #888888)');
+              const txt = isTrk ? (isPaused ? 'Paused' : 'Studying') : (isThisStudy ? 'Not Studying' : 'Break Time');
+              const icn = isTrk ? (isPaused ? 'pause_circle' : 'timer') : (isThisStudy ? 'timer_off' : 'free_breakfast');
+              return `<div style="margin-top:8px; margin-bottom:2px;"><span class="active-indicator realtime-time-badge" style="display:inline-flex; align-items:center; gap:4px; background:${bg}; color:${col}; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600;"><span class="material-symbols-rounded icon-sm" style="font-size:14px; color:${col};">${icn}</span> ${txt} • ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}</span></div>`;
+            })() : ''}
         <div class="slot-details" style="${isEditMode ? 'display:flex; flex-direction:column; gap:4px; margin-right:10px;' : ''}">
           ${!isEditMode ? `
           <span class="slot-range">Start between: ${slot.startRange}</span>
