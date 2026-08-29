@@ -1079,6 +1079,7 @@ function renderSchedule() {
   todayResult.slotResults.forEach(r => { slotResultsMap[r.slot.id] = r; });
   
     const isTrk = typeof trackerState !== 'undefined' && (trackerState.isRunning || trackerState.isPaused);
+  let smartActiveIdx = -1;
   let chronoActiveIdx = schedule.slots.findIndex((s) => {
     const [sh, sm] = s.startRange.split('-')[0].split(':').map(Number);
     const startMin = sh * 60 + sm;
@@ -1636,18 +1637,69 @@ function updateConsistencyWidget() {
         if(typeof window.getGlobalTime === 'function') d2 = new Date(window.getGlobalTime());
         const timeStr = String(d2.getHours()).padStart(2,'0') + ':' + String(d2.getMinutes()).padStart(2,'0');
         const cTime = d2.getHours() * 60 + d2.getMinutes();
-        let cSlot = null;
-        for (let s = 0; s < schedule.slots.length; s++) {
-          const slot = schedule.slots[s];
-          const [startStr] = slot.startRange.split('-');
-          const [sh, sm] = startStr.split(':').map(Number);
-          const startMin = sh * 60 + sm;
-          const endMin = startMin + slot.duration;
-          if (cTime >= startMin && cTime < endMin) { cSlot = slot; break; }
-        }
+        
         const isTrk = typeof trackerState !== 'undefined' && (trackerState.isRunning || trackerState.isPaused);
-        const trkCol = isTrk ? 'var(--success, #10B981)' : 'var(--red, #EF4444)';
-        const trkTxt = isTrk ? 'Studying' : 'Not Studying';
+        const isTrkPaused = typeof trackerState !== 'undefined' && trackerState.isPaused;
+        
+        let smartActiveIdx = -1;
+  let chronoActiveIdx = schedule.slots.findIndex((s) => {
+          const [sh, sm] = s.startRange.split('-')[0].split(':').map(Number);
+          const startMin = sh * 60 + sm;
+          return cTime >= startMin && cTime < startMin + s.duration;
+        });
+
+        if (isTrk && trackerState.startTime) {
+          const trkDate = new Date(trackerState.startTime);
+          const trkMin = trkDate.getHours() * 60 + trkDate.getMinutes();
+          
+          let matchedIdx = schedule.slots.findIndex(s => {
+            if (s.type !== 'study') return false;
+            const [sh, sm] = s.startRange.split('-')[0].split(':').map(Number);
+            const start = sh * 60 + sm;
+            const end = start + (s.duration || 60);
+            return trkMin >= start && trkMin < end;
+          });
+          
+          if (matchedIdx === -1) {
+            matchedIdx = schedule.slots.findIndex(s => {
+              if (s.type !== 'study') return false;
+              const [sh, sm] = s.startRange.split('-')[0].split(':').map(Number);
+              const start = sh * 60 + sm;
+              const end = start + (s.duration || 60);
+              const broadStart = start - 60;
+              const broadEnd = end + (s.duration || 60);
+              return trkMin >= broadStart && trkMin < broadEnd;
+            });
+          }
+          
+          if (matchedIdx !== -1) {
+            smartActiveIdx = matchedIdx;
+          } else {
+             let bestIdx = -1;
+             for (let i = 0; i < schedule.slots.length; i++) {
+               const s = schedule.slots[i];
+               const [sh, sm] = s.startRange.split('-')[0].split(':').map(Number);
+               if (sh * 60 + sm <= trkMin && s.type === 'study') {
+                 bestIdx = i;
+               }
+             }
+             if (bestIdx !== -1) smartActiveIdx = bestIdx;
+             else {
+               for (let i = schedule.slots.length - 1; i >= 0; i--) {
+                 if (schedule.slots[i].type === 'study') { smartActiveIdx = i; break; }
+               }
+             }
+          }
+        } else {
+          smartActiveIdx = chronoActiveIdx;
+        }
+
+        let cSlot = smartActiveIdx !== -1 ? schedule.slots[smartActiveIdx] : null;
+        const isThisStudy = cSlot && cSlot.type === 'study';
+        
+        const trkCol = isTrk ? (isTrkPaused ? 'var(--warning, #F59E0B)' : 'var(--success, #10B981)') : (isThisStudy ? 'var(--red, #EF4444)' : 'var(--text-muted, #888888)');
+        const trkTxt = isTrk ? (isTrkPaused ? 'Paused' : 'Studying') : (isThisStudy ? 'Not Studying' : 'Break Time');
+
         if (cSlot) {
           currentActivityStr = `<div style="font-size:11px; margin-top:4px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;"><span class="material-symbols-rounded" style="font-size:14px; color:var(--primary);">${(cSlot.icon || 'schedule').trim()}</span> <span style="flex:1;">Current: <b style="color:var(--text-primary);">${cSlot.label}</b></span> <span style="font-weight:700; color:${trkCol}; display:flex; align-items:center; gap:3px;">${trkTxt} • ${timeStr}</span></div>`;
         } else {
