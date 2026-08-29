@@ -5652,7 +5652,9 @@ window.toggleZenMode = function() {
         document.exitFullscreen().catch(e => {});
       }
     } catch(e) {}
-    setTimeout(() => window.scrollTo(0, savedZenScrollPos), 50);
+    setTimeout(() => {
+      document.getElementById('study-tracker-card').scrollIntoView({ behavior: 'auto', block: 'center' });
+    }, 50);
   }
 };
 
