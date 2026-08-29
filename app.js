@@ -1079,7 +1079,6 @@ function renderSchedule() {
   todayResult.slotResults.forEach(r => { slotResultsMap[r.slot.id] = r; });
   
     const isTrk = typeof trackerState !== 'undefined' && (trackerState.isRunning || trackerState.isPaused);
-  let smartActiveIdx = -1;
   let chronoActiveIdx = schedule.slots.findIndex((s) => {
     const [sh, sm] = s.startRange.split('-')[0].split(':').map(Number);
     const startMin = sh * 60 + sm;
@@ -1130,29 +1129,7 @@ function renderSchedule() {
     }
   } else {
     smartActiveIdx = chronoActiveIdx;
-  } else {
-       let bestIdx = -1;
-       for (let i = 0; i < schedule.slots.length; i++) {
-         const s = schedule.slots[i];
-         const [sh, sm] = s.startRange.split('-')[0].split(':').map(Number);
-         if (sh * 60 + sm <= currentMin && s.type === 'study') {
-           const sr = slotResultsMap[s.id];
-           if (sr && sr.status !== 'done') {
-             if (bestIdx === -1) bestIdx = i;
-           }
-         }
-       }
-       if (bestIdx !== -1) smartActiveIdx = bestIdx;
-       else {
-         for (let i = schedule.slots.length - 1; i >= 0; i--) {
-           if (schedule.slots[i].type === 'study') { smartActiveIdx = i; break; }
-         }
-       }
-    }
-  } else {
-    smartActiveIdx = chronoActiveIdx;
   }
-
   schedule.slots.forEach((slot, idx) => {
     const [startStr] = slot.startRange.split('-');
     const [sh, sm] = startStr.split(':').map(Number);
