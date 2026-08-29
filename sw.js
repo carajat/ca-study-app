@@ -1,11 +1,11 @@
-const CACHE_NAME = 'ca-final-companion-v334';
+const CACHE_NAME = 'ca-final-companion-v335';
 const ASSETS = [
   '/',
-  '/index.html?v=334',
-  '/style.css?v=334',
-  '/app.js?v=334',
-  '/data.js?v=334',
-  '/sync.js?v=334',
+  '/index.html?v=335',
+  '/style.css?v=335',
+  '/app.js?v=335',
+  '/data.js?v=335',
+  '/sync.js?v=335',
   '/Sortable.min.js',
   '/manifest.json'
 ];

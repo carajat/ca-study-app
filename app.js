@@ -3814,11 +3814,11 @@ function populateTrackerSubjects() {
     if (s.type === 'folder' && s.children) subjects = subjects.concat(s.children);
   });
   subjects.forEach(function(s) {
-    var opt = document.createElement('option');
+    var opt = (typeof topSel !== 'undefined' && topSel ? topSel.ownerDocument : (typeof subSel !== 'undefined' && subSel ? subSel.ownerDocument : (typeof sel !== 'undefined' && sel ? sel.ownerDocument : document))).createElement('option');
     opt.value = s.name; opt.textContent = s.name;
     sel.appendChild(opt);
   });
-  var customOpt = document.createElement('option');
+  var customOpt = (typeof topSel !== 'undefined' && topSel ? topSel.ownerDocument : (typeof subSel !== 'undefined' && subSel ? subSel.ownerDocument : (typeof sel !== 'undefined' && sel ? sel.ownerDocument : document))).createElement('option');
   customOpt.value = '__custom__'; customOpt.textContent = 'Other...';
   sel.appendChild(customOpt);
 }
@@ -3832,7 +3832,7 @@ function onTrackerSubjectChange(restoring) {
   if (subj === '__custom__') {
     var name = prompt('Enter subject name:');
     if (name) {
-      var opt = document.createElement('option');
+      var opt = (typeof topSel !== 'undefined' && topSel ? topSel.ownerDocument : (typeof subSel !== 'undefined' && subSel ? subSel.ownerDocument : (typeof sel !== 'undefined' && sel ? sel.ownerDocument : document))).createElement('option');
       opt.value = name; opt.textContent = name;
       subSel.insertBefore(opt, subSel.querySelector('[value="__custom__"]'));
       subSel.value = name;
@@ -3848,7 +3848,7 @@ function onTrackerSubjectChange(restoring) {
     if (sData) {
       let arr = sData.chapters || sData.children || [];
       arr.forEach(function(ch) {
-        var opt = document.createElement('option');
+        var opt = (typeof topSel !== 'undefined' && topSel ? topSel.ownerDocument : (typeof subSel !== 'undefined' && subSel ? subSel.ownerDocument : (typeof sel !== 'undefined' && sel ? sel.ownerDocument : document))).createElement('option');
         opt.value = ch.name; opt.textContent = ch.name;
         topSel.appendChild(opt);
       });
@@ -4190,7 +4190,7 @@ window.pickPlannerTask = function(subj, topic, taskName, target) {
     if (subj && subSel.querySelector(`option[value="${subj}"]`)) {
       subSel.value = subj;
     } else if (subj) {
-      const opt = document.createElement('option');
+      const opt = (typeof topSel !== 'undefined' && topSel ? topSel.ownerDocument : (typeof subSel !== 'undefined' && subSel ? subSel.ownerDocument : (typeof sel !== 'undefined' && sel ? sel.ownerDocument : document))).createElement('option');
       opt.value = subj; opt.textContent = subj;
       subSel.insertBefore(opt, subSel.querySelector('[value="__custom__"]'));
       subSel.value = subj;
@@ -4203,7 +4203,7 @@ window.pickPlannerTask = function(subj, topic, taskName, target) {
     if (topic && topSel.querySelector(`option[value="${topic}"]`)) {
       topSel.value = topic;
     } else if (topic) {
-      const opt = document.createElement('option');
+      const opt = (typeof topSel !== 'undefined' && topSel ? topSel.ownerDocument : (typeof subSel !== 'undefined' && subSel ? subSel.ownerDocument : (typeof sel !== 'undefined' && sel ? sel.ownerDocument : document))).createElement('option');
       opt.value = topic; opt.textContent = topic;
       topSel.appendChild(opt);
       topSel.value = topic;
@@ -4625,7 +4625,7 @@ window.onManualLogSubjChange = function(prefillTopic) {
   if (subj === '__custom__') {
     const name = prompt('Enter subject name:');
     if (name) {
-      const opt = document.createElement('option');
+      const opt = (typeof topSel !== 'undefined' && topSel ? topSel.ownerDocument : (typeof subSel !== 'undefined' && subSel ? subSel.ownerDocument : (typeof sel !== 'undefined' && sel ? sel.ownerDocument : document))).createElement('option');
       opt.value = name; opt.textContent = name;
       subSel.insertBefore(opt, subSel.querySelector('[value="__custom__"]'));
       subSel.value = name;
@@ -4641,7 +4641,7 @@ window.onManualLogSubjChange = function(prefillTopic) {
     const sData = subjects.find(s => s.name === subj);
     if (sData && sData.chapters) {
       sData.chapters.forEach(ch => {
-        const opt = document.createElement('option');
+        const opt = (typeof topSel !== 'undefined' && topSel ? topSel.ownerDocument : (typeof subSel !== 'undefined' && subSel ? subSel.ownerDocument : (typeof sel !== 'undefined' && sel ? sel.ownerDocument : document))).createElement('option');
         opt.value = ch.name; opt.textContent = ch.name;
         if (typeof prefillTopic === 'string' && prefillTopic === ch.name) opt.selected = true;
         topSel.appendChild(opt);
@@ -5074,7 +5074,7 @@ window.pickMockTask = function(seriesName, mockSubject, target) {
     if (matchedSubj) actualSubjName = matchedSubj.name;
     
     if (!Array.from(subSel.options).some(o => o.value === actualSubjName)) {
-      const opt = document.createElement('option');
+      const opt = (typeof topSel !== 'undefined' && topSel ? topSel.ownerDocument : (typeof subSel !== 'undefined' && subSel ? subSel.ownerDocument : (typeof sel !== 'undefined' && sel ? sel.ownerDocument : document))).createElement('option');
       opt.value = actualSubjName;
       opt.textContent = actualSubjName;
       subSel.appendChild(opt);
@@ -5083,7 +5083,7 @@ window.pickMockTask = function(seriesName, mockSubject, target) {
     onTrackerSubjectChange();
     
     if (!Array.from(topSel.options).some(o => o.value === mockTopic)) {
-      const tOpt = document.createElement('option');
+      const tOpt = (typeof topSel !== 'undefined' && topSel ? topSel.ownerDocument : (typeof subSel !== 'undefined' && subSel ? subSel.ownerDocument : (typeof sel !== 'undefined' && sel ? sel.ownerDocument : document))).createElement('option');
       tOpt.value = mockTopic;
       tOpt.textContent = mockTopic;
       topSel.appendChild(tOpt);
@@ -5113,7 +5113,7 @@ window.pickMockTask = function(seriesName, mockSubject, target) {
       if (matchedSubj) actualSubjName = matchedSubj.name;
       
       if (!Array.from(subSel.options).some(o => o.value === actualSubjName)) {
-        const opt = document.createElement('option');
+        const opt = (typeof topSel !== 'undefined' && topSel ? topSel.ownerDocument : (typeof subSel !== 'undefined' && subSel ? subSel.ownerDocument : (typeof sel !== 'undefined' && sel ? sel.ownerDocument : document))).createElement('option');
         opt.value = actualSubjName;
         opt.textContent = actualSubjName;
         subSel.insertBefore(opt, subSel.querySelector('option[value="__custom__"]'));
@@ -5122,7 +5122,7 @@ window.pickMockTask = function(seriesName, mockSubject, target) {
       onManualLogSubjChange();
       
       if (!Array.from(topSel.options).some(o => o.value === mockTopic)) {
-        const tOpt = document.createElement('option');
+        const tOpt = (typeof topSel !== 'undefined' && topSel ? topSel.ownerDocument : (typeof subSel !== 'undefined' && subSel ? subSel.ownerDocument : (typeof sel !== 'undefined' && sel ? sel.ownerDocument : document))).createElement('option');
         tOpt.value = mockTopic;
         tOpt.textContent = mockTopic;
         topSel.appendChild(tOpt);
