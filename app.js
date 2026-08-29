@@ -2667,6 +2667,11 @@ function init() {
   // Load dynamic data
   loadDynamicData();
   smartRepairSyllabusData();
+  restoreTrackerState();
+  
+  setTimeout(function() { if (window.refreshLiveUI) window.refreshLiveUI(); }, 300);
+  document.addEventListener('touchstart', function() { if (window.refreshLiveUI) window.refreshLiveUI(); }, {once: true, passive: true});
+  document.addEventListener('mousedown', function() { if (window.refreshLiveUI) window.refreshLiveUI(); }, {once: true, passive: true});
   
   // Load saved state preferences
   Object.assign(state, loadState());

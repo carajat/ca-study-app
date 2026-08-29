@@ -1,0 +1,1 @@
+5584:           <button class="menu-btn" style="flex:1; margin:0; text-align:center; background:var(--primary); color:var(--on-primary); border:none;" onclick="applyOTAUpdate('${latestVersion}', '${zipAsset.browser_download_url}')">Install Now</button>
