@@ -5638,8 +5638,7 @@ window.toggleZenMode = function() {
   if (isZen) {
     savedZenScrollPos = window.scrollY;
     icon.innerText = 'fullscreen_exit';
-    btn.style.background = 'var(--primary)';
-    btn.style.color = '#fff';
+    btn.classList.add('active-mode-btn');
     try {
       if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen().catch(e => {});
@@ -5647,8 +5646,7 @@ window.toggleZenMode = function() {
     } catch(e) {}
   } else {
     icon.innerText = 'fullscreen';
-    btn.style.background = 'color-mix(in srgb, var(--primary) 15%, transparent)';
-    btn.style.color = 'var(--primary)';
+    btn.classList.remove('active-mode-btn');
     try {
       if (document.exitFullscreen) {
         document.exitFullscreen().catch(e => {});

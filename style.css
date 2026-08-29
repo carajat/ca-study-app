@@ -1943,6 +1943,11 @@ body.edit-mode-active {
   -webkit-app-region: no-drag;
 }
 
+.active-mode-btn {
+  background: var(--primary) !important;
+  color: #fff !important;
+}
+
 /* --- ZEN MODE --- */
 body.zen-mode-active {
   background: #000 !important;
