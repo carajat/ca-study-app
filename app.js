@@ -5629,12 +5629,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ─── FOCUS MODES (Zen & PiP) ──────────────────────
+let savedZenScrollPos = 0;
 window.toggleZenMode = function() {
   const isZen = document.body.classList.toggle('zen-mode-active');
   const icon = document.getElementById('zen-icon');
   const btn = document.getElementById('btn-zen-mode');
   
   if (isZen) {
+    savedZenScrollPos = window.scrollY;
     icon.innerText = 'fullscreen_exit';
     btn.style.background = 'var(--primary)';
     btn.style.color = '#fff';
@@ -5645,13 +5647,14 @@ window.toggleZenMode = function() {
     } catch(e) {}
   } else {
     icon.innerText = 'fullscreen';
-    btn.style.background = 'var(--bg-primary)';
-    btn.style.color = 'var(--text-secondary)';
+    btn.style.background = 'color-mix(in srgb, var(--primary) 15%, transparent)';
+    btn.style.color = 'var(--primary)';
     try {
       if (document.exitFullscreen) {
         document.exitFullscreen().catch(e => {});
       }
     } catch(e) {}
+    setTimeout(() => window.scrollTo(0, savedZenScrollPos), 50);
   }
 };
 
@@ -5694,6 +5697,7 @@ window.togglePiPMode = async function() {
     });
     
     // Setup PiP body
+    pipWin.document.body.className = document.body.className;
     pipWin.document.body.setAttribute('data-theme', document.body.getAttribute('data-theme'));
     pipWin.document.body.style.padding = '10px';
     pipWin.document.body.style.margin = '0';
