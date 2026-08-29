@@ -1100,6 +1100,7 @@ function renderSchedule() {
             if (st === 'done') return `<div class="cons-slot-status cons-status-done">${_svgCheck}<span style="color:var(--success);">${_fmtMins(slotResultsMap[slot.id].actualMin)}</span></div>`;
             if (st === 'partial') return `<div class="cons-slot-status cons-status-partial">${_svgPartial}<span>${_fmtMins(slotResultsMap[slot.id].actualMin)}</span></div>`;
             if (st === 'upcoming') return `<div class="cons-slot-status cons-status-upcoming">${_svgUpcoming}<span>Upcoming</span></div>`;
+            if (st === 'studying') return `<div class="cons-slot-status" style="color:var(--primary); font-weight:600;"><span class="material-symbols-rounded icon-sm" style="font-size:16px;">timer</span><span>Studying...</span></div>`;
             return `<div class="cons-slot-status cons-status-missed">${_svgPartial}<span>Missed</span></div>`;
           })() : ''}
         </div>
@@ -1243,6 +1244,7 @@ function computeDayAdherence(dateStr) {
     let status;
     if (pct >= 0.8) status = 'done';
     else if (pct > 0) status = 'partial';
+    else if (dateStr === todayStr && typeof trackerState !== 'undefined' && (trackerState.isRunning || trackerState.isPaused) && nowMin >= rangeStart && nowMin < (rangeStart + (slot.duration || 60))) status = 'studying';
     else if (dateStr === todayStr && nowMin < rangeStart) status = 'upcoming';
     else status = 'missed';
 
