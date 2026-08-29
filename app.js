@@ -5874,7 +5874,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!meta) return;
   const updateMeta = () => {
     const isLight = document.body.getAttribute("data-theme") === "light";
-    meta.setAttribute("content", isLight ? "#f4f5f9" : "#0a0b14");
+    meta.setAttribute("content", isLight ? "#f0f2f5" : "#000000");
   };
   updateMeta();
   new MutationObserver(updateMeta).observe(document.body, { attributes: true, attributeFilter: ["data-theme"] });
