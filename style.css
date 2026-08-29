@@ -1403,10 +1403,10 @@ input[type="checkbox"]:checked::before {
   color: var(--primary);
 }
 .st-timer-display.paused {
-  border-color: var(--warning);
+  border-color: var(--text-muted);
 }
 .st-timer-display.paused span {
-  color: var(--warning);
+  color: var(--text-muted);
   animation: timerBlink 1s ease-in-out infinite;
 }
 @keyframes timerBlink {
@@ -1519,7 +1519,7 @@ body[data-theme="light"]   .st-timer-display {
   }
 body[data-theme="light"]   .st-timer-display span { color: var(--text-primary); }
 body[data-theme="light"]   .st-timer-display.running span { color: var(--primary); }
-body[data-theme="light"]   .st-timer-display.paused span { color: var(--warning); }
+body[data-theme="light"]   .st-timer-display.paused span { color: var(--text-muted); }
 
 
 /* ═══════════ DAILY JOURNAL STYLES ═══════════ */
@@ -1874,9 +1874,9 @@ input:checked + .slider:before {
   display: flex; align-items: center; gap: 4px; flex-shrink: 0;
 }
 .cons-status-done    { color: var(--success); }
-.cons-status-partial { color: var(--warning); }
+.cons-status-partial { color: var(--text-muted); }
 .cons-status-upcoming { color: var(--text-muted); font-weight: 600; }
-.cons-status-missed  { color: var(--warning); opacity: 0.7; }
+.cons-status-missed  { color: var(--text-muted); opacity: 0.7; }
 
 /* ── 7-Day Heatmap ── */
 .cons-heatmap { padding: 16px; margin-top: 14px; }
