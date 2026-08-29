@@ -1089,11 +1089,11 @@ function renderSchedule() {
     container.innerHTML += `
       <div class="schedule-slot glass-card slot-type-${slot.type} ${isActive ? 'slot-active' : ''}">
         
-        ${isActive && !isEditMode ? '<div class="active-indicator"><span class="material-symbols-rounded icon-sm">circle</span> NOW</div>' : ''}
         <div class="slot-header" style="flex:1; display:flex; justify-content:space-between; align-items:center;">
-          <div>
+          <div style="display:flex; align-items:center;">
             <span class="material-symbols-rounded slot-icon">${(slot.icon || "").trim()}</span>
             ${!isEditMode ? `<span class="slot-label">${slot.label}</span>` : `<input type="text" class="inline-input" value="${slot.label}" onchange="updateScheduleSlot('${state.activeSchedule}', ${idx}, 'label', this.value)">`}
+            ${isActive && !isEditMode ? `<span class="active-indicator" style="position:static; display:inline-flex; align-items:center; gap:3px; margin-left:10px; background:var(--red-light, rgba(239, 68, 68, 0.15)); padding:2px 6px; border-radius:10px;"><span class="material-symbols-rounded icon-sm" style="font-size:10px;">circle</span> ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}</span>` : ''}
           </div>
           ${(!isEditMode && slot.type === 'study' && slotResultsMap[slot.id]) ? (() => {
             const st = slotResultsMap[slot.id].status;
@@ -1551,6 +1551,7 @@ function updateConsistencyWidget() {
       if (schedule) {
         let d2 = new Date();
         if(typeof window.getGlobalTime === 'function') d2 = new Date(window.getGlobalTime());
+        const timeStr = String(d2.getHours()).padStart(2,'0') + ':' + String(d2.getMinutes()).padStart(2,'0');
         const cTime = d2.getHours() * 60 + d2.getMinutes();
         let cSlot = null;
         for (let s = 0; s < schedule.slots.length; s++) {
@@ -1562,9 +1563,9 @@ function updateConsistencyWidget() {
           if (cTime >= startMin && cTime < endMin) { cSlot = slot; break; }
         }
         if (cSlot) {
-          currentActivityStr = `<div style="font-size:11px; margin-top:4px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;"><span class="material-symbols-rounded" style="font-size:14px; color:var(--primary);">${(cSlot.icon || 'schedule').trim()}</span> <span>Current: <b style="color:var(--text-primary);">${cSlot.label}</b></span></div>`;
+          currentActivityStr = `<div style="font-size:11px; margin-top:4px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;"><span class="material-symbols-rounded" style="font-size:14px; color:var(--primary);">${(cSlot.icon || 'schedule').trim()}</span> <span style="flex:1;">Current: <b style="color:var(--text-primary);">${cSlot.label}</b></span> <span style="font-weight:700; color:var(--primary-color);">${timeStr}</span></div>`;
         } else {
-          currentActivityStr = `<div style="font-size:11px; margin-top:4px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;"><span class="material-symbols-rounded" style="font-size:14px; color:var(--text-muted);">bed</span> <span>Current: <b style="color:var(--text-muted);">Rest Time</b></span></div>`;
+          currentActivityStr = `<div style="font-size:11px; margin-top:4px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;"><span class="material-symbols-rounded" style="font-size:14px; color:var(--text-muted);">bed</span> <span style="flex:1;">Current: <b style="color:var(--text-muted);">Rest Time</b></span> <span style="font-weight:700; color:var(--text-muted);">${timeStr}</span></div>`;
         }
       }
     }
