@@ -1153,7 +1153,7 @@ function renderSchedule() {
               const isThisStudy = slot.type === 'study';
               const isPaused = isTrk && typeof trackerState !== 'undefined' && trackerState.isPaused;
               const bg = isTrk ? (isPaused ? 'var(--bg-tertiary, #333333)' : 'var(--success-light, rgba(16, 185, 129, 0.15))') : (isThisStudy ? 'var(--red-light, rgba(239, 68, 68, 0.15))' : 'var(--bg-tertiary, #333333)');
-              const col = isTrk ? (isPaused ? 'var(--text-muted, #888888)' : 'var(--success, #10B981)') : (isThisStudy ? 'var(--red, #EF4444)' : 'var(--text-muted, #888888)');
+              const col = isTrk ? (isPaused ? 'var(--primary, #C9A15B)' : 'var(--success, #10B981)') : (isThisStudy ? 'var(--red, #EF4444)' : 'var(--text-muted, #888888)');
               const txt = isTrk ? (isPaused ? 'Paused' : 'Studying') : (isThisStudy ? 'Not Studying' : 'Break Time');
               const icn = isTrk ? (isPaused ? 'pause_circle' : 'timer') : (isThisStudy ? 'timer_off' : 'free_breakfast');
               return `<div style="margin-top:8px; margin-bottom:2px;"><span class="active-indicator realtime-time-badge" style="display:inline-flex; align-items:center; gap:4px; background:${bg}; color:${col}; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600;"><span class="material-symbols-rounded icon-sm" style="font-size:14px; color:${col};">${icn}</span> ${txt} • ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}</span></div>`;
@@ -1176,7 +1176,7 @@ function renderSchedule() {
             if (st === 'done') return `<div class="cons-slot-status cons-status-done">${_svgCheck}<span style="color:var(--success);">${_fmtMins(slotResultsMap[slot.id].actualMin)}</span></div>`;
             if (st === 'partial') return `<div class="cons-slot-status cons-status-partial">${_svgPartial}<span>${_fmtMins(slotResultsMap[slot.id].actualMin)}</span></div>`;
             if (st === 'upcoming') return `<div class="cons-slot-status cons-status-upcoming">${_svgUpcoming}<span>Upcoming</span></div>`;
-            if (st === 'pending') return `<div class="cons-slot-status cons-status-upcoming" style="color:var(--text-muted);"><span class="material-symbols-rounded icon-sm" style="font-size:16px;">pending_actions</span><span>Pending</span></div>`;
+            if (st === 'pending') return `<div class="cons-slot-status cons-status-upcoming" style="color:var(--primary);"><span class="material-symbols-rounded icon-sm" style="font-size:16px;">pending_actions</span><span>Pending</span></div>`;
             if (st === 'current') return ''; // Handled by badge
             return `<div class="cons-slot-status cons-status-missed">${_svgPartial}<span>Missed</span></div>`;
           })() : ''}
@@ -1551,12 +1551,12 @@ function switchSchedule(type) {
 
 // ─── Consistency UI helpers ──────────────────────────────
 const _svgCheck = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--success)" stroke-width="1.8"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-const _svgPartial = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--text-muted)" stroke-width="1.8"/><path d="M12 8v5" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1" fill="var(--text-muted)"/></svg>`;
+const _svgPartial = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--primary)" stroke-width="1.8"/><path d="M12 8v5" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1" fill="var(--primary)"/></svg>`;
 const _svgUpcoming = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--text-muted)" stroke-width="1.8"/><path d="M12 7v5l3 3" stroke="var(--text-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const _svgTrendUp = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 17l6-6 4 4 8-8" stroke="var(--success)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h6v6" stroke="var(--success)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-const _svgWarn = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" stroke="var(--text-muted)" stroke-width="2" stroke-linejoin="round"/><path d="M12 9v5" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="var(--text-muted)"/></svg>`;
+const _svgWarn = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" stroke="var(--primary)" stroke-width="2" stroke-linejoin="round"/><path d="M12 9v5" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="var(--primary)"/></svg>`;
 const _svgStar = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z" fill="var(--primary)"/></svg>`;
-const _svgWarnSm = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" stroke="var(--text-muted)" stroke-width="2" stroke-linejoin="round"/><path d="M12 9v5" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="var(--text-muted)"/></svg>`;
+const _svgWarnSm = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 20h20L12 3z" stroke="var(--primary)" stroke-width="2" stroke-linejoin="round"/><path d="M12 9v5" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="var(--primary)"/></svg>`;
 const _svgBook = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5A1.5 1.5 0 0 1 4 18.5v-13z" stroke="currentColor" stroke-width="1.8"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5a1.5 1.5 0 0 0 1.5-1.5v-13z" stroke="currentColor" stroke-width="1.8"/></svg>`;
 
 function _fmtMins(m) {
@@ -1705,7 +1705,7 @@ function updateConsistencyWidget() {
         let cSlot = smartActiveIdx !== -1 ? schedule.slots[smartActiveIdx] : null;
         const isThisStudy = cSlot && cSlot.type === 'study';
         
-        const trkCol = isTrk ? (isTrkPaused ? 'var(--text-muted, #888888)' : 'var(--success, #10B981)') : (isThisStudy ? 'var(--red, #EF4444)' : 'var(--text-muted, #888888)');
+        const trkCol = isTrk ? (isTrkPaused ? 'var(--primary, #C9A15B)' : 'var(--success, #10B981)') : (isThisStudy ? 'var(--red, #EF4444)' : 'var(--text-muted, #888888)');
         const trkTxt = isTrk ? (isTrkPaused ? 'Paused' : 'Studying') : (isThisStudy ? 'Not Studying' : 'Break Time');
 
         if (cSlot) {
@@ -5657,7 +5657,7 @@ window.renderHistoryCalendar = function(yr, mo) {
     
     if (!isFuture) {
       if (pct >= 80) { bg = 'var(--success)'; border = '1px solid var(--success)'; color = '#fff'; }
-      else if (pct > 0) { bg = 'var(--text-muted)'; border = '1px solid var(--text-muted)'; color = '#ffffff'; }
+      else if (pct > 0) { bg = 'var(--primary)'; border = '1px solid var(--primary)'; color = '#ffffff'; }
       else if (dStr < tStr) {
         color = 'var(--text-muted)';
       }
