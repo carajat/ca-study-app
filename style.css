@@ -1943,3 +1943,42 @@ body.edit-mode-active {
   -webkit-app-region: no-drag;
 }
 
+/* --- ZEN MODE --- */
+body.zen-mode-active {
+  background: #000 !important;
+}
+body.zen-mode-active .app-header, 
+body.zen-mode-active .bottom-nav {
+  display: none !important;
+}
+body.zen-mode-active section#dashboard-tab > *:not(#study-tracker-card) {
+  display: none !important;
+  opacity: 0;
+}
+body.zen-mode-active #app > *:not(section#dashboard-tab) {
+  display: none !important;
+}
+body.zen-mode-active #study-tracker-card {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 500px;
+  z-index: 9999;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+  border: 1px solid var(--primary);
+  background: var(--bg-primary);
+  margin: 0;
+}
+
+/* --- PiP MODE --- */
+.in-pip-mode {
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+

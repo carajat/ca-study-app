@@ -5628,6 +5628,97 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// ─── FOCUS MODES (Zen & PiP) ──────────────────────
+window.toggleZenMode = function() {
+  const isZen = document.body.classList.toggle('zen-mode-active');
+  const icon = document.getElementById('zen-icon');
+  const btn = document.getElementById('btn-zen-mode');
+  
+  if (isZen) {
+    icon.innerText = 'fullscreen_exit';
+    btn.style.background = 'var(--primary)';
+    btn.style.color = '#fff';
+    try {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(e => {});
+      }
+    } catch(e) {}
+  } else {
+    icon.innerText = 'fullscreen';
+    btn.style.background = 'var(--bg-primary)';
+    btn.style.color = 'var(--text-secondary)';
+    try {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(e => {});
+      }
+    } catch(e) {}
+  }
+};
+
+window.togglePiPMode = async function() {
+  if (!('documentPictureInPicture' in window)) {
+    showToast('Picture-in-Picture not supported in this browser.', 'warning');
+    return;
+  }
+  
+  if (window.pipWindow) {
+    window.pipWindow.close();
+    return;
+  }
+  
+  try {
+    const tracker = document.getElementById('study-tracker-card');
+    const rect = tracker.getBoundingClientRect();
+    
+    const pipWin = await window.documentPictureInPicture.requestWindow({
+      width: Math.max(Math.round(rect.width), 320),
+      height: Math.max(Math.round(rect.height), 400)
+    });
+    
+    window.pipWindow = pipWin;
+    
+    // Copy stylesheets
+    [...document.styleSheets].forEach(styleSheet => {
+      try {
+        if (styleSheet.href) {
+          const newLink = document.createElement('link');
+          newLink.rel = 'stylesheet';
+          newLink.href = styleSheet.href;
+          pipWin.document.head.appendChild(newLink);
+        } else {
+          const newStyle = document.createElement('style');
+          newStyle.textContent = Array.from(styleSheet.cssRules).map(r => r.cssText).join('');
+          pipWin.document.head.appendChild(newStyle);
+        }
+      } catch(e) {}
+    });
+    
+    // Setup PiP body
+    pipWin.document.body.setAttribute('data-theme', document.body.getAttribute('data-theme'));
+    pipWin.document.body.style.padding = '10px';
+    pipWin.document.body.style.margin = '0';
+    pipWin.document.body.style.background = 'var(--bg-primary)';
+    pipWin.document.body.style.fontFamily = 'Inter, sans-serif';
+    
+    // Add custom class for styling inside PiP
+    tracker.classList.add('in-pip-mode');
+    pipWin.document.body.appendChild(tracker);
+    
+    pipWin.addEventListener('pagehide', () => {
+      // Put tracker back to dashboard
+      tracker.classList.remove('in-pip-mode');
+      const dashboard = document.getElementById('tab-dashboard');
+      const todaysLog = document.querySelector('.todays-log-container');
+      dashboard.insertBefore(tracker, todaysLog);
+      window.pipWindow = null;
+    });
+    
+  } catch (err) {
+    console.error(err);
+    showToast('Failed to enter PiP mode.', 'danger');
+  }
+};
+
 // Dynamically update PWA title bar color based on internal theme
 document.addEventListener("DOMContentLoaded", () => {
   const meta = document.getElementById("meta-theme-color");
