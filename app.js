@@ -5680,20 +5680,9 @@ window.togglePiPMode = async function() {
     
     window.pipWindow = pipWin;
     
-    // Copy stylesheets
-    [...document.styleSheets].forEach(styleSheet => {
-      try {
-        if (styleSheet.href) {
-          const newLink = document.createElement('link');
-          newLink.rel = 'stylesheet';
-          newLink.href = styleSheet.href;
-          pipWin.document.head.appendChild(newLink);
-        } else {
-          const newStyle = document.createElement('style');
-          newStyle.textContent = Array.from(styleSheet.cssRules).map(r => r.cssText).join('');
-          pipWin.document.head.appendChild(newStyle);
-        }
-      } catch(e) {}
+    // Copy stylesheets directly from head
+    document.head.querySelectorAll('style, link[rel="stylesheet"]').forEach(el => {
+      pipWin.document.head.appendChild(el.cloneNode(true));
     });
     
     // Setup PiP body
