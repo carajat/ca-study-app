@@ -5680,6 +5680,8 @@ window.togglePiPMode = async function() {
     });
     
     window.pipWindow = pipWin;
+      const funcsToCopy = ['toggleZenMode', 'togglePiPMode', 'openMockPickerModal', 'openPlannerPickerModal', 'onTrackerSubjectChange', 'onTrackerTopicChange', 'trackerStart', 'trackerPause', 'trackerResume', 'trackerStop'];
+      funcsToCopy.forEach(fn => { if (typeof window[fn] === 'function') { pipWin.window[fn] = window[fn]; } });
     
     // Copy stylesheets directly from head
     document.head.querySelectorAll('style, link[rel="stylesheet"]').forEach(el => {
