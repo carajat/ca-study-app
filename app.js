@@ -1152,8 +1152,8 @@ function renderSchedule() {
           ${hasSmartBadge ? (() => {
               const isThisStudy = slot.type === 'study';
               const isPaused = isTrk && typeof trackerState !== 'undefined' && trackerState.isPaused;
-              const bg = isTrk ? (isPaused ? 'var(--warning-light, rgba(245, 158, 11, 0.15))' : 'var(--success-light, rgba(16, 185, 129, 0.15))') : (isThisStudy ? 'var(--red-light, rgba(239, 68, 68, 0.15))' : 'var(--bg-tertiary, #333333)');
-              const col = isTrk ? (isPaused ? 'var(--warning, #F59E0B)' : 'var(--success, #10B981)') : (isThisStudy ? 'var(--red, #EF4444)' : 'var(--text-muted, #888888)');
+              const bg = isTrk ? (isPaused ? 'var(--bg-tertiary, #333333)' : 'var(--success-light, rgba(16, 185, 129, 0.15))') : (isThisStudy ? 'var(--red-light, rgba(239, 68, 68, 0.15))' : 'var(--bg-tertiary, #333333)');
+              const col = isTrk ? (isPaused ? 'var(--text-muted, #888888)' : 'var(--success, #10B981)') : (isThisStudy ? 'var(--red, #EF4444)' : 'var(--text-muted, #888888)');
               const txt = isTrk ? (isPaused ? 'Paused' : 'Studying') : (isThisStudy ? 'Not Studying' : 'Break Time');
               const icn = isTrk ? (isPaused ? 'pause_circle' : 'timer') : (isThisStudy ? 'timer_off' : 'free_breakfast');
               return `<div style="margin-top:8px; margin-bottom:2px;"><span class="active-indicator realtime-time-badge" style="display:inline-flex; align-items:center; gap:4px; background:${bg}; color:${col}; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600;"><span class="material-symbols-rounded icon-sm" style="font-size:14px; color:${col};">${icn}</span> ${txt} • ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}</span></div>`;
@@ -1705,7 +1705,7 @@ function updateConsistencyWidget() {
         let cSlot = smartActiveIdx !== -1 ? schedule.slots[smartActiveIdx] : null;
         const isThisStudy = cSlot && cSlot.type === 'study';
         
-        const trkCol = isTrk ? (isTrkPaused ? 'var(--warning, #F59E0B)' : 'var(--success, #10B981)') : (isThisStudy ? 'var(--red, #EF4444)' : 'var(--text-muted, #888888)');
+        const trkCol = isTrk ? (isTrkPaused ? 'var(--text-muted, #888888)' : 'var(--success, #10B981)') : (isThisStudy ? 'var(--red, #EF4444)' : 'var(--text-muted, #888888)');
         const trkTxt = isTrk ? (isTrkPaused ? 'Paused' : 'Studying') : (isThisStudy ? 'Not Studying' : 'Break Time');
 
         if (cSlot) {
