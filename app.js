@@ -1875,6 +1875,7 @@ window.showPaceCalculation = function(subjectId = null, paceWindow = null) {
 
 
 let lastNotifiedTime = '';
+let lastMissedStudyAlert = 0;
 
 window.toggleNotifications = function() {
   if (state.activeNotificationSchedule === state.activeSchedule) {
