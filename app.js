@@ -1132,6 +1132,14 @@ function renderSchedule() {
     smartActiveIdx = chronoActiveIdx;
   }
   schedule.slots.forEach((slot, idx) => {
+    const [startStr] = slot.startRange.split('-');
+    const [sh, sm] = startStr.split(':').map(Number);
+    const startMin = sh * 60 + sm;
+    const endMin = startMin + slot.duration;
+    const isChronoActive = currentMin >= startMin && currentMin < endMin;
+    const hasSmartBadge = !isEditMode && (idx === smartActiveIdx);
+    const durationStr = slot.duration >= 60 ? (slot.duration / 60) + ' hrs' : slot.duration + ' min';
+
     container.innerHTML += `
       <div class="schedule-slot glass-card slot-type-${slot.type} ${hasSmartBadge ? 'slot-active' : ''}" style="display:flex; justify-content:space-between; align-items:center;">
         
