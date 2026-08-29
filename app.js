@@ -5688,7 +5688,7 @@ window.togglePiPMode = async function() {
     // Setup PiP body
     pipWin.document.body.className = document.body.className;
     pipWin.document.body.setAttribute('data-theme', document.body.getAttribute('data-theme'));
-    pipWin.document.body.style.padding = '10px';
+    pipWin.document.body.style.padding = '0';
     pipWin.document.body.style.margin = '0';
     pipWin.document.body.style.background = 'var(--bg-primary)';
     pipWin.document.body.style.fontFamily = 'Inter, sans-serif';
