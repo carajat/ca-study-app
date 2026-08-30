@@ -1154,11 +1154,15 @@ body {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none !important;
-    width: 0 !important;
-    height: 0 !important;
-  }
+  
+.hide-scrollbar::-webkit-scrollbar,
+.hide-scrollbar::-webkit-scrollbar-track,
+.hide-scrollbar::-webkit-scrollbar-thumb {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
 
 select option {
   background-color: var(--bg-primary);
