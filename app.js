@@ -1709,7 +1709,8 @@ function updateConsistencyWidget() {
         const trkTxt = isTrk ? (isTrkPaused ? 'Paused' : 'Studying') : (isThisStudy ? 'Not Studying' : 'Break Time');
 
         if (cSlot) {
-          currentActivityStr = `<div style="font-size:11px; margin-top:4px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;"><span class="material-symbols-rounded" style="font-size:14px; color:var(--primary);">${(cSlot.icon || 'schedule').trim()}</span> <span style="flex:1;">Current: <b style="color:var(--text-primary);">${cSlot.label}</b></span> <span style="font-weight:700; color:${trkCol}; display:flex; align-items:center; gap:3px;">${trkTxt} • ${timeStr}</span></div>`;
+          const slotDur = cSlot.duration >= 60 ? (cSlot.duration / 60) + 'h' : cSlot.duration + 'min';
+          currentActivityStr = `<div style="font-size:11px; margin-top:4px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;"><span class="material-symbols-rounded" style="font-size:14px; color:var(--primary);">${(cSlot.icon || 'schedule').trim()}</span> <span style="flex:1;">Current: <b style="color:var(--text-primary);">${cSlot.label}</b> <span style="opacity:0.7;">${cSlot.startRange} · ${slotDur}</span></span> <span style="font-weight:700; color:${trkCol}; display:flex; align-items:center; gap:3px;">${trkTxt} • ${timeStr}</span></div>`;
         } else {
           currentActivityStr = `<div style="font-size:11px; margin-top:4px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;"><span class="material-symbols-rounded" style="font-size:14px; color:var(--text-muted);">bed</span> <span style="flex:1;">Current: <b style="color:var(--text-muted);">Rest Time</b></span> <span style="font-weight:700; color:${trkCol}; display:flex; align-items:center; gap:3px;">${trkTxt} • ${timeStr}</span></div>`;
         }
