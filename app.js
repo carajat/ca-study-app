@@ -1710,9 +1710,20 @@ function updateConsistencyWidget() {
 
         if (cSlot) {
           const slotDur = cSlot.duration >= 60 ? (cSlot.duration / 60) + 'h' : cSlot.duration + 'min';
-          currentActivityStr = `<div style="font-size:11px; margin-top:4px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;"><span class="material-symbols-rounded" style="font-size:14px; color:var(--primary);">${(cSlot.icon || 'schedule').trim()}</span> <span style="flex:1;">Current: <b style="color:var(--text-primary);">${cSlot.label}</b> <span style="opacity:0.7;">${cSlot.startRange} · ${slotDur}</span></span> <span style="font-weight:700; color:${trkCol}; display:flex; align-items:center; gap:3px;">${trkTxt} • ${timeStr}</span></div>`;
+          currentActivityStr = `<div style="font-size:11px; margin-top:5px; color:var(--text-secondary);">
+            <div style="display:flex; align-items:center; gap:4px;">
+              <span class="material-symbols-rounded" style="font-size:14px; color:var(--primary);">${(cSlot.icon || 'schedule').trim()}</span>
+              <span style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><b style="color:var(--text-primary);">${cSlot.label}</b></span>
+              <span style="font-weight:700; color:${trkCol}; white-space:nowrap; font-size:10px;">${trkTxt} • ${timeStr}</span>
+            </div>
+            <div style="font-size:10px; opacity:0.6; margin-top:1px; padding-left:18px;">${cSlot.startRange} · ${slotDur}</div>
+          </div>`;
         } else {
-          currentActivityStr = `<div style="font-size:11px; margin-top:4px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;"><span class="material-symbols-rounded" style="font-size:14px; color:var(--text-muted);">bed</span> <span style="flex:1;">Current: <b style="color:var(--text-muted);">Rest Time</b></span> <span style="font-weight:700; color:${trkCol}; display:flex; align-items:center; gap:3px;">${trkTxt} • ${timeStr}</span></div>`;
+          currentActivityStr = `<div style="font-size:11px; margin-top:5px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;">
+            <span class="material-symbols-rounded" style="font-size:14px; color:var(--text-muted);">bed</span>
+            <span style="flex:1;"><b style="color:var(--text-muted);">Rest Time</b></span>
+            <span style="font-weight:700; color:${trkCol}; white-space:nowrap; font-size:10px;">${trkTxt} • ${timeStr}</span>
+          </div>`;
         }
       }
     }
