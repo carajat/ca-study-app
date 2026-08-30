@@ -1625,7 +1625,7 @@ function updateConsistencyWidget() {
   }
 
   // Swipeable Adherence Html
-  let adherenceHtml = `<div id="cons-adherence-scroll" style="display:flex; overflow-x:auto; scroll-snap-type: x mandatory; padding-bottom:5px;" class="hide-scrollbar">`;
+  let adherenceHtml = `<div style="overflow:hidden; width:100%;"><div id="cons-adherence-scroll" style="display:flex; overflow-x:auto; scroll-snap-type: x mandatory; padding-bottom:30px; margin-bottom:-30px;" class="hide-scrollbar">`;
   for(let i=29; i>=0; i--) {
     let d = new Date();
     if(typeof window.getGlobalTime === 'function') d = new Date(window.getGlobalTime());
