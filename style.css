@@ -1150,7 +1150,6 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 2px; }
 
-@media (hover: none) and (pointer: coarse) {
   .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -1158,7 +1157,6 @@ body {
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
-}
 
 select option {
   background-color: var(--bg-primary);
