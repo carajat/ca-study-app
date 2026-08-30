@@ -1148,14 +1148,36 @@ body {
 /* ─── Scrollbar ──────────────────────── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
 
+/* Thin Google-style scrollbar for horizontal scroll areas */
 .hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(150,150,150,0.3) transparent;
 }
 .hide-scrollbar::-webkit-scrollbar {
-  display: none;
+  height: 3px;
+}
+.hide-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.hide-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(150,150,150,0.3);
+  border-radius: 4px;
+}
+.hide-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(150,150,150,0.5);
+}
+
+/* On mobile touch devices, hide scrollbar completely */
+@media (hover: none) and (pointer: coarse) {
+  .hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 select option {
