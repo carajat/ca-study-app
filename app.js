@@ -609,7 +609,8 @@ function renderTrendGraph() {
       wrapper.scrollLeft = wrapper.scrollWidth;
     }, 50);
     initDragToScroll(wrapper);
-
+  }
+}
 
 window.saveTrendRange = function() {
   const selectEl = document.getElementById('trend-range-select');
@@ -1625,7 +1626,7 @@ function updateConsistencyWidget() {
   }
 
   // Swipeable Adherence Html
-  let adherenceHtml = `<div style="overflow:hidden; width:100%;"><div id="cons-adherence-scroll" style="display:flex; overflow-x:auto; scroll-snap-type: x mandatory; padding-bottom:30px; margin-bottom:-30px;" class="hide-scrollbar">`;
+  let adherenceHtml = `<div id="cons-adherence-scroll" style="display:flex; overflow-x:auto; scroll-snap-type: x mandatory; padding-bottom:5px;" class="hide-scrollbar">`;
   for(let i=29; i>=0; i--) {
     let d = new Date();
     if(typeof window.getGlobalTime === 'function') d = new Date(window.getGlobalTime());
@@ -1751,6 +1752,7 @@ function updateConsistencyWidget() {
     const adhereScroll = document.getElementById('cons-adherence-scroll');
     if (adhereScroll) {
       adhereScroll.scrollLeft = adhereScroll.scrollWidth;
+      initDragToScroll(adhereScroll);
     }
   }, 10);
 }
@@ -5889,3 +5891,36 @@ function refreshLiveUI() {
 }
 let _lastTickMin = new Date().getMinutes();
 setInterval(() => { const m = new Date().getMinutes(); if (m !== _lastTickMin) { _lastTickMin = m; refreshLiveUI(); } }, 1000);
+
+// Drag-to-scroll for desktop (replaces scrollbar with mouse-drag like mobile touch)
+function initDragToScroll(el) {
+  if (!el || el.dataset.dragInit) return;
+  el.dataset.dragInit = 'true';
+  var isDown = false;
+  var startX, scrollLeft;
+  el.addEventListener('mousedown', function(e) {
+    isDown = true;
+    startX = e.pageX - el.offsetLeft;
+    scrollLeft = el.scrollLeft;
+    el.style.cursor = 'grabbing';
+    el.style.userSelect = 'none';
+  });
+  el.addEventListener('mouseleave', function() {
+    if (!isDown) return;
+    isDown = false;
+    el.style.cursor = '';
+    el.style.userSelect = '';
+  });
+  el.addEventListener('mouseup', function() {
+    isDown = false;
+    el.style.cursor = '';
+    el.style.userSelect = '';
+  });
+  el.addEventListener('mousemove', function(e) {
+    if (!isDown) return;
+    e.preventDefault();
+    var x = e.pageX - el.offsetLeft;
+    var walk = (x - startX) * 1.5;
+    el.scrollLeft = scrollLeft - walk;
+  });
+}
