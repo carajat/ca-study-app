@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ca-final-companion-v363';
+const CACHE_NAME = 'ca-final-companion-v364';
 const ASSETS = [
   '/',
   '/index.html?v=351',

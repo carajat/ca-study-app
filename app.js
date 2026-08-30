@@ -1711,18 +1711,17 @@ function updateConsistencyWidget() {
         if (cSlot) {
           const slotDur = cSlot.duration >= 60 ? (cSlot.duration / 60) + 'h' : cSlot.duration + 'min';
           currentActivityStr = `<div style="font-size:11px; margin-top:5px; color:var(--text-secondary);">
-            <div style="display:flex; align-items:center; gap:4px;">
-              <span class="material-symbols-rounded" style="font-size:14px; color:var(--primary);">${(cSlot.icon || 'schedule').trim()}</span>
-              <span style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><b style="color:var(--text-primary);">${cSlot.label}</b></span>
-              <span style="font-weight:700; color:${trkCol}; white-space:nowrap; font-size:10px;">${trkTxt} • ${timeStr}</span>
+            <div style="display:flex; align-items:center; gap:4px; min-width:0;">
+              <span class="material-symbols-rounded" style="font-size:13px; color:var(--primary); flex-shrink:0;">${(cSlot.icon || 'schedule').trim()}</span>
+              <span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><b style="color:var(--text-primary); font-size:11px;">${cSlot.label}</b> <span style="opacity:0.5; font-size:10px;">${cSlot.startRange} · ${slotDur}</span></span>
+              <span style="flex-shrink:0; font-weight:700; color:${trkCol}; white-space:nowrap; font-size:10px;">${trkTxt}</span>
             </div>
-            <div style="font-size:10px; opacity:0.6; margin-top:1px; padding-left:18px;">${cSlot.startRange} · ${slotDur}</div>
           </div>`;
         } else {
           currentActivityStr = `<div style="font-size:11px; margin-top:5px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;">
-            <span class="material-symbols-rounded" style="font-size:14px; color:var(--text-muted);">bed</span>
+            <span class="material-symbols-rounded" style="font-size:13px; color:var(--text-muted); flex-shrink:0;">bed</span>
             <span style="flex:1;"><b style="color:var(--text-muted);">Rest Time</b></span>
-            <span style="font-weight:700; color:${trkCol}; white-space:nowrap; font-size:10px;">${trkTxt} • ${timeStr}</span>
+            <span style="flex-shrink:0; font-weight:700; color:${trkCol}; white-space:nowrap; font-size:10px;">${trkTxt}</span>
           </div>`;
         }
       }
