@@ -2064,10 +2064,13 @@ async function scheduleNativeAlarms(scheduleId) {
         const nagMin = slotStartMin + offset;
         const nagHH = Math.floor(nagMin / 60) % 24;
         const nagMM = nagMin % 60;
+        const oH = Math.floor(offset / 60);
+        const oM = offset % 60;
+        const offsetStr = oH > 0 ? `${oH}h ${oM}m` : `${oM}m`;
         notificationsToSchedule.push({
           id: nagId++,
           title: "⚠️ You should be studying!",
-          body: `${slot.label} started ${offset} min ago. Start your tracker!`,
+          body: `${slot.label} — ${offsetStr} wasted already. Open your tracker!`,
           smallIcon: "ic_stat_ca",
           iconColor: "#FF0000",
           schedule: {
@@ -2171,9 +2174,19 @@ function checkScheduleNotifications() {
   if (lastMissedStudyAlert === 0 || (nowMs - lastMissedStudyAlert) >= 5 * 60 * 1000) {
     const [sh, sm] = activeStudySlot.startRange.split('-')[0].split(':').map(Number);
     const missedMins = currentMin - (sh * 60 + sm);
+    const mH = Math.floor(missedMins / 60);
+    const mM = missedMins % 60;
+    const missedStr = mH > 0 ? `${mH}h ${mM}m` : `${mM}m`;
+    // Compute today's total studied time
+    const todayKey = dateKey(new Date());
+    const todayEntries = (DYNAMIC_DATA.journalEntries && DYNAMIC_DATA.journalEntries[todayKey]) || [];
+    const totalMins = todayEntries.reduce((sum, e) => sum + (parseInt(e.durHH || 0) * 60 + parseInt(e.durMM || 0)), 0);
+    const tH = Math.floor(totalMins / 60);
+    const tM = totalMins % 60;
+    const studiedStr = totalMins > 0 ? `Only ${tH}h ${tM}m studied today.` : `0 min studied today.`;
     fireNotification(
       "⚠️ You should be studying!",
-      `${activeStudySlot.label} started ${missedMins} min ago. Start your tracker now!`
+      `${activeStudySlot.label} — ${missedStr} wasted. ${studiedStr}`
     );
     lastMissedStudyAlert = nowMs;
   }
