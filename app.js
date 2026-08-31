@@ -2054,20 +2054,61 @@ function checkScheduleNotifications() {
   const hh = String(now.getHours()).padStart(2, '0');
   const mm = String(now.getMinutes()).padStart(2, '0');
   const currentTime = `${hh}:${mm}`;
-  
-  if (lastNotifiedTime === currentTime) return;
+  const currentMin = now.getHours() * 60 + now.getMinutes();
   
   const scheduleData = DYNAMIC_DATA.schedules && DYNAMIC_DATA.schedules[state.activeNotificationSchedule];
   if (!scheduleData || !scheduleData.slots) return;
   
-  scheduleData.slots.forEach(slot => {
-    if (!slot.startRange) return;
-    const startStr = slot.startRange.split('-')[0].trim();
-    if (currentTime === startStr) {
-      fireNotification("CA Study Tracker", `Time for: ${slot.label}`);
-      lastNotifiedTime = currentTime;
+  // 1. Slot-start notification (existing — fires once at exact start time)
+  if (lastNotifiedTime !== currentTime) {
+    scheduleData.slots.forEach(slot => {
+      if (!slot.startRange) return;
+      const startStr = slot.startRange.split('-')[0].trim();
+      if (currentTime === startStr) {
+        fireNotification("CA Study Tracker", `Time for: ${slot.label}`);
+        lastNotifiedTime = currentTime;
+      }
+    });
+  }
+  
+  // 2. "Not Studying" nag — every 5 minutes during an active study slot if tracker is OFF
+  const isTrackerActive = typeof trackerState !== 'undefined' && (trackerState.isRunning || trackerState.isPaused);
+  if (isTrackerActive) {
+    // User is studying or paused — no nagging needed
+    lastMissedStudyAlert = 0;
+    return;
+  }
+  
+  // Find if we're currently inside a study slot
+  let activeStudySlot = null;
+  for (const slot of scheduleData.slots) {
+    if (slot.type !== 'study' || !slot.startRange) continue;
+    const [sh, sm] = slot.startRange.split('-')[0].split(':').map(Number);
+    const slotStart = sh * 60 + sm;
+    const slotEnd = slotStart + (slot.duration || 60);
+    if (currentMin >= slotStart && currentMin < slotEnd) {
+      activeStudySlot = slot;
+      break;
     }
-  });
+  }
+  
+  if (!activeStudySlot) {
+    // Not in a study slot — reset and don't nag
+    lastMissedStudyAlert = 0;
+    return;
+  }
+  
+  // We're in a study slot but NOT studying — nag every 5 minutes
+  const nowMs = Date.now();
+  if (lastMissedStudyAlert === 0 || (nowMs - lastMissedStudyAlert) >= 5 * 60 * 1000) {
+    const [sh, sm] = activeStudySlot.startRange.split('-')[0].split(':').map(Number);
+    const missedMins = currentMin - (sh * 60 + sm);
+    fireNotification(
+      "⚠️ You should be studying!",
+      `${activeStudySlot.label} started ${missedMins} min ago. Start your tracker now!`
+    );
+    lastMissedStudyAlert = nowMs;
+  }
 }
 
 // ═══════════════════════════════════════════
