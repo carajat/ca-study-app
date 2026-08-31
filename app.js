@@ -1989,6 +1989,7 @@ async function scheduleNativeAlarms(scheduleId) {
     const notificationsToSchedule = [];
     let idCounter = 1;
 
+    // 1. Slot-start notifications (existing)
     scheduleData.slots.forEach(slot => {
       if (!slot.startRange) return;
       const startStr = slot.startRange.split('-')[0].trim();
@@ -2005,6 +2006,35 @@ async function scheduleNativeAlarms(scheduleId) {
           iconColor: "#6C3CE1",
           schedule: {
             on: { hour: hh, minute: mm },
+            allowWhileIdle: true
+          }
+        });
+      }
+    });
+
+    // 2. "Not Studying" nag every 5 min during study slots
+    let nagId = 5000;
+    scheduleData.slots.forEach(slot => {
+      if (slot.type !== 'study' || !slot.startRange) return;
+      const startStr = slot.startRange.split('-')[0].trim();
+      const [sh, sm] = startStr.split(':').map(Number);
+      if (isNaN(sh) || isNaN(sm)) return;
+      const slotStartMin = sh * 60 + sm;
+      const slotDuration = slot.duration || 60;
+      
+      // Schedule a nag at every 5-min mark within the slot (skip the start time itself, already covered above)
+      for (let offset = 5; offset < slotDuration; offset += 5) {
+        const nagMin = slotStartMin + offset;
+        const nagHH = Math.floor(nagMin / 60) % 24;
+        const nagMM = nagMin % 60;
+        notificationsToSchedule.push({
+          id: nagId++,
+          title: "⚠️ You should be studying!",
+          body: `${slot.label} started ${offset} min ago. Start your tracker!`,
+          smallIcon: "ic_stat_ca",
+          iconColor: "#FF0000",
+          schedule: {
+            on: { hour: nagHH, minute: nagMM },
             allowWhileIdle: true
           }
         });
