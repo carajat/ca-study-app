@@ -9,6 +9,7 @@ let state = {
   activeTab: 'dashboard',
   activeSchedule: 'earlyMorning',
   activeNotificationSchedule: null,
+  studyNagEnabled: false,
   targetAttempt: 'Nov 2026',
   excludeIBS: false,
   paceExcludeIBS: false,
@@ -1966,6 +1967,41 @@ window.updateNotifToggleUI = function() {
     icon.textContent = 'notifications_off';
     txt.textContent = 'Turn ON for ' + schedName;
   }
+  // Show/hide nag toggle based on whether schedule alerts are ON
+  const nagCard = document.getElementById('nag-toggle-card');
+  if (nagCard) nagCard.style.display = isEnabled ? 'flex' : 'none';
+  updateNagToggleUI();
+};
+
+window.toggleStudyNag = function() {
+  state.studyNagEnabled = !state.studyNagEnabled;
+  saveState({ studyNagEnabled: state.studyNagEnabled });
+  updateNagToggleUI();
+  // Re-schedule native alarms with updated nag state
+  if (state.activeNotificationSchedule && window.Capacitor) {
+    scheduleNativeAlarms(state.activeNotificationSchedule);
+  }
+};
+
+window.updateNagToggleUI = function() {
+  const toggle = document.getElementById('nag-toggle-switch');
+  const iconBg = document.getElementById('nag-icon-bg');
+  const icon = document.getElementById('nag-icon');
+  const txt = document.getElementById('nag-text');
+  if (!toggle) return;
+
+  toggle.checked = state.studyNagEnabled;
+  if (state.studyNagEnabled) {
+    iconBg.style.background = 'rgba(239,68,68,0.1)';
+    iconBg.style.color = 'var(--danger-color, #EF4444)';
+    icon.textContent = 'alarm_on';
+    txt.textContent = 'Nagging every 5 min when not studying';
+  } else {
+    iconBg.style.background = 'rgba(255,255,255,0.05)';
+    iconBg.style.color = 'var(--text-secondary)';
+    icon.textContent = 'alarm_off';
+    txt.textContent = 'Turn ON to get reminded';
+  }
 };
 
 async function scheduleNativeAlarms(scheduleId) {
@@ -2012,8 +2048,9 @@ async function scheduleNativeAlarms(scheduleId) {
       }
     });
 
-    // 2. "Not Studying" nag every 5 min during study slots
+    // 2. "Not Studying" nag every 5 min during study slots (only when nag toggle is ON)
     let nagId = 5000;
+    if (state.studyNagEnabled) {
     scheduleData.slots.forEach(slot => {
       if (slot.type !== 'study' || !slot.startRange) return;
       const startStr = slot.startRange.split('-')[0].trim();
@@ -2040,6 +2077,7 @@ async function scheduleNativeAlarms(scheduleId) {
         });
       }
     });
+    } // end if studyNagEnabled
 
     if (notificationsToSchedule.length > 0) {
       await LocalNotifications.schedule({ notifications: notificationsToSchedule });
@@ -4192,6 +4230,13 @@ function trackerStart() {
     };
     if (typeof saveDynamicData === 'function') saveDynamicData();
   }
+  // Auto-turn OFF study nag when studying
+  if (state.studyNagEnabled && state.activeNotificationSchedule) {
+    state.studyNagEnabled = false;
+    saveState({ studyNagEnabled: false });
+    updateNagToggleUI();
+    if (window.Capacitor) scheduleNativeAlarms(state.activeNotificationSchedule);
+  }
 }
 
 function trackerPause() {
@@ -4360,6 +4405,13 @@ function trackerStop() {
     var st = getTrackerEl('st-status');
     if (st) st.textContent = '';
   }, 4000);
+  // Auto-turn ON study nag when stopping
+  if (!state.studyNagEnabled && state.activeNotificationSchedule) {
+    state.studyNagEnabled = true;
+    saveState({ studyNagEnabled: true });
+    updateNagToggleUI();
+    if (window.Capacitor) scheduleNativeAlarms(state.activeNotificationSchedule);
+  }
 }
 
 
