@@ -2736,10 +2736,11 @@ function init() {
   setInterval(updateCountdown, 1000);
   
   // Update current activity every minute
-  setInterval(() => {
-    updateCurrentActivity();
-    checkScheduleNotifications();
-  }, 60000);
+  setInterval(updateCurrentActivity, 60000);
+  
+  // Check notifications every 30 seconds (for 5-min nag accuracy)
+  checkScheduleNotifications();
+  setInterval(checkScheduleNotifications, 30000);
   
   performDailyBackup(); // Auto-save daily backup
   
