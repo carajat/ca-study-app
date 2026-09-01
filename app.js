@@ -5218,6 +5218,24 @@ window.reloadAppFromCloud = function(cloudData) {
     restoreTrackerState();
     switchTab(state.activeTab);
     
+    // Sync study nag alarms based on tracker state from cloud
+    if (state.activeNotificationSchedule && window.Capacitor) {
+      const trackerActive = trackerState.isRunning || trackerState.isPaused;
+      if (trackerActive && state.studyNagEnabled) {
+        // Tracker running on another device — turn off nag on this device
+        state.studyNagEnabled = false;
+        saveState({ studyNagEnabled: false });
+        updateNagToggleUI();
+        scheduleNativeAlarms(state.activeNotificationSchedule);
+      } else if (!trackerActive && !state.studyNagEnabled) {
+        // Tracker stopped on another device — turn on nag on this device
+        state.studyNagEnabled = true;
+        saveState({ studyNagEnabled: true });
+        updateNagToggleUI();
+        scheduleNativeAlarms(state.activeNotificationSchedule);
+      }
+    }
+    
     if (typeof showToast === 'function') {
       showToast("Data synced from cloud! <span class='material-symbols-rounded icon-sm' style='vertical-align:middle'>cloud_done</span>");
     }
