@@ -4233,6 +4233,13 @@ function trackerStart() {
   updateTrackerUI('running'); refreshLiveUI();
   trackerState.intervalId = setInterval(updateTimerDisplay, 1000);
   saveTrackerState();
+  // Auto-turn OFF study nag when studying
+  if (state.studyNagEnabled && state.activeNotificationSchedule) {
+    state.studyNagEnabled = false;
+    saveState({ studyNagEnabled: false });
+    updateNagToggleUI();
+    if (window.Capacitor) scheduleNativeAlarms(state.activeNotificationSchedule);
+  }
   if (!window.isReadOnlyMode) {
     DYNAMIC_DATA.liveSession = {
       active: true,
@@ -4242,13 +4249,6 @@ function trackerStart() {
       topic: trackerState.topic
     };
     if (typeof saveDynamicData === 'function') saveDynamicData();
-  }
-  // Auto-turn OFF study nag when studying
-  if (state.studyNagEnabled && state.activeNotificationSchedule) {
-    state.studyNagEnabled = false;
-    saveState({ studyNagEnabled: false });
-    updateNagToggleUI();
-    if (window.Capacitor) scheduleNativeAlarms(state.activeNotificationSchedule);
   }
 }
 
@@ -4424,6 +4424,7 @@ function trackerStop() {
     saveState({ studyNagEnabled: true });
     updateNagToggleUI();
     if (window.Capacitor) scheduleNativeAlarms(state.activeNotificationSchedule);
+    if (typeof saveDynamicData === 'function') saveDynamicData(); // sync nag state to cloud
   }
 }
 
@@ -5218,22 +5219,10 @@ window.reloadAppFromCloud = function(cloudData) {
     restoreTrackerState();
     switchTab(state.activeTab);
     
-    // Sync study nag alarms based on tracker state from cloud
+    // Re-sync nag alarms from cloud state (studyNagEnabled syncs via state)
     if (state.activeNotificationSchedule && window.Capacitor) {
-      const trackerActive = trackerState.isRunning || trackerState.isPaused;
-      if (trackerActive && state.studyNagEnabled) {
-        // Tracker running on another device — turn off nag on this device
-        state.studyNagEnabled = false;
-        saveState({ studyNagEnabled: false });
-        updateNagToggleUI();
-        scheduleNativeAlarms(state.activeNotificationSchedule);
-      } else if (!trackerActive && !state.studyNagEnabled) {
-        // Tracker stopped on another device — turn on nag on this device
-        state.studyNagEnabled = true;
-        saveState({ studyNagEnabled: true });
-        updateNagToggleUI();
-        scheduleNativeAlarms(state.activeNotificationSchedule);
-      }
+      updateNagToggleUI();
+      scheduleNativeAlarms(state.activeNotificationSchedule);
     }
     
     if (typeof showToast === 'function') {
