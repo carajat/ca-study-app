@@ -5219,9 +5219,10 @@ window.reloadAppFromCloud = function(cloudData) {
     restoreTrackerState();
     switchTab(state.activeTab);
     
-    // Re-sync nag alarms from cloud state (studyNagEnabled syncs via state)
+    // Re-sync nag UI + alarms from cloud state
+    updateNagToggleUI();
+    updateNotifToggleUI();
     if (state.activeNotificationSchedule && window.Capacitor) {
-      updateNagToggleUI();
       scheduleNativeAlarms(state.activeNotificationSchedule);
     }
     
