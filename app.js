@@ -249,13 +249,18 @@ function initSortable(containerIdOrEl, arrayRef, saveCallback) {
   if (isEditMode) {
     const s = new Sortable(container, {
       handle: '.drag-handle',
+      draggable: '.chapter-drag-item',
       animation: 150,
       ghostClass: 'sortable-ghost',
       delay: 150, // Time in ms to define when the sorting should start
       delayOnTouchOnly: true, // Only delay if user is using touch
       touchStartThreshold: 3, // px, how many pixels the point should move before cancelling a delayed drag event
       fallbackTolerance: 3,
+      onStart: function() {
+        window.isDragging = true;
+      },
       onEnd: function(evt) {
+        window.isDragging = false;
         if (evt.oldIndex !== evt.newIndex) {
           const item = arrayRef.splice(evt.oldIndex, 1)[0];
           arrayRef.splice(evt.newIndex, 0, item);
@@ -2647,9 +2652,10 @@ function renderSyllabusDetail(subject) {
       '</div>' +
       chapters.map((ch, idx) => {
         const chProgress = progress[ch.id] || {};
-        return '<div class="st-row ' + (isEditMode ? 'is-edit' : '') + '">' +
+        return '<div class="st-row chapter-drag-item ' + (isEditMode ? 'is-edit' : '') + '" data-idx="' + idx + '">' +
           '' +
           (!isEditMode ? '<span class="st-num">' + (idx + 1) + '</span><div class="st-name">' + ch.name + '</div>' : 
+            '<span class="drag-handle material-symbols-rounded" style="cursor:grab; color:var(--text-secondary); font-size:18px; margin-right:6px;">drag_indicator</span>' +
             '<div class="st-name" style="flex:1; margin-right: 10px;">' +
               '<input type="text" class="inline-input" value="' + ch.name.replace(/"/g, '&quot;') + '" onclick="event.stopPropagation()" onchange="updateSyllabusChapter(\'' + key + '\', ' + idx + ', this.value)">' +
             '</div>'
@@ -2659,11 +2665,7 @@ function renderSyllabusDetail(subject) {
           '<span class="st-check"><input type="checkbox" ' + (chProgress.questionBank ? 'checked' : '') + ' onchange="toggleSyllabusCheck(\'' + ch.id + '\', \'questionBank\', this.checked)"></span>' +
           '<span class="st-check"><input type="checkbox" ' + (chProgress.revisionVideo ? 'checked' : '') + ' onchange="toggleSyllabusCheck(\'' + ch.id + '\', \'revisionVideo\', this.checked)"></span>' 
           : 
-          '<div class="edit-mode-controls" style="display:flex; gap:4px; align-items:center;">' +
-      '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusChapter(\'' + key + '\', ' + idx + ', -1)" ' + (idx === 0 ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_up</span></button>' +
-      '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusChapter(\'' + key + '\', ' + idx + ', 1)" ' + (idx === chapters.length - 1 ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_down</span></button>' +
-      '<button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter(\'' + key + '\', ' + idx + ')"><span class="material-symbols-rounded icon-sm">delete</span></button>' +
-  '</div>'
+          '<button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter(\'' + key + '\', ' + idx + ')"><span class="material-symbols-rounded icon-sm">delete</span></button>'
           ) +
         '</div>';
       }).join('') +
@@ -2677,19 +2679,16 @@ function renderSyllabusDetail(subject) {
     contentEl.innerHTML = '<div class="syllabus-simple">' +
       chapters.map((ch, idx) => {
         const isDone = progress[ch.id]?.done || false;
-        return '<div class="ss-row ' + (isDone ? 'done' : '') + '" ' + (!isEditMode ? 'onclick="toggleIbsCheck(\'' + ch.id + '\')"' : '') + '>' +
+        return '<div class="ss-row chapter-drag-item ' + (isDone ? 'done' : '') + '" data-idx="' + idx + '" ' + (!isEditMode ? 'onclick="toggleIbsCheck(\'' + ch.id + '\')"' : '') + '>' +
           '' +
-          '<span class="ss-check">' + (isDone ? '<span class="material-symbols-rounded icon-sm">check_box</span>' : '<span class="material-symbols-rounded icon-sm">check_box_outline_blank</span>') + '</span>' +
+          (!isEditMode ? '<span class="ss-check">' + (isDone ? '<span class="material-symbols-rounded icon-sm">check_box</span>' : '<span class="material-symbols-rounded icon-sm">check_box_outline_blank</span>') + '</span>' : 
+          '<span class="drag-handle material-symbols-rounded" style="cursor:grab; color:var(--text-secondary); font-size:18px; margin-right:6px;">drag_indicator</span>') +
           '<span class="ss-num">' + (!isEditMode ? (idx + 1) + '.' : '') + '</span>' +
           (!isEditMode ? '<span class="ss-name" style="flex:1">' + ch.name + '</span>' : 
           '<div class="ss-name" style="flex:1; margin-right:10px;">' +
             '<input type="text" class="inline-input" value="' + ch.name.replace(/"/g, '&quot;') + '" onclick="event.stopPropagation()" onchange="updateSyllabusChapter(\'' + key + '\', ' + idx + ', this.value)">' +
           '</div>' +
-          '<div class="edit-mode-controls" style="display:flex; gap:4px; align-items:center;">' +
-      '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusChapter(\'' + key + '\', ' + idx + ', -1)" ' + (idx === 0 ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_up</span></button>' +
-      '<button class="move-btn" onclick="event.stopPropagation(); moveSyllabusChapter(\'' + key + '\', ' + idx + ', 1)" ' + (idx === chapters.length - 1 ? 'disabled' : '') + '><span class="material-symbols-rounded">keyboard_arrow_down</span></button>' +
-      '<button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter(\'' + key + '\', ' + idx + ')"><span class="material-symbols-rounded icon-sm">delete</span></button>' +
-  '</div>'
+          '<button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter(\'' + key + '\', ' + idx + ')"><span class="material-symbols-rounded icon-sm">delete</span></button>'
           ) +
         '</div>';
       }).join('') +
@@ -2697,6 +2696,21 @@ function renderSyllabusDetail(subject) {
     
     if (isEditMode) {
       contentEl.innerHTML += '<button class="add-item-btn" onclick="addSyllabusChapter(\'' + key + '\')">+ Add Chapter</button>';
+    }
+  }
+  
+  // Init drag-and-drop reordering for chapters in edit mode
+  if (isEditMode && subjData.chapters) {
+    clearSortables();
+    const sortContainer = type === 'main' 
+      ? contentEl.querySelector('.syllabus-table')
+      : contentEl.querySelector('.syllabus-simple');
+    if (sortContainer) {
+      initSortable(sortContainer, subjData.chapters, function() {
+        saveDynamicData();
+        // Re-render to update numbering after reorder
+        renderSyllabusDetail(subject);
+      });
     }
   }
 }
@@ -5203,6 +5217,11 @@ window.reloadAppFromCloud = function(cloudData) {
   const cloudHash = JSON.stringify(normalizeForHash(newDynamic)) + JSON.stringify(normalizeForHash(newState)) + JSON.stringify(normalizeForHash(cleanTracker));
   
   if (localHash !== cloudHash) {
+    // Skip re-render while user is dragging (would destroy SortableJS mid-drag)
+    if (window.isDragging) {
+      console.log("Cloud data differs but drag in progress — skipping sync.");
+      return;
+    }
     console.log("Cloud data differs. Applying sync...");
     localStorage.setItem(getDynamicDataKey(), JSON.stringify(newDynamic));
     localStorage.setItem(getStorageKey(), JSON.stringify(newState));
