@@ -2650,13 +2650,13 @@ function renderSyllabusDetail(subject) {
         '<span class="st-check"><span class="material-symbols-rounded icon-sm">help</span></span>' +
         '<span class="st-check"><span class="material-symbols-rounded icon-sm">videocam</span></span>' +
       '</div>' +
+      '<div class="chapter-list-sortable">' +
       chapters.map((ch, idx) => {
         const chProgress = progress[ch.id] || {};
         return '<div class="st-row chapter-drag-item ' + (isEditMode ? 'is-edit' : '') + '" data-idx="' + idx + '">' +
-          '' +
           (!isEditMode ? '<span class="st-num">' + (idx + 1) + '</span><div class="st-name">' + ch.name + '</div>' : 
-            '<span class="drag-handle material-symbols-rounded" style="cursor:grab; color:var(--text-secondary); font-size:18px; margin-right:6px;">drag_indicator</span>' +
-            '<div class="st-name" style="flex:1; margin-right: 10px;">' +
+            '<span class="drag-handle material-symbols-rounded" style="cursor:grab; color:var(--text-secondary); font-size:18px; margin-right:4px; flex-shrink:0;">drag_indicator</span>' +
+            '<div class="st-name" style="flex:1; min-width:0; margin-right: 6px;">' +
               '<input type="text" class="inline-input" value="' + ch.name.replace(/"/g, '&quot;') + '" onclick="event.stopPropagation()" onchange="updateSyllabusChapter(\'' + key + '\', ' + idx + ', this.value)">' +
             '</div>'
           ) +
@@ -2665,10 +2665,11 @@ function renderSyllabusDetail(subject) {
           '<span class="st-check"><input type="checkbox" ' + (chProgress.questionBank ? 'checked' : '') + ' onchange="toggleSyllabusCheck(\'' + ch.id + '\', \'questionBank\', this.checked)"></span>' +
           '<span class="st-check"><input type="checkbox" ' + (chProgress.revisionVideo ? 'checked' : '') + ' onchange="toggleSyllabusCheck(\'' + ch.id + '\', \'revisionVideo\', this.checked)"></span>' 
           : 
-          '<button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter(\'' + key + '\', ' + idx + ')"><span class="material-symbols-rounded icon-sm">delete</span></button>'
+          '<button class="delete-btn" onclick="event.stopPropagation(); deleteSyllabusChapter(\'' + key + '\', ' + idx + ')" style="flex-shrink:0;"><span class="material-symbols-rounded icon-sm">delete</span></button>'
           ) +
         '</div>';
       }).join('') +
+      '</div>' +
     '</div>';
     
     if (isEditMode) {
@@ -2702,9 +2703,8 @@ function renderSyllabusDetail(subject) {
   // Init drag-and-drop reordering for chapters in edit mode
   if (isEditMode && subjData.chapters) {
     clearSortables();
-    const sortContainer = type === 'main' 
-      ? contentEl.querySelector('.syllabus-table')
-      : contentEl.querySelector('.syllabus-simple');
+    const sortContainer = contentEl.querySelector('.chapter-list-sortable') 
+      || contentEl.querySelector('.syllabus-simple');
     if (sortContainer) {
       initSortable(sortContainer, subjData.chapters, function() {
         saveDynamicData();
