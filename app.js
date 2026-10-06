@@ -2961,7 +2961,7 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
           html += `</div>`;
         } else {
           html += `<div class="revision-question-header" style="display:flex; align-items:center; gap:12px; padding:16px; cursor:pointer; user-select:none;" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'; const icon = this.querySelector('.expand-icon'); if (icon) icon.style.transform = this.nextElementSibling.style.display === 'none' ? 'rotate(0deg)' : 'rotate(90deg)';">`;
-          html += `<span class="expand-icon material-symbols-rounded icon-sm" style="color:var(--text-muted); transition: transform 0.2s;">arrow_right</span>`;
+          html += `<span class="expand-icon material-symbols-rounded icon-sm" style="color:var(--text-muted); transition: transform 0.2s; transform: rotate(90deg);">arrow_right</span>`;
           html += `<div style="flex:1">`;
           html += `<div class="q-name" style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:4px; line-height:1.3;">${q.name}</div>`;
           html += `<div class="q-marks" style="font-size:12px; font-weight:600; color:var(--primary); opacity:0.9;">${q.marks}</div>`;
@@ -2974,8 +2974,8 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
           html += `</div>`;
         }
         
-        // Body (collapsed by default in view mode, open in edit mode)
-        html += `<div class="revision-question-body" style="${isEditMode ? 'display:block;' : 'display:none;'} padding:0 16px 16px 16px;">`;
+        // Body (open by default)
+        html += `<div class="revision-question-body" style="display:block; padding:0 16px 16px 16px;">`;
         if (totalChapters > 0) {
           qChapterIds.forEach(chId => {
             const chObj = chapters.find(c => c.id === chId) || { name: 'Unknown Chapter' };
