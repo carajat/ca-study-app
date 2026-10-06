@@ -2836,7 +2836,203 @@ function deleteRevisionRound(roundNo) {
 }
 
 function renderRevisionRoundTab(subjectId, roundNo, container) {
-  container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-secondary);">Revision features coming in next commit...</div>';
+  const config = ensureRevisionConfig(subjectId);
+  const progress = getRevisionProgress();
+  const roundData = progress[roundNo] || {};
+  
+  // Need the full list of chapters
+  const subj = findSubj(subjectId);
+  const chapters = subj?.chapters || [];
+  
+  let html = '<div class="revision-tab-content">';
+  
+  const isTicked = (id) => roundData[id] === true;
+  
+  // 1. PAPER PATTERN
+  if (config.pattern && config.pattern.length > 0) {
+    html += '<div class="revision-section">';
+    html += '<div class="revision-section-title">PAPER PATTERN</div>';
+    
+    let usedChapterIds = new Set();
+    
+    config.pattern.forEach((group, gIdx) => {
+      html += `<div class="revision-group-title">${group.title}</div>`;
+      
+      (group.items || []).forEach((q, qIdx) => {
+        let qChapterIds = q.chapterIds || [];
+        qChapterIds.forEach(id => usedChapterIds.add(id));
+        
+        let tickedCount = qChapterIds.filter(id => isTicked(id)).length;
+        let totalCount = qChapterIds.length;
+        let allDone = totalCount > 0 && tickedCount === totalCount;
+        
+        html += `<div class="revision-question-card">`;
+        html += `<div class="revision-question-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">`;
+        html += `<span class="material-symbols-rounded icon-sm" style="color:var(--text-muted)">arrow_right</span>`;
+        html += `<div style="flex:1">`;
+        html += `<div class="q-name">${q.name}</div>`;
+        html += `<div class="q-marks">${q.marks}</div>`;
+        html += `</div>`;
+        html += `<div class="revision-done-chip ${allDone ? 'complete' : ''}">${tickedCount}/${totalCount}</div>`;
+        html += `</div>`;
+        
+        // Body (collapsed by default)
+        html += `<div class="revision-question-body" style="display:none; border-top:1px solid var(--border-color); padding:10px;">`;
+        qChapterIds.forEach(chId => {
+          const chObj = chapters.find(c => c.id === chId) || { name: 'Unknown Chapter' };
+          html += `<div class="revision-chapter-row">
+            <label style="display:flex; align-items:center; cursor:pointer;">
+              <input type="checkbox" ${isTicked(chId) ? 'checked' : ''} onchange="toggleRevisionTick(${roundNo}, '${chId}', this.checked)">
+              <span style="margin-left:8px; font-size:13.5px;">${chObj.name}</span>
+            </label>
+          </div>`;
+        });
+        html += `</div>`; // end body
+        html += `</div>`; // end card
+      });
+    });
+    
+    // OTHER REMAINING TOPICS
+    let remainingChapters = chapters.filter(c => !usedChapterIds.has(c.id));
+    if (remainingChapters.length > 0) {
+      html += `<div class="revision-section-title" style="margin-top:20px; font-size:12px; font-weight:normal; opacity:0.7;">OTHER REMAINING TOPICS</div>`;
+      html += `<div class="revision-question-card" style="padding:10px;">`;
+      remainingChapters.forEach(ch => {
+        html += `<div class="revision-chapter-row">
+          <label style="display:flex; align-items:center; cursor:pointer;">
+            <input type="checkbox" ${isTicked(ch.id) ? 'checked' : ''} onchange="toggleRevisionTick(${roundNo}, '${ch.id}', this.checked)">
+            <span style="margin-left:8px; font-size:13.5px;">${ch.name}</span>
+          </label>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+    
+    html += '</div>'; // end section
+  }
+  
+  // 2. PRACTICE
+  if (config.practice && config.practice.length > 0) {
+    html += '<div class="revision-section" style="margin-top:24px;">';
+    html += '<div class="revision-section-title">PRACTICE</div>';
+    
+    config.practice.forEach((group, gIdx) => {
+      if (group.type === 'counter') {
+        const cKey = `mcq_${subjectId}`;
+        let done = roundData[cKey] || 0;
+        let total = group.total || 35;
+        let pct = total > 0 ? Math.round((done / total) * 100) : 0;
+        
+        html += `<div class="revision-mcq-card glass-card" style="padding:16px; margin-bottom:12px;">`;
+        html += `<div class="mcq-counter-row">
+          <div style="flex:1; font-weight:500;">${group.title}</div>
+          <button class="mcq-btn" onclick="updateMcqCount(${roundNo}, '${subjectId}', -1)"><span class="material-symbols-rounded">remove</span></button>
+          <div class="mcq-score" style="margin:0 12px; font-size:18px; font-weight:bold; cursor:pointer;" onclick="editMcqCount(${roundNo}, '${subjectId}', ${done}, ${total})">${done}/${total}</div>
+          <button class="mcq-btn" onclick="updateMcqCount(${roundNo}, '${subjectId}', 1)"><span class="material-symbols-rounded">add</span></button>
+        </div>`;
+        html += `<div class="stat-bar stat-bar-lg" style="margin-top:12px;"><div class="stat-bar-fill" style="width:${pct}%"></div></div>`;
+        html += `</div>`;
+        
+      } else {
+        // Chips
+        let tickedCount = (group.items || []).filter(i => isTicked(i.id)).length;
+        let totalCount = (group.items || []).length;
+        
+        html += `<div class="revision-chip-group" style="margin-bottom:16px;">`;
+        html += `<div class="revision-chip-title" style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">${group.title} · ${tickedCount}/${totalCount}</div>`;
+        html += `<div class="revision-chips-row" style="display:flex; flex-wrap:wrap; gap:8px;">`;
+        
+        (group.items || []).forEach(item => {
+          let done = isTicked(item.id);
+          html += `<div class="revision-chip ${done ? 'done' : ''}" onclick="toggleRevisionTick(${roundNo}, '${item.id}', ${!done})">
+            ${item.name} ${done ? '✓' : ''}
+          </div>`;
+        });
+        
+        // + Add button
+        html += `<div class="revision-chip add" onclick="addPracticeItem('${subjectId}', ${gIdx})">+ Add</div>`;
+        
+        html += `</div></div>`;
+      }
+    });
+    
+    html += '</div>';
+  }
+  
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ─── Revision Tab Helpers ───
+
+function toggleRevisionTick(roundNo, id, isChecked) {
+  const progress = getRevisionProgress();
+  if (!progress[roundNo]) progress[roundNo] = {};
+  progress[roundNo][id] = isChecked;
+  saveRevisionProgress(progress);
+  renderSyllabusDetail(state.activeSubject);
+}
+
+function updateMcqCount(roundNo, subjectId, delta) {
+  const config = ensureRevisionConfig(subjectId);
+  const progress = getRevisionProgress();
+  if (!progress[roundNo]) progress[roundNo] = {};
+  
+  let mcqTotal = 35;
+  config.practice.forEach(g => { if(g.type === 'counter') mcqTotal = g.total; });
+  
+  let key = `mcq_${subjectId}`;
+  let current = progress[roundNo][key] || 0;
+  let next = current + delta;
+  
+  if (next < 0) next = 0;
+  if (next > mcqTotal) next = mcqTotal;
+  
+  progress[roundNo][key] = next;
+  saveRevisionProgress(progress);
+  renderSyllabusDetail(state.activeSubject);
+}
+
+function editMcqCount(roundNo, subjectId, currentDone, currentTotal) {
+  let newDone = prompt("Done count:", currentDone);
+  if (newDone === null) return;
+  let newTotal = prompt("Total count:", currentTotal);
+  if (newTotal === null) return;
+  
+  newDone = parseInt(newDone, 10) || 0;
+  newTotal = parseInt(newTotal, 10) || 1;
+  if (newDone > newTotal) newDone = newTotal;
+  if (newDone < 0) newDone = 0;
+  
+  const config = getRevisionConfig();
+  if (config[subjectId]) {
+    config[subjectId].practice.forEach(g => {
+      if(g.type === 'counter') g.total = newTotal;
+    });
+    saveRevisionConfig(config);
+  }
+  
+  const progress = getRevisionProgress();
+  if (!progress[roundNo]) progress[roundNo] = {};
+  progress[roundNo][`mcq_${subjectId}`] = newDone;
+  saveRevisionProgress(progress);
+  
+  renderSyllabusDetail(state.activeSubject);
+}
+
+function addPracticeItem(subjectId, gIdx) {
+  const name = prompt("Enter name for new practice item (e.g. 'May 27'):");
+  if (!name || !name.trim()) return;
+  
+  const config = getRevisionConfig();
+  if (!config[subjectId] || !config[subjectId].practice[gIdx]) return;
+  
+  const group = config[subjectId].practice[gIdx];
+  const newId = `${subjectId}_p_${Date.now()}`;
+  group.items.push({ id: newId, name: name.trim() });
+  
+  saveRevisionConfig(config);
+  renderSyllabusDetail(state.activeSubject);
 }
 
 function toggleSyllabusCheck(chapterId, field, checked) {
