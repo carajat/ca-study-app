@@ -2016,8 +2016,9 @@ body.zen-mode-active #study-tracker-card {
 .revision-pill.add-pill { border: 1px dashed var(--text-muted); color: var(--text-muted); }
 
 /* Revision Tab CSS */
-.revision-section-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px; letter-spacing: 0.5px; padding: 0 4px; }
-.revision-group-title { font-size: 14px; font-weight: 600; margin: 16px 0 8px 0; color: var(--primary-color); padding: 0 4px; display: flex; align-items: center; justify-content: space-between; }
+.revision-tab-content { padding: 0 16px; }
+.revision-section-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px; letter-spacing: 0.5px; }
+.revision-group-title { font-size: 14px; font-weight: 600; margin: 16px 0 8px 0; color: var(--primary-color); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .revision-question-card { background: var(--bg-card); border-radius: 12px; margin-bottom: 8px; border-left: 3px solid var(--primary-color); box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden; }
 .revision-question-header { display: flex; align-items: center; gap: 8px; padding: 12px; cursor: pointer; user-select: none; }
 .q-name { font-size: 14px; font-weight: 500; }
