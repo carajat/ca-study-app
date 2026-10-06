@@ -392,21 +392,21 @@ function ensureRevisionConfig(subjectId) {
     modified = true;
   }
   
-  // Migration: update old Descriptive titles and add marks field
+  // Migration: update old Descriptive titles and add marks and subtitle
   if (subjectId === 'dt' && config.dt && config.dt.pattern) {
     let descGroup = config.dt.pattern.find(g => g.id === 'dt_desc');
-    if (descGroup && (descGroup.title === "Descriptive" || descGroup.title === "Descriptive (70 marks)")) {
-      descGroup.title = "Descriptive (Q1 compulsory + any 4 of Q2 to Q6)";
-      descGroup.marks = 70;
-      modified = true;
-    } else if (descGroup && !descGroup.marks) {
+    if (descGroup && (descGroup.title === "Descriptive" || descGroup.title === "Descriptive (70 marks)" || descGroup.title === "Descriptive (Q1 compulsory + any 4 of Q2 to Q6)")) {
+      descGroup.title = "PAPER PATTERN (Descriptive)";
+      descGroup.subtitle = "Q1 compulsory + any 4 of Q2 to Q6";
       descGroup.marks = 70;
       modified = true;
     }
   }
   if (subjectId === 'idt' && config.idt && config.idt.pattern) {
     let descGroup = config.idt.pattern.find(g => g.id === 'idt_b');
-    if (descGroup && !descGroup.marks) {
+    if (descGroup && descGroup.title === "Descriptive (Q1 compulsory + any 4 of Q2 to Q6)") {
+      descGroup.title = "PAPER PATTERN (Descriptive)";
+      descGroup.subtitle = "Q1 compulsory + any 4 of Q2 to Q6";
       descGroup.marks = 70;
       modified = true;
     }
@@ -2943,13 +2943,19 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
   
   if (config.pattern && config.pattern.length > 0) {
     html += '<div class="revision-section">';
-    html += '<div class="revision-section-title">PAPER PATTERN</div>';
+    // Removed global PAPER PATTERN title as it is now baked into the group title
     
     let usedChapterIds = new Set();
     
     config.pattern.forEach((group, gIdx) => {
       let marksHtml = group.marks ? `<span style="font-size:12px; font-weight:600; background:rgba(255,255,255,0.08); color:var(--text-secondary); padding:4px 12px; border-radius:20px; white-space:nowrap;">${group.marks} marks</span>` : '';
-      html += `<div class="revision-group-title"><span>${group.title}</span>${marksHtml}</div>`;
+      html += `<div class="revision-group-title">
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <span>${group.title}</span>
+          ${group.subtitle ? `<span style="font-size:12px; font-weight:normal; font-style:italic; color:var(--text-muted);">${group.subtitle}</span>` : ''}
+        </div>
+        ${marksHtml}
+      </div>`;
       html += `<div class="rev-group-sortable" data-gidx="${gIdx}">`;
       
       (group.items || []).forEach((q, qIdx) => {
