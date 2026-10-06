@@ -2976,7 +2976,7 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
         
         // Body (open by default)
         html += `<div class="revision-question-body" style="display:block; padding:0 16px 16px 16px;">`;
-        if (totalChapters > 0) {
+        if (totalCount > 0) {
           qChapterIds.forEach(chId => {
             const chObj = chapters.find(c => c.id === chId) || { name: 'Unknown Chapter' };
             html += `<div class="revision-chapter-row" style="padding:10px 0; border-top:1px dashed rgba(255,255,255,0.1);">`;
