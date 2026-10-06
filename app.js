@@ -6619,7 +6619,7 @@ function openHomeCardModal() {
     const renderBtn = (subId, display) => {
       const key = prefix + '_' + subId;
       const isSel = sel.includes(key);
-      html += `<div class="revision-chip ${isSel ? 'active' : ''}" style="padding:6px 16px; ${isSel ? 'background:var(--primary-color); color:#000; border-color:var(--primary-color);' : ''}" onclick="toggleHomeCardChip('${key}')">${display}</div>`;
+      html += `<div class="revision-chip ${isSel ? 'active' : ''}" style="padding:6px 16px; ${isSel ? 'background:var(--primary-color); color:#ffffff; border-color:var(--primary-color); font-weight:600;' : ''}" onclick="toggleHomeCardChip('${key}')">${display}</div>`;
     };
     renderBtn('dt', 'DT');
     renderBtn('idt', 'IDT');
@@ -6633,9 +6633,8 @@ function openHomeCardModal() {
     renderRow(l, i.toString());
   }
 
-  html += `<div style="margin-top:20px; border-top:1px solid var(--border-color); padding-top:16px; display:flex; justify-content:space-between; align-items:center;">`;
-  html += `<span style="color:var(--text-secondary); font-size:13px;">${sel.length} selected</span>`;
-  html += `<button class="btn btn-primary" onclick="closeModal(); switchTab('syllabus');">Open Syllabus</button>`;
+  html += `<div style="margin-top:20px; border-top:1px solid var(--border-color); padding-top:16px;">`;
+  html += `<button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="closeModal(); switchTab('syllabus');">Go to Syllabus</button>`;
   html += `</div></div>`;
 
   document.getElementById('modal-body').innerHTML = html;

@@ -2012,7 +2012,7 @@ body.zen-mode-active #study-tracker-card {
 .revision-pill-row { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0 16px 0; margin-bottom: 8px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .revision-pill-row::-webkit-scrollbar { display: none; }
 .revision-pill { white-space: nowrap; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-color); font-size: 13px; cursor: pointer; transition: 0.2s; position: relative; display: flex; align-items: center; }
-.revision-pill.active { background: var(--primary-color); color: #000; border-color: var(--primary-color); font-weight: 600; }
+.revision-pill.active { background: var(--primary-color); color: #ffffff; border-color: var(--primary-color); font-weight: 600; }
 .revision-pill.add-pill { border: 1px dashed var(--text-muted); color: var(--text-muted); }
 
 /* Revision Tab CSS */
@@ -2031,3 +2031,7 @@ body.zen-mode-active #study-tracker-card {
 .revision-chip { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-color); font-size: 13px; cursor: pointer; transition: 0.2s; user-select: none; }
 .revision-chip.done { background: rgba(52,199,89,0.15); color: var(--success-color); border-color: rgba(52,199,89,0.3); }
 .revision-chip.add { border: 1px dashed var(--text-muted); color: var(--text-muted); }
+
+@media (min-width: 900px) {
+  .stats-grid { padding: 0; }
+}
