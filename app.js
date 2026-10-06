@@ -2994,6 +2994,7 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
             }
             html += `</div>`;
           });
+        }
         
         if (isEditMode) {
            html += `<div style="padding-top:8px;"><button class="add-item-btn" style="font-size:12px; padding:4px 8px;" onclick="addChapterToQuestion('${subjectId}', ${gIdx}, ${qIdx})">+ Add Chapter</button></div>`;
