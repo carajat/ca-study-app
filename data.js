@@ -7,7 +7,7 @@ const REVISION_DEFAULTS = {
   // ───────────── DT (Paper 4) ─────────────
   dt: {
     pattern: [
-      { id: "dt_desc", title: "Descriptive", items: [
+      { id: "dt_desc", title: "Descriptive (70 marks)", items: [
         { id: "dt_q1",   name: "Q1 · Total income (company), 115BAA/BAB", marks: "14 marks · compulsory", chapterIds: ["dt1","dt3","dt12","dt19","dt25","dt26","dt43"] },
         { id: "dt_q2a",  name: "Q2A · Capital gains, IFOS, various entities, MAT, AMT", marks: "8 marks (or 4+4)", chapterIds: ["dt2","dt4","dt5","dt13","dt14","dt16","dt17","dt18","dt20","dt23","dt29"] },
         { id: "dt_q2b",  name: "Q2B · NR taxation", marks: "6 marks", chapterIds: ["dt28"] },

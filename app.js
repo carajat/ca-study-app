@@ -386,8 +386,22 @@ function saveHomeCardSelection(sel) { saveState({ homeCardSelection: sel }); }
 
 function ensureRevisionConfig(subjectId) {
   const config = getRevisionConfig();
+  let modified = false;
   if (!config[subjectId] && typeof REVISION_DEFAULTS !== 'undefined' && REVISION_DEFAULTS[subjectId]) {
     config[subjectId] = JSON.parse(JSON.stringify(REVISION_DEFAULTS[subjectId]));
+    modified = true;
+  }
+  
+  // Migration: update old Descriptive title for DT if it exactly matches "Descriptive"
+  if (subjectId === 'dt' && config.dt && config.dt.pattern) {
+    let descGroup = config.dt.pattern.find(g => g.id === 'dt_desc');
+    if (descGroup && descGroup.title === "Descriptive") {
+      descGroup.title = "Descriptive (70 marks)";
+      modified = true;
+    }
+  }
+  
+  if (modified) {
     saveRevisionConfig(config);
   }
   return config[subjectId] || { pattern: [], practice: [] };
@@ -2933,7 +2947,7 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
         let totalCount = qChapterIds.length;
         let allDone = totalCount > 0 && tickedCount === totalCount;
         
-        html += `<div class="revision-question-card rev-q-item" data-qidx="${qIdx}">`;
+        html += `<div class="glass-card rev-q-item" style="margin-bottom:12px; padding:0; overflow:hidden; border-left:4px solid var(--primary);" data-qidx="${qIdx}">`;
         
         if (isEditMode) {
           html += `<div class="revision-question-header">`;
@@ -2945,34 +2959,40 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
           html += `<button class="delete-btn" onclick="event.stopPropagation(); deleteRevQuestion('${subjectId}', ${gIdx}, ${qIdx})"><span class="material-symbols-rounded icon-sm">delete</span></button>`;
           html += `</div>`;
         } else {
-          html += `<div class="revision-question-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">`;
-          html += `<span class="material-symbols-rounded icon-sm" style="color:var(--text-muted)">arrow_right</span>`;
+          html += `<div class="revision-question-header" style="display:flex; align-items:center; gap:12px; padding:16px; cursor:pointer; user-select:none;" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'; const icon = this.querySelector('.expand-icon'); if (icon) icon.style.transform = this.nextElementSibling.style.display === 'none' ? 'rotate(0deg)' : 'rotate(90deg)';">`;
+          html += `<span class="expand-icon material-symbols-rounded icon-sm" style="color:var(--text-muted); transition: transform 0.2s;">arrow_right</span>`;
           html += `<div style="flex:1">`;
-          html += `<div class="q-name">${q.name}</div>`;
-          html += `<div class="q-marks">${q.marks}</div>`;
+          html += `<div class="q-name" style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:4px; line-height:1.3;">${q.name}</div>`;
+          html += `<div class="q-marks" style="font-size:12px; font-weight:600; color:var(--primary); opacity:0.9;">${q.marks}</div>`;
           html += `</div>`;
-          html += `<div class="revision-done-chip ${allDone ? 'complete' : ''}">${tickedCount}/${totalCount}</div>`;
+          if (allDone) {
+            html += `<div class="revision-done-chip complete" style="background:rgba(16,185,129,0.15); color:var(--success); padding:4px 12px; border-radius:20px; font-weight:700; font-size:12px;">Done</div>`;
+          } else {
+            html += `<div class="revision-done-chip" style="background:rgba(255,255,255,0.08); padding:4px 12px; border-radius:20px; font-weight:600; font-size:12px; color:var(--text-secondary);">${tickedCount}/${totalCount}</div>`;
+          }
           html += `</div>`;
         }
         
         // Body (collapsed by default in view mode, open in edit mode)
-        html += `<div class="revision-question-body" style="${isEditMode ? 'display:block;' : 'display:none;'} border-top:1px solid var(--border-color); padding:10px;">`;
-        qChapterIds.forEach(chId => {
-          const chObj = chapters.find(c => c.id === chId) || { name: 'Unknown Chapter' };
-          html += `<div class="revision-chapter-row">`;
-          if (isEditMode) {
-            html += `<div style="display:flex; align-items:center;">
+        html += `<div class="revision-question-body" style="${isEditMode ? 'display:block;' : 'display:none;'} padding:0 16px 16px 16px;">`;
+        if (totalChapters > 0) {
+          qChapterIds.forEach(chId => {
+            const chObj = chapters.find(c => c.id === chId) || { name: 'Unknown Chapter' };
+            html += `<div class="revision-chapter-row" style="padding:10px 0; border-top:1px dashed rgba(255,255,255,0.1);">`;
+            if (isEditMode) {
+              html += `<div style="display:flex; align-items:center;">
               <span style="flex:1; font-size:13.5px; opacity:0.8;">${chObj.name}</span>
               <button class="delete-btn" style="padding:4px;" onclick="removeChapterFromQuestion('${subjectId}', ${gIdx}, ${qIdx}, '${chId}')"><span class="material-symbols-rounded" style="font-size:16px;">close</span></button>
             </div>`;
-          } else {
-            html += `<label style="display:flex; align-items:center; cursor:pointer;">
-              <input type="checkbox" ${isTicked(chId) ? 'checked' : ''} onchange="toggleRevisionTick(${roundNo}, '${chId}', this.checked)">
-              <span style="margin-left:8px; font-size:13.5px;">${chObj.name}</span>
+            } else {
+              let done = isTicked(chId);
+              html += `<label style="display:flex; align-items:center; cursor:pointer;">
+              <input type="checkbox" ${done ? 'checked' : ''} onchange="toggleRevisionTick(${roundNo}, '${chId}', this.checked)" style="margin-right:14px; flex-shrink:0;">
+              <span style="font-size:14px; line-height:1.4; color:${done ? 'var(--text-muted)' : 'var(--text-primary)'}; ${done ? 'text-decoration:line-through;' : ''}">${chObj.name}</span>
             </label>`;
-          }
-          html += `</div>`;
-        });
+            }
+            html += `</div>`;
+          });
         
         if (isEditMode) {
            html += `<div style="padding-top:8px;"><button class="add-item-btn" style="font-size:12px; padding:4px 8px;" onclick="addChapterToQuestion('${subjectId}', ${gIdx}, ${qIdx})">+ Add Chapter</button></div>`;
@@ -2991,15 +3011,14 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
     // OTHER REMAINING TOPICS
     let remainingChapters = chapters.filter(c => !usedChapterIds.has(c.id));
     if (remainingChapters.length > 0) {
-      html += `<div class="revision-section-title" style="margin-top:20px; font-size:12px; font-weight:normal; opacity:0.7;">OTHER REMAINING TOPICS</div>`;
-      html += `<div class="revision-question-card" style="padding:10px;">`;
+      html += `<div class="revision-section-title" style="margin-top:24px; margin-bottom:12px;">OTHER REMAINING TOPICS</div>`;
+      html += `<div class="glass-card" style="padding:16px;">`;
       remainingChapters.forEach(ch => {
-        html += `<div class="revision-chapter-row">
-          <label style="display:flex; align-items:center; cursor:pointer;">
-            <input type="checkbox" ${isTicked(ch.id) ? 'checked' : ''} onchange="toggleRevisionTick(${roundNo}, '${ch.id}', this.checked)">
-            <span style="margin-left:8px; font-size:13.5px;">${ch.name}</span>
-          </label>
-        </div>`;
+        let done = isTicked(ch.id);
+        html += `<label style="display:flex; align-items:center; cursor:pointer; padding:10px 0; border-bottom:1px dashed rgba(255,255,255,0.1);">`;
+        html += `<input type="checkbox" ${done ? 'checked' : ''} onchange="toggleRevisionTick(${roundNo}, '${ch.id}', this.checked)" style="margin-right:14px; flex-shrink:0;">`;
+        html += `<div style="flex:1; font-size:14px; line-height:1.4; color:${done ? 'var(--text-muted)' : 'var(--text-primary)'}; ${done ? 'text-decoration:line-through;' : ''}">${ch.name}</div>`;
+        html += `</label>`;
       });
       html += `</div>`;
     }
@@ -3010,7 +3029,7 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
   // 2. PRACTICE
   if (config.practice && config.practice.length > 0) {
     html += '<div class="revision-section" style="margin-top:24px;">';
-    html += '<div class="revision-section-title">PRACTICE</div>';
+    html += '<div class="revision-section-title">PRACTICE & MCQ</div>';
     
     config.practice.forEach((group, gIdx) => {
       if (group.type === 'counter') {
@@ -3019,19 +3038,19 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
         let total = group.total || 35;
         let pct = total > 0 ? Math.round((done / total) * 100) : 0;
         
-        html += `<div class="revision-mcq-card glass-card" style="padding:16px; margin-bottom:12px;">`;
-        html += `<div class="mcq-counter-row">
-          <div style="flex:1; font-weight:500;">${group.title}</div>`;
+        html += `<div class="glass-card" style="padding:20px; margin-bottom:12px;">`;
+        html += `<div class="mcq-counter-row" style="display:flex; align-items:center; margin-bottom:16px;">
+          <div style="flex:1; font-size:15px; font-weight:600;">${group.title}</div>`;
         if (isEditMode) {
-            html += `<div class="mcq-score" style="margin:0 12px; font-size:16px; cursor:pointer; color:var(--primary-color);" onclick="editMcqCount(${roundNo}, '${subjectId}', ${done}, ${total})">Edit Total</div>`;
+            html += `<div class="mcq-score" style="margin:0 12px; font-size:14px; cursor:pointer; color:var(--primary); font-weight:600;" onclick="editMcqCount(${roundNo}, '${subjectId}', ${done}, ${total})">Edit Total</div>`;
         } else {
             html += `<button class="mcq-btn" onclick="updateMcqCount(${roundNo}, '${subjectId}', -1)"><span class="material-symbols-rounded">remove</span></button>
-          <div class="mcq-score" style="margin:0 12px; font-size:18px; font-weight:bold; cursor:pointer;" onclick="editMcqCount(${roundNo}, '${subjectId}', ${done}, ${total})">${done}/${total}</div>
+          <div class="mcq-score" style="margin:0 16px; font-size:18px; font-weight:bold; cursor:pointer;" onclick="editMcqCount(${roundNo}, '${subjectId}', ${done}, ${total})">${done}/${total}</div>
           <button class="mcq-btn" onclick="updateMcqCount(${roundNo}, '${subjectId}', 1)"><span class="material-symbols-rounded">add</span></button>`;
         }
         html += `</div>`;
         if (!isEditMode) {
-          html += `<div class="stat-bar stat-bar-lg" style="margin-top:12px;"><div class="stat-bar-fill" style="width:${pct}%"></div></div>`;
+          html += `<div class="stat-bar stat-bar-lg"><div class="stat-bar-fill" style="width:${pct}%"></div></div>`;
         }
         html += `</div>`;
         
@@ -3039,25 +3058,25 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
         let tickedCount = (group.items || []).filter(i => isTicked(i.id)).length;
         let totalCount = (group.items || []).length;
         
-        html += `<div class="revision-chip-group" style="margin-bottom:16px;">`;
-        html += `<div class="revision-chip-title" style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">${group.title} · ${tickedCount}/${totalCount}</div>`;
+        html += `<div class="glass-card" style="padding:16px; margin-bottom:12px;">`;
+        html += `<div class="revision-chip-title" style="font-size:13px; font-weight:600; color:var(--primary); opacity:0.9; margin-bottom:12px;">${group.title} · ${tickedCount}/${totalCount}</div>`;
         html += `<div class="revision-chips-row" style="display:flex; flex-wrap:wrap; gap:8px;">`;
         
         (group.items || []).forEach((item, iIdx) => {
           let done = isTicked(item.id);
           if (isEditMode) {
-            html += `<div class="revision-chip edit" style="display:flex; align-items:center; gap:4px; padding:4px 8px 4px 12px; cursor:default;">
+            html += `<div class="revision-chip edit" style="display:flex; align-items:center; gap:4px; padding:6px 12px; cursor:default;">
               <input type="text" class="inline-input" style="width:80px; font-size:13px;" value="${item.name.replace(/"/g, '&quot;')}" onchange="updatePracticeItem('${subjectId}', ${gIdx}, ${iIdx}, this.value)">
               <span class="material-symbols-rounded icon-sm" style="font-size:16px; cursor:pointer; color:var(--danger-color, #ff3b30);" onclick="deletePracticeItem('${subjectId}', ${gIdx}, ${iIdx})">close</span>
             </div>`;
           } else {
-            html += `<div class="revision-chip ${done ? 'done' : ''}" onclick="toggleRevisionTick(${roundNo}, '${item.id}', ${!done})">
+            html += `<div class="revision-chip ${done ? 'done' : ''}" style="padding:6px 14px; font-size:13px;" onclick="toggleRevisionTick(${roundNo}, '${item.id}', ${!done})">
               ${item.name} ${done ? '✓' : ''}
             </div>`;
           }
         });
         
-        html += `<div class="revision-chip add" onclick="addPracticeItem('${subjectId}', ${gIdx})">+ Add</div>`;
+        html += `<div class="revision-chip add" style="padding:6px 14px; font-size:13px;" onclick="addPracticeItem('${subjectId}', ${gIdx})">+ Add</div>`;
         html += `</div></div>`;
       }
     });
