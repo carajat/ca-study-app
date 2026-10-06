@@ -6643,7 +6643,8 @@ function openHomeCardModal() {
 
   window.toggleHomeCardChip = toggleChip;
 
-  let html = '<div style="padding:0 20px;"><h3 style="margin-bottom:16px;">Show on home card</h3>';
+  document.getElementById('modal-title').innerText = 'Dashboard Display Settings';
+  let html = '<div style="padding:0 20px 10px 20px;">';
 
   const renderRow = (label, prefix) => {
     html += `<div style="margin-bottom:12px;">`;
