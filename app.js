@@ -2973,10 +2973,10 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
           html += `</div>`;
         } else {
           html += `<div class="revision-question-header" style="display:flex; align-items:center; gap:12px; padding:16px; cursor:pointer; user-select:none;" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'; const icon = this.querySelector('.expand-icon'); if (icon) icon.style.transform = this.nextElementSibling.style.display === 'none' ? 'rotate(0deg)' : 'rotate(90deg)';">`;
-          html += `<span class="expand-icon material-symbols-rounded icon-sm" style="color:var(--text-muted); transition: transform 0.2s; transform: rotate(90deg);">arrow_right</span>`;
+          html += `<span class="expand-icon material-symbols-rounded icon-sm" style="color:var(--text-muted); transition: transform 0.2s; transform: rotate(0deg);">arrow_right</span>`;
           html += `<div style="flex:1">`;
           html += `<div class="q-name" style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:4px; line-height:1.3;">${q.name}</div>`;
-          html += `<div class="q-marks" style="font-size:12px; font-weight:600; color:var(--primary); opacity:0.9;">${q.marks}</div>`;
+          html += `<div class="q-marks" style="font-size:12px; font-weight:600; color:var(--primary-color); opacity:0.9;">${q.marks}</div>`;
           html += `</div>`;
           if (allDone) {
             html += `<div class="revision-done-chip complete" style="background:rgba(16,185,129,0.15); color:var(--success); padding:4px 12px; border-radius:20px; font-weight:700; font-size:12px;">Done</div>`;
@@ -2986,8 +2986,8 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
           html += `</div>`;
         }
         
-        // Body (open by default)
-        html += `<div class="revision-question-body" style="display:block; padding:0 16px 16px 16px;">`;
+        // Body (collapsed by default)
+        html += `<div class="revision-question-body" style="display:none; padding:0 16px 16px 16px;">`;
         if (totalCount > 0) {
           qChapterIds.forEach(chId => {
             const chObj = chapters.find(c => c.id === chId) || { name: 'Unknown Chapter' };
