@@ -810,7 +810,7 @@ function updateDashboardStats() {
         let pct = type === 'learn' ? calculateSubjectProgress(sub, sub === 'ibs' ? 'folder' : 'main') : calculateRevisionRoundProgress(sub, parseInt(type));
         let label = (sub === 'dt' ? 'DT' : 'IDT') + ' · ' + (type === 'learn' ? 'Learn' : type + 'R');
         html += `<div style="display:flex; align-items:center; justify-content:space-between; font-size:12px;">
-          <span style="width:60px;">${label}</span>
+          <span style="width:105px; white-space:nowrap;">${label}</span>
           <div class="stat-bar" style="flex:1; margin:0 8px; height:6px;"><div class="stat-bar-fill" style="width:${pct}%"></div></div>
           <span style="font-weight:bold;">${pct}%</span>
         </div>`;
