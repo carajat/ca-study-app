@@ -2948,7 +2948,7 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
     let usedChapterIds = new Set();
     
     config.pattern.forEach((group, gIdx) => {
-      let marksHtml = group.marks ? `<span style="font-size:12px; font-weight:600; background:rgba(108,60,225,0.15); color:var(--primary); padding:3px 10px; border-radius:12px; white-space:nowrap;">${group.marks} marks</span>` : '';
+      let marksHtml = group.marks ? `<span style="font-size:12px; font-weight:600; background:rgba(255,255,255,0.08); color:var(--text-secondary); padding:4px 12px; border-radius:20px; white-space:nowrap;">${group.marks} marks</span>` : '';
       html += `<div class="revision-group-title"><span>${group.title}</span>${marksHtml}</div>`;
       html += `<div class="rev-group-sortable" data-gidx="${gIdx}">`;
       
