@@ -792,53 +792,54 @@ function updateDashboardStats() {
     const labelEl = document.getElementById('dash-syllabus-pct').nextElementSibling;
     const barEl = document.getElementById('dash-syllabus-bar');
     
-    if (sel.length === 0) {
-      // Default overall
-      const pct = calculateOverallProgress();
-      const excludeText = state.excludeIBS ? ' <span style="font-size:11px; font-weight:normal; opacity:0.6;">(Excl. IBS)</span>' : '';
-      valEl.innerHTML = pct + '%' + excludeText;
-      labelEl.innerHTML = 'Syllabus Done';
-      barEl.style.width = pct + '%';
-      barEl.parentElement.style.display = '';
-    } else if (sel.length === 1) {
-      // Single selection
-      const [type, sub] = sel[0].split('_'); // 'learn_dt' or '1_idt'
-      let pct = 0;
-      let label = (sub === 'dt' ? 'DT · ' : 'IDT · ');
-      if (type === 'learn') {
-        pct = calculateSubjectProgress(sub, sub === 'ibs' ? 'folder' : 'main');
-        label += 'Learn';
+    // Always show overall progress
+    const pct = calculateOverallProgress();
+    const excludeText = state.excludeIBS ? ' <span style="font-size:11px; font-weight:normal; opacity:0.6;">(Excl. IBS)</span>' : '';
+    valEl.innerHTML = pct + '%' + excludeText;
+    labelEl.innerHTML = 'Syllabus Done';
+    barEl.style.width = pct + '%';
+    barEl.parentElement.style.display = '';
+
+    // Handle extra selected items
+    let extraEl = document.getElementById('dash-syllabus-extra');
+    if (!extraEl && syllCard) {
+      extraEl = document.createElement('div');
+      extraEl.id = 'dash-syllabus-extra';
+      extraEl.style.width = '100%';
+      extraEl.style.marginTop = '12px';
+      extraEl.style.borderTop = '1px dashed rgba(255,255,255,0.1)';
+      extraEl.style.paddingTop = '12px';
+      syllCard.appendChild(extraEl);
+    }
+    
+    if (extraEl) {
+      if (sel.length === 0) {
+        extraEl.style.display = 'none';
       } else {
-        pct = calculateRevisionRoundProgress(sub, parseInt(type));
-        label += type + (type==='1'?'st':type==='2'?'nd':type==='3'?'rd':'th') + ' revision';
+        extraEl.style.display = 'flex';
+        extraEl.style.flexDirection = 'column';
+        extraEl.style.gap = '8px';
+        let html = '';
+        sel.forEach(s => {
+          const [type, sub] = s.split('_');
+          let sPct = type === 'learn' ? calculateSubjectProgress(sub, sub === 'ibs' ? 'folder' : 'main') : calculateRevisionRoundProgress(sub, parseInt(type));
+          let label = (sub === 'dt' ? 'DT' : 'IDT') + ' · ' + (type === 'learn' ? 'Learn' : type + 'R');
+          html += `<div style="display:flex; align-items:center; justify-content:space-between; font-size:12px;">
+            <span style="width:105px; white-space:nowrap; color:var(--text-secondary);">${label}</span>
+            <div class="stat-bar" style="flex:1; margin:0 8px; height:6px; background:rgba(255,255,255,0.05);"><div class="stat-bar-fill" style="width:${sPct}%; background:var(--primary);"></div></div>
+            <span style="font-weight:bold;">${sPct}%</span>
+          </div>`;
+        });
+        extraEl.innerHTML = html;
       }
-      valEl.innerHTML = pct + '%';
-      labelEl.innerHTML = label;
-      barEl.style.width = pct + '%';
-      barEl.parentElement.style.display = '';
-    } else {
-      // Multi selection - compact rows
-      let html = '<div style="display:flex; flex-direction:column; gap:8px; width:100%; margin-top:8px;">';
-      sel.forEach(s => {
-        const [type, sub] = s.split('_');
-        let pct = type === 'learn' ? calculateSubjectProgress(sub, sub === 'ibs' ? 'folder' : 'main') : calculateRevisionRoundProgress(sub, parseInt(type));
-        let label = (sub === 'dt' ? 'DT' : 'IDT') + ' · ' + (type === 'learn' ? 'Learn' : type + 'R');
-        html += `<div style="display:flex; align-items:center; justify-content:space-between; font-size:12px;">
-          <span style="width:105px; white-space:nowrap;">${label}</span>
-          <div class="stat-bar" style="flex:1; margin:0 8px; height:6px;"><div class="stat-bar-fill" style="width:${pct}%"></div></div>
-          <span style="font-weight:bold;">${pct}%</span>
-        </div>`;
-      });
-      html += '</div>';
-      valEl.innerHTML = html;
-      labelEl.innerHTML = '';
-      barEl.parentElement.style.display = 'none';
     }
   } else {
     if (mockCard) mockCard.style.display = '';
     if (syllCard) {
       syllCard.style.gridColumn = '';
       syllCard.onclick = () => switchTab('syllabus');
+      const extraEl = document.getElementById('dash-syllabus-extra');
+      if (extraEl) extraEl.style.display = 'none';
     }
     
     // Default Group 1 render
