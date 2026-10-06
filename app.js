@@ -6610,16 +6610,16 @@ function openHomeCardModal() {
 
   window.toggleHomeCardChip = toggleChip;
 
-  let html = '<div style=\"padding:0 20px;\"><h3 style=\"margin-bottom:16px;\">Show on home card</h3>';
+  let html = '<div style="padding:0 20px;"><h3 style="margin-bottom:16px;">Show on home card</h3>';
 
   const renderRow = (label, prefix) => {
-    html += \<div style=\"margin-bottom:12px;\">\;
-    html += \<div style=\"font-size:12px; color:var(--text-secondary); margin-bottom:6px;\">\</div>\;
-    html += \<div style=\"display:flex; gap:8px;\">\;
+    html += `<div style="margin-bottom:12px;">`;
+    html += `<div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px;">${label}</div>`;
+    html += `<div style="display:flex; gap:8px;">`;
     const renderBtn = (subId, display) => {
       const key = prefix + '_' + subId;
       const isSel = sel.includes(key);
-      html += \<div class=\"revision-chip \\" style=\"padding:6px 16px; \\" onclick=\"toggleHomeCardChip('\')\">\</div>\;
+      html += `<div class="revision-chip ${isSel ? 'active' : ''}" style="padding:6px 16px; ${isSel ? 'background:var(--primary-color); color:#000; border-color:var(--primary-color);' : ''}" onclick="toggleHomeCardChip('${key}')">${display}</div>`;
     };
     renderBtn('dt', 'DT');
     renderBtn('idt', 'IDT');
@@ -6633,10 +6633,10 @@ function openHomeCardModal() {
     renderRow(l, i.toString());
   }
 
-  html += \<div style=\"margin-top:20px; border-top:1px solid var(--border-color); padding-top:16px; display:flex; justify-content:space-between; align-items:center;\">\;
-  html += \<span style=\"color:var(--text-secondary); font-size:13px;\">\ selected</span>\;
-  html += \<button class=\"btn btn-primary\" onclick=\"closeModal(); switchTab('syllabus');\">Open Syllabus</button>\;
-  html += \</div></div>\;
+  html += `<div style="margin-top:20px; border-top:1px solid var(--border-color); padding-top:16px; display:flex; justify-content:space-between; align-items:center;">`;
+  html += `<span style="color:var(--text-secondary); font-size:13px;">${sel.length} selected</span>`;
+  html += `<button class="btn btn-primary" onclick="closeModal(); switchTab('syllabus');">Open Syllabus</button>`;
+  html += `</div></div>`;
 
   document.getElementById('modal-body').innerHTML = html;
   document.getElementById('modal-overlay').style.display = 'flex';
