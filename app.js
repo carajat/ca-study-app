@@ -2978,8 +2978,9 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
           html += `<button class="delete-btn" onclick="event.stopPropagation(); deleteRevQuestion('${subjectId}', ${gIdx}, ${qIdx})"><span class="material-symbols-rounded icon-sm">delete</span></button>`;
           html += `</div>`;
         } else {
-          html += `<div class="revision-question-header" style="display:flex; align-items:center; gap:12px; padding:16px; cursor:pointer; user-select:none;" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'; const icon = this.querySelector('.expand-icon'); if (icon) icon.style.transform = this.nextElementSibling.style.display === 'none' ? 'rotate(0deg)' : 'rotate(90deg)';">`;
-          html += `<span class="expand-icon material-symbols-rounded icon-sm" style="color:var(--text-muted); transition: transform 0.2s; transform: rotate(0deg);">arrow_right</span>`;
+          let isOpen = window.openRevQs && window.openRevQs.has(q.id);
+          html += `<div class="revision-question-header" style="display:flex; align-items:center; gap:12px; padding:16px; cursor:pointer; user-select:none;" onclick="toggleRevQ('${q.id}', this)">`;
+          html += `<span class="expand-icon material-symbols-rounded icon-sm" style="color:var(--text-muted); transition: transform 0.2s; transform: rotate(${isOpen ? '90deg' : '0deg'});">arrow_right</span>`;
           html += `<div style="flex:1">`;
           html += `<div class="q-name" style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:4px; line-height:1.3;">${q.name}</div>`;
           html += `<div class="q-marks" style="font-size:12px; font-weight:600; color:var(--primary-color); opacity:0.9;">${q.marks}</div>`;
@@ -2992,8 +2993,9 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
           html += `</div>`;
         }
         
-        // Body (collapsed by default)
-        html += `<div class="revision-question-body" style="display:none; padding:0 16px 16px 16px;">`;
+        // Body (stateful collapse)
+        let isOpen = window.openRevQs && window.openRevQs.has(q.id);
+        html += `<div class="revision-question-body" style="display:${isOpen ? 'block' : 'none'}; padding:0 16px 16px 16px;">`;
         if (totalCount > 0) {
           qChapterIds.forEach(chId => {
             const chObj = chapters.find(c => c.id === chId) || { name: 'Unknown Chapter' };
@@ -3119,6 +3121,22 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
 }
 
 // ─── Revision Tab Helpers ───
+
+window.openRevQs = window.openRevQs || new Set();
+
+function toggleRevQ(qId, headerEl) {
+  const body = headerEl.nextElementSibling;
+  const icon = headerEl.querySelector('.expand-icon');
+  if (body.style.display === 'none') {
+    body.style.display = 'block';
+    if (icon) icon.style.transform = 'rotate(90deg)';
+    window.openRevQs.add(qId);
+  } else {
+    body.style.display = 'none';
+    if (icon) icon.style.transform = 'rotate(0deg)';
+    window.openRevQs.delete(qId);
+  }
+}
 
 function toggleRevisionTick(roundNo, id, isChecked) {
   const progress = getRevisionProgress();
