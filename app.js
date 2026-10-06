@@ -2854,7 +2854,7 @@ function renderSyllabusDetail(subject) {
   }
   
   // Init drag-and-drop reordering for chapters in edit mode
-  if (isEditMode && subjData.chapters) {
+  if (isEditMode && subjData.chapters && (!window.activeRevisionTab || window.activeRevisionTab === 'learn')) {
     clearSortables();
     const sortContainer = contentEl.querySelector('.chapter-list-sortable') 
       || contentEl.querySelector('.syllabus-simple');
