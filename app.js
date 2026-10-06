@@ -761,11 +761,80 @@ function updateCountdown() {
 function updateDashboardStats() {
   ensureConsistencyInit();
   const c = DYNAMIC_DATA.consistency;
-  // Syllabus progress
-  const pct = calculateOverallProgress();
-  const excludeText = state.excludeIBS ? ' <span style="font-size:11px; font-weight:normal; opacity:0.6;">(Excl. IBS)</span>' : '';
-  document.getElementById('dash-syllabus-pct').innerHTML = pct + '%' + excludeText;
-  document.getElementById('dash-syllabus-bar').style.width = pct + '%';
+  
+  const syllCard = document.getElementById('dash-syllabus-pct')?.closest('.stat-card');
+  const mockCard = document.getElementById('dash-next-mock')?.closest('.stat-card');
+  
+  if (state.activeGroup === 'group2') {
+    if (mockCard) mockCard.style.display = 'none';
+    if (syllCard) {
+      syllCard.style.gridColumn = '1 / -1';
+      syllCard.onclick = () => openHomeCardModal();
+    }
+    
+    // Custom render for Group 2 home card based on selection
+    const sel = getHomeCardSelection();
+    const valEl = document.getElementById('dash-syllabus-pct');
+    const labelEl = document.getElementById('dash-syllabus-pct').nextElementSibling;
+    const barEl = document.getElementById('dash-syllabus-bar');
+    
+    if (sel.length === 0) {
+      // Default overall
+      const pct = calculateOverallProgress();
+      const excludeText = state.excludeIBS ? ' <span style="font-size:11px; font-weight:normal; opacity:0.6;">(Excl. IBS)</span>' : '';
+      valEl.innerHTML = pct + '%' + excludeText;
+      labelEl.innerHTML = 'Syllabus Done';
+      barEl.style.width = pct + '%';
+      barEl.parentElement.style.display = '';
+    } else if (sel.length === 1) {
+      // Single selection
+      const [type, sub] = sel[0].split('_'); // 'learn_dt' or '1_idt'
+      let pct = 0;
+      let label = (sub === 'dt' ? 'DT · ' : 'IDT · ');
+      if (type === 'learn') {
+        pct = calculateSubjectProgress(sub, sub === 'ibs' ? 'folder' : 'main');
+        label += 'Learn';
+      } else {
+        pct = calculateRevisionRoundProgress(sub, parseInt(type));
+        label += type + (type==='1'?'st':type==='2'?'nd':type==='3'?'rd':'th') + ' revision';
+      }
+      valEl.innerHTML = pct + '%';
+      labelEl.innerHTML = label;
+      barEl.style.width = pct + '%';
+      barEl.parentElement.style.display = '';
+    } else {
+      // Multi selection - compact rows
+      let html = '<div style="display:flex; flex-direction:column; gap:8px; width:100%; margin-top:8px;">';
+      sel.forEach(s => {
+        const [type, sub] = s.split('_');
+        let pct = type === 'learn' ? calculateSubjectProgress(sub, sub === 'ibs' ? 'folder' : 'main') : calculateRevisionRoundProgress(sub, parseInt(type));
+        let label = (sub === 'dt' ? 'DT' : 'IDT') + ' · ' + (type === 'learn' ? 'Learn' : type + 'R');
+        html += `<div style="display:flex; align-items:center; justify-content:space-between; font-size:12px;">
+          <span style="width:60px;">${label}</span>
+          <div class="stat-bar" style="flex:1; margin:0 8px; height:6px;"><div class="stat-bar-fill" style="width:${pct}%"></div></div>
+          <span style="font-weight:bold;">${pct}%</span>
+        </div>`;
+      });
+      html += '</div>';
+      valEl.innerHTML = html;
+      labelEl.innerHTML = '';
+      barEl.parentElement.style.display = 'none';
+    }
+  } else {
+    if (mockCard) mockCard.style.display = '';
+    if (syllCard) {
+      syllCard.style.gridColumn = '';
+      syllCard.onclick = () => switchTab('syllabus');
+    }
+    
+    // Default Group 1 render
+    const pct = calculateOverallProgress();
+    const excludeText = state.excludeIBS ? ' <span style="font-size:11px; font-weight:normal; opacity:0.6;">(Excl. IBS)</span>' : '';
+    document.getElementById('dash-syllabus-pct').innerHTML = pct + '%' + excludeText;
+    document.getElementById('dash-syllabus-bar').style.width = pct + '%';
+    document.getElementById('dash-syllabus-bar').parentElement.style.display = '';
+    document.getElementById('dash-syllabus-pct').nextElementSibling.innerHTML = 'Syllabus Done';
+  }
   
   // Next mock
   const nextMock = getNextMock();
@@ -6524,3 +6593,51 @@ function refreshLiveUI() {
 let _lastTickMin = new Date().getMinutes();
 setInterval(() => { const m = new Date().getMinutes(); if (m !== _lastTickMin) { _lastTickMin = m; refreshLiveUI(); } }, 1000);
 
+
+// --- Home Card Modal ---
+function openHomeCardModal() {
+  let sel = getHomeCardSelection();
+  const rounds = getRevisionRounds();
+
+  const toggleChip = (key) => {
+    let s = getHomeCardSelection();
+    if (s.includes(key)) s = s.filter(k => k !== key);
+    else s.push(key);
+    saveHomeCardSelection(s);
+    updateDashboardStats();
+    openHomeCardModal(); // re-render modal
+  };
+
+  window.toggleHomeCardChip = toggleChip;
+
+  let html = '<div style=\"padding:0 20px;\"><h3 style=\"margin-bottom:16px;\">Show on home card</h3>';
+
+  const renderRow = (label, prefix) => {
+    html += \<div style=\"margin-bottom:12px;\">\;
+    html += \<div style=\"font-size:12px; color:var(--text-secondary); margin-bottom:6px;\">\</div>\;
+    html += \<div style=\"display:flex; gap:8px;\">\;
+    const renderBtn = (subId, display) => {
+      const key = prefix + '_' + subId;
+      const isSel = sel.includes(key);
+      html += \<div class=\"revision-chip \\" style=\"padding:6px 16px; \\" onclick=\"toggleHomeCardChip('\')\">\</div>\;
+    };
+    renderBtn('dt', 'DT');
+    renderBtn('idt', 'IDT');
+    if (prefix === 'learn') renderBtn('ibs', 'IBS');
+    html += '</div></div>';
+  };
+
+  renderRow('Syllabus progress', 'learn');
+  for (let i = 1; i <= rounds; i++) {
+    let l = i + (i === 1 ? 'st' : i === 2 ? 'nd' : i === 3 ? 'rd' : 'th') + ' revision';
+    renderRow(l, i.toString());
+  }
+
+  html += \<div style=\"margin-top:20px; border-top:1px solid var(--border-color); padding-top:16px; display:flex; justify-content:space-between; align-items:center;\">\;
+  html += \<span style=\"color:var(--text-secondary); font-size:13px;\">\ selected</span>\;
+  html += \<button class=\"btn btn-primary\" onclick=\"closeModal(); switchTab('syllabus');\">Open Syllabus</button>\;
+  html += \</div></div>\;
+
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-overlay').style.display = 'flex';
+}
