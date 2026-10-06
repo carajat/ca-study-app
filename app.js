@@ -2840,15 +2840,12 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
   const progress = getRevisionProgress();
   const roundData = progress[roundNo] || {};
   
-  // Need the full list of chapters
   const subj = findSubj(subjectId);
   const chapters = subj?.chapters || [];
   
   let html = '<div class="revision-tab-content">';
-  
   const isTicked = (id) => roundData[id] === true;
   
-  // 1. PAPER PATTERN
   if (config.pattern && config.pattern.length > 0) {
     html += '<div class="revision-section">';
     html += '<div class="revision-section-title">PAPER PATTERN</div>';
@@ -2857,6 +2854,7 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
     
     config.pattern.forEach((group, gIdx) => {
       html += `<div class="revision-group-title">${group.title}</div>`;
+      html += `<div class="rev-group-sortable" data-gidx="${gIdx}">`;
       
       (group.items || []).forEach((q, qIdx) => {
         let qChapterIds = q.chapterIds || [];
@@ -2866,30 +2864,59 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
         let totalCount = qChapterIds.length;
         let allDone = totalCount > 0 && tickedCount === totalCount;
         
-        html += `<div class="revision-question-card">`;
-        html += `<div class="revision-question-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">`;
-        html += `<span class="material-symbols-rounded icon-sm" style="color:var(--text-muted)">arrow_right</span>`;
-        html += `<div style="flex:1">`;
-        html += `<div class="q-name">${q.name}</div>`;
-        html += `<div class="q-marks">${q.marks}</div>`;
-        html += `</div>`;
-        html += `<div class="revision-done-chip ${allDone ? 'complete' : ''}">${tickedCount}/${totalCount}</div>`;
-        html += `</div>`;
+        html += `<div class="revision-question-card rev-q-item" data-qidx="${qIdx}">`;
         
-        // Body (collapsed by default)
-        html += `<div class="revision-question-body" style="display:none; border-top:1px solid var(--border-color); padding:10px;">`;
+        if (isEditMode) {
+          html += `<div class="revision-question-header">`;
+          html += `<span class="drag-handle material-symbols-rounded" style="cursor:grab; color:var(--text-secondary); margin-right:6px; display:block;">drag_indicator</span>`;
+          html += `<div style="flex:1">`;
+          html += `<input type="text" class="inline-input" style="font-weight:bold; font-size:14px; margin-bottom:2px;" value="${q.name.replace(/"/g, '&quot;')}" onclick="event.stopPropagation()" onchange="updateRevQuestion('${subjectId}', ${gIdx}, ${qIdx}, 'name', this.value)">`;
+          html += `<input type="text" class="inline-input" style="font-size:12px; color:var(--text-muted);" value="${q.marks.replace(/"/g, '&quot;')}" onclick="event.stopPropagation()" onchange="updateRevQuestion('${subjectId}', ${gIdx}, ${qIdx}, 'marks', this.value)">`;
+          html += `</div>`;
+          html += `<button class="delete-btn" onclick="event.stopPropagation(); deleteRevQuestion('${subjectId}', ${gIdx}, ${qIdx})"><span class="material-symbols-rounded icon-sm">delete</span></button>`;
+          html += `</div>`;
+        } else {
+          html += `<div class="revision-question-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">`;
+          html += `<span class="material-symbols-rounded icon-sm" style="color:var(--text-muted)">arrow_right</span>`;
+          html += `<div style="flex:1">`;
+          html += `<div class="q-name">${q.name}</div>`;
+          html += `<div class="q-marks">${q.marks}</div>`;
+          html += `</div>`;
+          html += `<div class="revision-done-chip ${allDone ? 'complete' : ''}">${tickedCount}/${totalCount}</div>`;
+          html += `</div>`;
+        }
+        
+        // Body (collapsed by default in view mode, open in edit mode)
+        html += `<div class="revision-question-body" style="${isEditMode ? 'display:block;' : 'display:none;'} border-top:1px solid var(--border-color); padding:10px;">`;
         qChapterIds.forEach(chId => {
           const chObj = chapters.find(c => c.id === chId) || { name: 'Unknown Chapter' };
-          html += `<div class="revision-chapter-row">
-            <label style="display:flex; align-items:center; cursor:pointer;">
+          html += `<div class="revision-chapter-row">`;
+          if (isEditMode) {
+            html += `<div style="display:flex; align-items:center;">
+              <span style="flex:1; font-size:13.5px; opacity:0.8;">${chObj.name}</span>
+              <button class="delete-btn" style="padding:4px;" onclick="removeChapterFromQuestion('${subjectId}', ${gIdx}, ${qIdx}, '${chId}')"><span class="material-symbols-rounded" style="font-size:16px;">close</span></button>
+            </div>`;
+          } else {
+            html += `<label style="display:flex; align-items:center; cursor:pointer;">
               <input type="checkbox" ${isTicked(chId) ? 'checked' : ''} onchange="toggleRevisionTick(${roundNo}, '${chId}', this.checked)">
               <span style="margin-left:8px; font-size:13.5px;">${chObj.name}</span>
-            </label>
-          </div>`;
+            </label>`;
+          }
+          html += `</div>`;
         });
+        
+        if (isEditMode) {
+           html += `<div style="padding-top:8px;"><button class="add-item-btn" style="font-size:12px; padding:4px 8px;" onclick="addChapterToQuestion('${subjectId}', ${gIdx}, ${qIdx})">+ Add Chapter</button></div>`;
+        }
+        
         html += `</div>`; // end body
         html += `</div>`; // end card
       });
+      html += `</div>`; // end rev-group-sortable
+      
+      if (isEditMode) {
+        html += `<button class="add-item-btn" style="margin-top:8px;" onclick="addRevQuestion('${subjectId}', ${gIdx})">+ Add Question</button>`;
+      }
     });
     
     // OTHER REMAINING TOPICS
@@ -2925,16 +2952,21 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
         
         html += `<div class="revision-mcq-card glass-card" style="padding:16px; margin-bottom:12px;">`;
         html += `<div class="mcq-counter-row">
-          <div style="flex:1; font-weight:500;">${group.title}</div>
-          <button class="mcq-btn" onclick="updateMcqCount(${roundNo}, '${subjectId}', -1)"><span class="material-symbols-rounded">remove</span></button>
+          <div style="flex:1; font-weight:500;">${group.title}</div>`;
+        if (isEditMode) {
+            html += `<div class="mcq-score" style="margin:0 12px; font-size:16px; cursor:pointer; color:var(--primary-color);" onclick="editMcqCount(${roundNo}, '${subjectId}', ${done}, ${total})">Edit Total</div>`;
+        } else {
+            html += `<button class="mcq-btn" onclick="updateMcqCount(${roundNo}, '${subjectId}', -1)"><span class="material-symbols-rounded">remove</span></button>
           <div class="mcq-score" style="margin:0 12px; font-size:18px; font-weight:bold; cursor:pointer;" onclick="editMcqCount(${roundNo}, '${subjectId}', ${done}, ${total})">${done}/${total}</div>
-          <button class="mcq-btn" onclick="updateMcqCount(${roundNo}, '${subjectId}', 1)"><span class="material-symbols-rounded">add</span></button>
-        </div>`;
-        html += `<div class="stat-bar stat-bar-lg" style="margin-top:12px;"><div class="stat-bar-fill" style="width:${pct}%"></div></div>`;
+          <button class="mcq-btn" onclick="updateMcqCount(${roundNo}, '${subjectId}', 1)"><span class="material-symbols-rounded">add</span></button>`;
+        }
+        html += `</div>`;
+        if (!isEditMode) {
+          html += `<div class="stat-bar stat-bar-lg" style="margin-top:12px;"><div class="stat-bar-fill" style="width:${pct}%"></div></div>`;
+        }
         html += `</div>`;
         
       } else {
-        // Chips
         let tickedCount = (group.items || []).filter(i => isTicked(i.id)).length;
         let totalCount = (group.items || []).length;
         
@@ -2942,25 +2974,40 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
         html += `<div class="revision-chip-title" style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">${group.title} · ${tickedCount}/${totalCount}</div>`;
         html += `<div class="revision-chips-row" style="display:flex; flex-wrap:wrap; gap:8px;">`;
         
-        (group.items || []).forEach(item => {
+        (group.items || []).forEach((item, iIdx) => {
           let done = isTicked(item.id);
-          html += `<div class="revision-chip ${done ? 'done' : ''}" onclick="toggleRevisionTick(${roundNo}, '${item.id}', ${!done})">
-            ${item.name} ${done ? '✓' : ''}
-          </div>`;
+          if (isEditMode) {
+            html += `<div class="revision-chip edit" style="display:flex; align-items:center; gap:4px; padding:4px 8px 4px 12px; cursor:default;">
+              <input type="text" class="inline-input" style="width:80px; font-size:13px;" value="${item.name.replace(/"/g, '&quot;')}" onchange="updatePracticeItem('${subjectId}', ${gIdx}, ${iIdx}, this.value)">
+              <span class="material-symbols-rounded icon-sm" style="font-size:16px; cursor:pointer; color:var(--danger-color, #ff3b30);" onclick="deletePracticeItem('${subjectId}', ${gIdx}, ${iIdx})">close</span>
+            </div>`;
+          } else {
+            html += `<div class="revision-chip ${done ? 'done' : ''}" onclick="toggleRevisionTick(${roundNo}, '${item.id}', ${!done})">
+              ${item.name} ${done ? '✓' : ''}
+            </div>`;
+          }
         });
         
-        // + Add button
         html += `<div class="revision-chip add" onclick="addPracticeItem('${subjectId}', ${gIdx})">+ Add</div>`;
-        
         html += `</div></div>`;
       }
     });
-    
     html += '</div>';
   }
-  
   html += '</div>';
   container.innerHTML = html;
+  
+  if (isEditMode) {
+    clearSortables();
+    const sortContainers = container.querySelectorAll('.rev-group-sortable');
+    sortContainers.forEach(sc => {
+      const gIdx = sc.getAttribute('data-gidx');
+      initSortable(sc, config.pattern[gIdx].items, function() {
+        saveRevisionConfig(config);
+        renderSyllabusDetail(state.activeSubject);
+      });
+    });
+  }
 }
 
 // ─── Revision Tab Helpers ───
@@ -3031,6 +3078,98 @@ function addPracticeItem(subjectId, gIdx) {
   const newId = `${subjectId}_p_${Date.now()}`;
   group.items.push({ id: newId, name: name.trim() });
   
+  saveRevisionConfig(config);
+  renderSyllabusDetail(state.activeSubject);
+}
+
+// ─── Revision Edit Mode Helpers ───
+function updateRevQuestion(subjectId, gIdx, qIdx, field, value) {
+  const config = getRevisionConfig();
+  config[subjectId].pattern[gIdx].items[qIdx][field] = value;
+  saveRevisionConfig(config);
+}
+
+function deleteRevQuestion(subjectId, gIdx, qIdx) {
+  if (!confirm("Delete this question?")) return;
+  const config = getRevisionConfig();
+  config[subjectId].pattern[gIdx].items.splice(qIdx, 1);
+  saveRevisionConfig(config);
+  renderSyllabusDetail(state.activeSubject);
+}
+
+function addRevQuestion(subjectId, gIdx) {
+  const name = prompt("Question Name (e.g. Q7 · New Topic):");
+  if (!name) return;
+  const config = getRevisionConfig();
+  const qId = subjectId + '_q_' + Date.now();
+  config[subjectId].pattern[gIdx].items.push({ id: qId, name: name, marks: "5 marks", chapterIds: [] });
+  saveRevisionConfig(config);
+  renderSyllabusDetail(state.activeSubject);
+}
+
+function removeChapterFromQuestion(subjectId, gIdx, qIdx, chId) {
+  const config = getRevisionConfig();
+  const arr = config[subjectId].pattern[gIdx].items[qIdx].chapterIds;
+  const idx = arr.indexOf(chId);
+  if (idx > -1) {
+    arr.splice(idx, 1);
+    saveRevisionConfig(config);
+    renderSyllabusDetail(state.activeSubject);
+  }
+}
+
+function addChapterToQuestion(subjectId, gIdx, qIdx) {
+  const subj = findSubj(subjectId);
+  if (!subj || !subj.chapters) return;
+  const config = getRevisionConfig();
+  const existingIds = config[subjectId].pattern[gIdx].items[qIdx].chapterIds || [];
+  
+  let options = subj.chapters.filter(ch => !existingIds.includes(ch.id));
+  if (options.length === 0) {
+    alert("All chapters are already added to this question.");
+    return;
+  }
+  
+  let msg = "Enter the number of the chapter to add:\n";
+  options.forEach((ch, idx) => {
+    msg += (idx + 1) + ". " + ch.name + "\n";
+  });
+  
+  let input = prompt(msg);
+  if (!input) return;
+  let selectedIdx = parseInt(input, 10) - 1;
+  if (selectedIdx >= 0 && selectedIdx < options.length) {
+    if (!config[subjectId].pattern[gIdx].items[qIdx].chapterIds) {
+      config[subjectId].pattern[gIdx].items[qIdx].chapterIds = [];
+    }
+    config[subjectId].pattern[gIdx].items[qIdx].chapterIds.push(options[selectedIdx].id);
+    saveRevisionConfig(config);
+    renderSyllabusDetail(state.activeSubject);
+  } else {
+    alert("Invalid selection.");
+  }
+}
+
+function updatePracticeItem(subjectId, gIdx, iIdx, value) {
+  const config = getRevisionConfig();
+  config[subjectId].practice[gIdx].items[iIdx].name = value;
+  saveRevisionConfig(config);
+}
+
+function deletePracticeItem(subjectId, gIdx, iIdx) {
+  if (!confirm("Delete this practice item? Ticks will be lost in ALL rounds.")) return;
+  const config = getRevisionConfig();
+  const itemId = config[subjectId].practice[gIdx].items[iIdx].id;
+  
+  const progress = getRevisionProgress();
+  Object.keys(progress).forEach(round => {
+    if (progress[round] && progress[round][itemId]) {
+      delete progress[round][itemId];
+    }
+  });
+  saveRevisionProgress(progress);
+  
+  config[subjectId].practice[gIdx].items.splice(iIdx, 1);
   saveRevisionConfig(config);
   renderSyllabusDetail(state.activeSubject);
 }
