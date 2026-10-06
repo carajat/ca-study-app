@@ -18,7 +18,11 @@ let state = {
   syllabusView: 'list', // 'list' or 'detail'
   activeSubject: null,
   paceWindow: 14,
-  paceSubjectId: null
+  paceSubjectId: null,
+  revisionRounds: 1,
+  revisionProgress: {},
+  revisionConfig: {},
+  homeCardSelection: []
 };
 window.state = state;
 
@@ -368,6 +372,57 @@ function getSyllabusProgress() {
 
 function saveSyllabusProgress(progress) {
   saveState({ syllabusProgress: progress });
+}
+
+// ─── Revision State Helpers ───
+function getRevisionConfig() { return loadState().revisionConfig || {}; }
+function saveRevisionConfig(config) { saveState({ revisionConfig: config }); }
+function getRevisionProgress() { return loadState().revisionProgress || {}; }
+function saveRevisionProgress(progress) { saveState({ revisionProgress: progress }); }
+function getRevisionRounds() { return loadState().revisionRounds || 1; }
+function saveRevisionRounds(n) { saveState({ revisionRounds: n }); }
+function getHomeCardSelection() { return loadState().homeCardSelection || []; }
+function saveHomeCardSelection(sel) { saveState({ homeCardSelection: sel }); }
+
+function ensureRevisionConfig(subjectId) {
+  const config = getRevisionConfig();
+  if (!config[subjectId] && typeof REVISION_DEFAULTS !== 'undefined' && REVISION_DEFAULTS[subjectId]) {
+    config[subjectId] = JSON.parse(JSON.stringify(REVISION_DEFAULTS[subjectId]));
+    saveRevisionConfig(config);
+  }
+  return config[subjectId] || { pattern: [], practice: [] };
+}
+
+function calculateRevisionRoundProgress(subjectId, roundNo) {
+  const config = ensureRevisionConfig(subjectId);
+  const progress = getRevisionProgress();
+  const roundData = progress[roundNo] || {};
+  
+  // All chapter IDs for this subject
+  const subj = findSubj(subjectId);
+  const allChapterIds = (subj?.chapters || []).map(ch => ch.id);
+  const totalChapters = allChapterIds.length;
+  const tickedChapters = allChapterIds.filter(id => roundData[id]).length;
+  
+  // Practice items (chips)
+  let totalPractice = 0, tickedPractice = 0;
+  let mcqDone = 0, mcqTotal = 1;
+  
+  (config.practice || []).forEach(group => {
+    if (group.type === 'counter') {
+      mcqDone = roundData[`mcq_${subjectId}`] || 0;
+      mcqTotal = group.total || 35;
+    } else if (group.items) {
+      group.items.forEach(item => {
+        totalPractice++;
+        if (roundData[item.id]) tickedPractice++;
+      });
+    }
+  });
+  
+  const total = totalChapters + totalPractice + 1; // +1 for MCQ counter
+  const done = tickedChapters + tickedPractice + (mcqTotal > 0 ? mcqDone / mcqTotal : 0);
+  return total > 0 ? Math.round((done / total) * 100) : 0;
 }
 
 function getMockScores() {
@@ -2632,13 +2687,42 @@ function renderSyllabusDetail(subject) {
   const chapters = subjData.chapters || [];
   const title = subjData.name;
   
-  const pct = calculateSubjectProgress(key, type);
+  const isRevisionEligible = state.activeGroup === 'group2' && (key === 'dt' || key === 'idt');
+  window.activeRevisionTab = window.activeRevisionTab || 'learn';
+  
+  let pct = 0;
+  if (isRevisionEligible && window.activeRevisionTab !== 'learn') {
+    pct = calculateRevisionRoundProgress(key, window.activeRevisionTab);
+  } else {
+    pct = calculateSubjectProgress(key, type);
+  }
+  
+  let pillRowHtml = '';
+  if (isRevisionEligible) {
+    const rounds = getRevisionRounds();
+    let pills = `<div class="revision-pill ${window.activeRevisionTab === 'learn' ? 'active' : ''}" onclick="switchRevisionTab('learn')">Learn</div>`;
+    for (let i = 1; i <= rounds; i++) {
+      let label = i + (i === 1 ? 'st' : i === 2 ? 'nd' : i === 3 ? 'rd' : 'th') + ' revision';
+      pills += `<div class="revision-pill ${window.activeRevisionTab === i ? 'active' : ''}" onclick="switchRevisionTab(${i})">
+        ${label}
+        ${isEditMode ? `<span class="material-symbols-rounded icon-sm" style="font-size:14px; margin-left:4px; vertical-align:middle;" onclick="event.stopPropagation(); deleteRevisionRound(${i})">close</span>` : ''}
+      </div>`;
+    }
+    pills += `<div class="revision-pill add-pill" onclick="addRevisionRound()">+ Add</div>`;
+    pillRowHtml = `<div class="revision-pill-row">${pills}</div>`;
+  }
   
   const headerEl = document.getElementById('syllabus-detail-header');
   headerEl.innerHTML = '<h3 style="margin-bottom:8px;"><span class="material-symbols-rounded icon-sm" style="vertical-align:middle; margin-right:6px;">menu_book</span> ' + title + '</h3>' +
+    pillRowHtml +
     '<div class="detail-progress"><span>' + pct + '% done</span><div class="stat-bar stat-bar-lg"><div class="stat-bar-fill" style="width:' + pct + '%"></div></div></div>';
   
   const contentEl = document.getElementById('syllabus-detail-content');
+  
+  if (isRevisionEligible && window.activeRevisionTab !== 'learn') {
+    renderRevisionRoundTab(key, window.activeRevisionTab, contentEl);
+    return;
+  }
   
   if (type === 'main') {
     // DT/IDT: Columnar with 3 checkboxes
@@ -2713,6 +2797,46 @@ function renderSyllabusDetail(subject) {
       });
     }
   }
+}
+
+// ─── Revision Tab Interactions ───
+function switchRevisionTab(tab) {
+  window.activeRevisionTab = tab;
+  renderSyllabusDetail(state.activeSubject);
+}
+
+function addRevisionRound() {
+  const current = getRevisionRounds();
+  saveRevisionRounds(current + 1);
+  switchRevisionTab(current + 1);
+}
+
+function deleteRevisionRound(roundNo) {
+  if (!confirm(`Are you sure you want to delete the ${roundNo} revision round? All its ticks and MCQ counts will be lost.`)) return;
+  
+  const current = getRevisionRounds();
+  if (current === 1) {
+    alert("Cannot delete the only revision round.");
+    return;
+  }
+  
+  // Shift progress data down
+  const progress = getRevisionProgress();
+  for (let i = roundNo; i < current; i++) {
+    progress[i] = progress[i + 1] || {};
+  }
+  delete progress[current];
+  saveRevisionProgress(progress);
+  saveRevisionRounds(current - 1);
+  
+  if (window.activeRevisionTab === roundNo || window.activeRevisionTab > current - 1) {
+    window.activeRevisionTab = 'learn';
+  }
+  renderSyllabusDetail(state.activeSubject);
+}
+
+function renderRevisionRoundTab(subjectId, roundNo, container) {
+  container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-secondary);">Revision features coming in next commit...</div>';
 }
 
 function toggleSyllabusCheck(chapterId, field, checked) {

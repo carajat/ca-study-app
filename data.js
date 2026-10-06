@@ -2,6 +2,77 @@
 // CA Final Study Companion — Pre-loaded Data
 // ========================================
 
+const REVISION_DEFAULTS = {
+
+  // ───────────── DT (Paper 4) ─────────────
+  dt: {
+    pattern: [
+      { id: "dt_desc", title: "Descriptive", items: [
+        { id: "dt_q1",   name: "Q1 · Total income (company), 115BAA/BAB", marks: "14 marks · compulsory", chapterIds: ["dt1","dt3","dt12","dt19","dt25","dt26","dt43"] },
+        { id: "dt_q2a",  name: "Q2A · Capital gains, IFOS, various entities, MAT, AMT", marks: "8 marks (or 4+4)", chapterIds: ["dt2","dt4","dt5","dt13","dt14","dt16","dt17","dt18","dt20","dt23","dt29"] },
+        { id: "dt_q2b",  name: "Q2B · NR taxation", marks: "6 marks", chapterIds: ["dt28"] },
+        { id: "dt_q3a",  name: "Q3A · Charitable trust", marks: "8 marks", chapterIds: ["dt24","dt36"] },
+        { id: "dt_q3b",  name: "Q3B · Double tax relief", marks: "6 marks", chapterIds: ["dt30"] },
+        { id: "dt_q4a",  name: "Q4A · TDS / TCS", marks: "8 marks", chapterIds: ["dt15"] },
+        { id: "dt_q4b",  name: "Q4B · Transfer pricing", marks: "6 marks", chapterIds: ["dt31"] },
+        { id: "dt_q5a",  name: "Q5A · 1 case law + 2 assessment procedure and appeals", marks: "8 marks (4+4+4, any 2)", chapterIds: ["dt6","dt7","dt8","dt9","dt10","dt11","dt22","dt33","dt35","dt45"] },
+        { id: "dt_q5b",  name: "Q5B · BEPS / tax treaty / MTC", marks: "6 marks", chapterIds: ["dt37","dt38","dt39","dt46"] },
+        { id: "dt_q6ai", name: "Q6A(i) · Tax audit / Black Money", marks: "6 marks", chapterIds: ["dt27","dt44"] },
+        { id: "dt_q6aii",name: "Q6A(ii) · GAAR", marks: "4 marks", chapterIds: ["dt34"] },
+        { id: "dt_q6b",  name: "Q6B · Advance ruling", marks: "4 marks", chapterIds: ["dt32"] }
+      ]}
+    ],
+    practice: [
+      { id: "dt_p_mcq", title: "MCQ case scenarios", type: "counter", total: 35 },
+      { id: "dt_p_past", title: "Past papers", items: [
+        { id: "dt_p_past1", name: "May 24" }, { id: "dt_p_past2", name: "Nov 24" },
+        { id: "dt_p_past3", name: "May 25" }, { id: "dt_p_past4", name: "Nov 25" },
+        { id: "dt_p_past5", name: "May 26" }
+      ]},
+      { id: "dt_p_mtp", title: "MTP", items: [
+        { id: "dt_p_mtp1", name: "Nov 26 · Series 1" }, { id: "dt_p_mtp2", name: "Nov 26 · Series 2" }
+      ]},
+      { id: "dt_p_rtp", title: "RTP", items: [
+        { id: "dt_p_rtp1", name: "Nov 26 RTP" }
+      ]}
+    ]
+  },
+
+  // ───────────── IDT (Paper 5) ─────────────
+  idt: {
+    pattern: [
+      { id: "idt_b", title: "Descriptive (Q1 compulsory + any 4 of Q2 to Q6)", items: [
+        { id: "idt_q1",   name: "Q1 · Numerical: net GST", marks: "14 marks · compulsory", chapterIds: ["idt1","idt2","idt3","idt4","idt5","idt6","idt7","idt8"] },
+        { id: "idt_q2ab", name: "Q2 (a)+(b) · GST", marks: "5 + 5 marks", chapterIds: ["idt1","idt2","idt4","idt8"] },
+        { id: "idt_q2c",  name: "Q2 (c) · Customs", marks: "4 marks", chapterIds: ["idt24","idt25"] },
+        { id: "idt_q3ab", name: "Q3 (a)+(b) · GST", marks: "5 + 5 marks", chapterIds: ["idt1","idt4","idt5","idt6","idt8"] },
+        { id: "idt_q3c",  name: "Q3 (c) · Customs", marks: "4 marks", chapterIds: ["idt22","idt23","idt27"] },
+        { id: "idt_q4ab", name: "Q4 (a)+(b) · GST", marks: "5 + 5 marks", chapterIds: ["idt9","idt10","idt11","idt13","idt14"] },
+        { id: "idt_q4c",  name: "Q4 (c) · Customs", marks: "4 marks", chapterIds: ["idt23"] },
+        { id: "idt_q5ab", name: "Q5 (a)+(b) · GST", marks: "5 + 5 marks", chapterIds: ["idt17","idt18","idt19","idt20"] },
+        { id: "idt_q5c",  name: "Q5 (c) · Customs", marks: "4 marks", chapterIds: ["idt27","idt29","idt31"] },
+        { id: "idt_q6a",  name: "Q6 (a) · GST direct", marks: "6 marks", chapterIds: ["idt15","idt16","idt21"] },
+        { id: "idt_q6b",  name: "Q6 (b) · GST direct, with option", marks: "4 marks", chapterIds: ["idt15","idt16","idt21"] },
+        { id: "idt_q6c",  name: "Q6 (c) · FTP / customs direct", marks: "4 marks", chapterIds: ["idt28","idt30"] }
+      ]}
+    ],
+    practice: [
+      { id: "idt_p_mcq", title: "MCQ case scenarios", type: "counter", total: 35 },
+      { id: "idt_p_past", title: "Past papers", items: [
+        { id: "idt_p_past1", name: "May 24" }, { id: "idt_p_past2", name: "Nov 24" },
+        { id: "idt_p_past3", name: "May 25" }, { id: "idt_p_past4", name: "Nov 25" },
+        { id: "idt_p_past5", name: "May 26" }
+      ]},
+      { id: "idt_p_mtp", title: "MTP", items: [
+        { id: "idt_p_mtp1", name: "Nov 26 · Series 1" }, { id: "idt_p_mtp2", name: "Nov 26 · Series 2" }
+      ]},
+      { id: "idt_p_rtp", title: "RTP", items: [
+        { id: "idt_p_rtp1", name: "Nov 26 RTP" }
+      ]}
+    ]
+  }
+};
+
 const APP_DATA_GROUP2 = {
   // ─── Exam Info ─────────────────────────
   exam: {
