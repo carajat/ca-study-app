@@ -3093,7 +3093,7 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
             </div>`;
           } else {
             html += `<div class="revision-chip ${done ? 'done' : ''}" style="padding:6px 14px; font-size:13px;" onclick="toggleRevisionTick(${roundNo}, '${item.id}', ${!done})">
-              ${item.name} ${done ? '<span class="ca-tick">✓</span>' : ''}
+              ${item.name} ${done ? '<svg viewBox="0 0 24 24" width="1.2em" height="1.2em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -0.2em;"><path d="M5 14 L10 6 L19 18" /></svg>' : ''}
             </div>`;
           }
         });
