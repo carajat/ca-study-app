@@ -1126,7 +1126,7 @@ function saveMockScoreFromModal(mockId) {
   saveMockScore(mockId, score, notes);
   closeModal();
   renderExams();
-  showToast('Score saved! <span class="material-symbols-rounded icon-sm ca-tick" style="color:var(--success-color);" >check_circle</span>');
+  showToast('Score saved! <span class="material-symbols-rounded icon-sm" style="color:var(--success-color);">check_circle</span>');
 }
 
 function clearMockScoreFromModal(mockId) {
@@ -2466,7 +2466,7 @@ function renderPlannerTaskList(tasks, dayKey) {
   
   return tasks.map((task, idx) => `
     <div class="planner-task ${task.done ? 'task-done' : ''}" onclick="togglePlannerTask('${dayKey}', ${task.originalIndex})">
-      <span class="task-check">${task.done ? '<span class="material-symbols-rounded icon-sm ca-tick">check_box</span>' : '<span class="material-symbols-rounded icon-sm">check_box_outline_blank</span>'}</span>
+      <span class="task-check">${task.done ? '<span class="material-symbols-rounded icon-sm">check_box</span>' : '<span class="material-symbols-rounded icon-sm">check_box_outline_blank</span>'}</span>
       <div class="task-info">
         <div class="task-name">${task.name}</div>
         ${task.subject ? '<div class="task-subject">' + task.subject + '</div>' : ''}
@@ -2518,7 +2518,7 @@ function openAddTaskModal() {
   };
   const subjects = flattenSubjects(DYNAMIC_DATA.syllabusSubjects).map(s => ({ value: s.id, label: s.name }));
   
-  openModal('<span class="material-symbols-rounded icon-sm">add</span> Add Task', '<div class="form-group"><label>Date</label><input type="date" id="task-date" value="' + dateKey(state.plannerDate) + '"></div><div class="form-group"><label>Category</label><select id="task-category" onchange="onTaskCategoryChange()"><option value="primary">Primary Subject</option><option value="secondary">Secondary Subject</option><option value="quick">Quick Task</option></select></div><div id="task-study-fields"><div class="form-group"><label>Subject</label><select id="task-subject" onchange="onTaskSubjectChange()"><option value="">— Select —</option>' + subjects.map(s => '<option value="' + s.value + '">' + s.label + '</option>').join('') + '</select></div><div class="form-group" id="task-chapter-group" style="display:none;"><label>Chapter</label><select id="task-chapter" onchange="onTaskChapterChange()"><option value="">— Select —</option></select></div><div class="form-group" id="task-activity-group" style="display:none;"><label>Activity</label><select id="task-activity" onchange="onTaskChapterChange()"><option value="">— Select —</option><option value="conceptBook">Book (Concepts)</option><option value="questionBank">Question Bank</option><option value="revisionVideo">Revision Video</option></select></div></div><div class="form-group"><label>Task Description</label><input type="text" id="task-name" placeholder="e.g. Complete pending questions"></div><button class="btn-primary" onclick="addPlannerTask()">Add Task <span class="material-symbols-rounded icon-sm ca-tick">check_circle</span></button>');
+  openModal('<span class="material-symbols-rounded icon-sm">add</span> Add Task', '<div class="form-group"><label>Date</label><input type="date" id="task-date" value="' + dateKey(state.plannerDate) + '"></div><div class="form-group"><label>Category</label><select id="task-category" onchange="onTaskCategoryChange()"><option value="primary">Primary Subject</option><option value="secondary">Secondary Subject</option><option value="quick">Quick Task</option></select></div><div id="task-study-fields"><div class="form-group"><label>Subject</label><select id="task-subject" onchange="onTaskSubjectChange()"><option value="">— Select —</option>' + subjects.map(s => '<option value="' + s.value + '">' + s.label + '</option>').join('') + '</select></div><div class="form-group" id="task-chapter-group" style="display:none;"><label>Chapter</label><select id="task-chapter" onchange="onTaskChapterChange()"><option value="">— Select —</option></select></div><div class="form-group" id="task-activity-group" style="display:none;"><label>Activity</label><select id="task-activity" onchange="onTaskChapterChange()"><option value="">— Select —</option><option value="conceptBook">Book (Concepts)</option><option value="questionBank">Question Bank</option><option value="revisionVideo">Revision Video</option></select></div></div><div class="form-group"><label>Task Description</label><input type="text" id="task-name" placeholder="e.g. Complete pending questions"></div><button class="btn-primary" onclick="addPlannerTask()">Add Task <span class="material-symbols-rounded icon-sm">check_circle</span></button>');
 }
 
 window.onTaskCategoryChange = function() {
@@ -2638,7 +2638,7 @@ function addPlannerTask() {
   savePlannerTasks(tasks);
   closeModal();
   renderPlanner();
-  showToast('Task added! <span class="material-symbols-rounded icon-sm ca-tick">check_circle</span>');
+  showToast('Task added! <span class="material-symbols-rounded icon-sm">check_circle</span>');
 }
 
 function copyToTomorrow() {
@@ -2861,7 +2861,7 @@ function renderSyllabusDetail(subject) {
         const isDone = progress[ch.id]?.done || false;
         return '<div class="ss-row chapter-drag-item ' + (isDone ? 'done' : '') + '" data-idx="' + idx + '" ' + (!isEditMode ? 'onclick="toggleIbsCheck(\'' + ch.id + '\')"' : '') + '>' +
           '' +
-          (!isEditMode ? '<span class="ss-check">' + (isDone ? '<span class="material-symbols-rounded icon-sm ca-tick">check_box</span>' : '<span class="material-symbols-rounded icon-sm">check_box_outline_blank</span>') + '</span>' : 
+          (!isEditMode ? '<span class="ss-check">' + (isDone ? '<span class="material-symbols-rounded icon-sm">check_box</span>' : '<span class="material-symbols-rounded icon-sm">check_box_outline_blank</span>') + '</span>' : 
           '<span class="drag-handle material-symbols-rounded" style="cursor:grab; color:var(--text-secondary); font-size:18px; margin-right:6px;">drag_indicator</span>') +
           '<span class="ss-num">' + (!isEditMode ? (idx + 1) + '.' : '') + '</span>' +
           (!isEditMode ? '<span class="ss-name" style="flex:1">' + ch.name + '</span>' : 
@@ -3093,7 +3093,7 @@ function renderRevisionRoundTab(subjectId, roundNo, container) {
             </div>`;
           } else {
             html += `<div class="revision-chip ${done ? 'done' : ''}" style="padding:6px 14px; font-size:13px;" onclick="toggleRevisionTick(${roundNo}, '${item.id}', ${!done})">
-              ${item.name} ${done ? '<svg viewBox="0 0 24 24" width="1.2em" height="1.2em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -0.2em;"><path d="M5 4 L12 18 L19 11" /></svg>' : ''}
+              ${item.name} ${done ? '✓' : ''}
             </div>`;
           }
         });
@@ -5008,7 +5008,7 @@ function trackerStop() {
     });
     saveDynamicData();
     renderTodaysLog();
-    getTrackerEl('st-status').innerHTML = '<span class="material-symbols-rounded icon-sm ca-tick" style="color:var(--success-color); vertical-align:middle; font-size:16px;" >check_circle</span> Saved ' + hh + 'h ' + mm + 'm to journal';
+    getTrackerEl('st-status').innerHTML = '<span class="material-symbols-rounded icon-sm" style="color:var(--success-color); vertical-align:middle; font-size:16px;">check_circle</span> Saved ' + hh + 'h ' + mm + 'm to journal';
   } else {
     getTrackerEl('st-status').textContent = 'Session too short (< 1 min), not saved';
   }
@@ -5431,7 +5431,7 @@ window.deleteTodaysLog = function(idx) {
       html += `
         <div onclick="saveStreakGoal(${opt})" style="cursor:pointer; padding:16px; border-radius:12px; border:2px solid ${isSelected ? 'var(--primary)' : 'var(--glass-border)'}; background:${isSelected ? 'var(--checkbox-row-active)' : 'transparent'}; display:flex; justify-content:space-between; align-items:center;">
           <span style="font-weight:600; color:var(--text-primary); font-size:15px;">${opt} Hours</span>
-          ${isSelected ? `<span class="material-symbols-rounded ca-tick" style="color:var(--primary);" >check_circle</span>` : ''}
+          ${isSelected ? `<span class="material-symbols-rounded" style="color:var(--primary);">check_circle</span>` : ''}
         </div>
       `;
     });
