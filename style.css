@@ -1331,7 +1331,12 @@ input[type="checkbox"]:checked {
 }
 
 input[type="checkbox"]:checked::before {
-  transform: scale(1);
+  transform: scale(-1, 1);
+}
+
+.ca-tick {
+  transform: scaleX(-1);
+  display: inline-block;
 }
 
 
