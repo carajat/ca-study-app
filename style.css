@@ -1331,11 +1331,11 @@ input[type="checkbox"]:checked {
 }
 
 input[type="checkbox"]:checked::before {
-  transform: scale(-1, 1);
+  transform: scaleX(-1) rotate(90deg);
 }
 
 .ca-tick {
-  transform: scaleX(-1);
+  transform: scaleX(-1) rotate(90deg);
   display: inline-block;
 }
 
